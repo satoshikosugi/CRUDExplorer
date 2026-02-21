@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CRUDExplorer.AuthServer/CRUDExplorer.AuthServer.csproj" />
+    <Project Path="src/CRUDExplorer.Core/CRUDExplorer.Core.csproj" />
+    <Project Path="src/CRUDExplorer.SqlParser/CRUDExplorer.SqlParser.csproj" />
+    <Project Path="src/CRUDExplorer.UI/CRUDExplorer.UI.csproj" />
+  </Folder>
+</Solution>
