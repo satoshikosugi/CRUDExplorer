@@ -1,0 +1,278 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{2D96157D-271E-4DC4-818E-B3DE3FBC5E1C}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <StartupObject>CRUDExplorer.My.MyApplication</StartupObject>
+    <RootNamespace>CRUDExplorer</RootNamespace>
+    <AssemblyName>CRUDExplorer</AssemblyName>
+    <MyType>WindowsForms</MyType>
+    <ApplicationIcon>CRUDExplorerICON.ico</ApplicationIcon>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationVersion>0.1.0.%2a</ApplicationVersion>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <ApplicationRevision>0</ApplicationRevision>
+    <UpgradeBackupLocation />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>CRUDExplorer.xml</DocumentationFile>
+    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022,42353,42354,42355</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DocumentationFile>CRUDExplorer.xml</DocumentationFile>
+    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022,42353,42354,42355</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Import Include="Microsoft.VisualBasic" />
+    <Import Include="System" />
+    <Import Include="System.Collections" />
+    <Import Include="System.Collections.Generic" />
+    <Import Include="System.Data" />
+    <Import Include="System.Drawing" />
+    <Import Include="System.Diagnostics" />
+    <Import Include="System.Windows.Forms" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Class1.vb" />
+    <Compile Include="clsArrangeQuery.vb" />
+    <Compile Include="clsColumn.vb" />
+    <Compile Include="clsQuery.vb" />
+    <Compile Include="clsSettings.vb" />
+    <Compile Include="clsTableDef.vb" />
+    <Compile Include="clsView.vb" />
+    <Compile Include="CommonAnalyze.vb" />
+    <Compile Include="CommonLicence.vb" />
+    <Compile Include="frmFileList.Designer.vb">
+      <DependentUpon>frmFileList.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmFileList.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmFilter.Designer.vb">
+      <DependentUpon>frmFilter.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmFilter.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmGrep.Designer.vb">
+      <DependentUpon>frmGrep.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmGrep.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmList.Designer.vb">
+      <DependentUpon>frmList.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmList.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmMain.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmMain.Designer.vb">
+      <DependentUpon>frmMain.vb</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmAnalyzeQuery.Designer.vb">
+      <DependentUpon>frmAnalyzeQuery.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmAnalyzeQuery.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmMakeCRUD.Designer.vb">
+      <DependentUpon>frmMakeCRUD.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmMakeCRUD.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmSearch.Designer.vb">
+      <DependentUpon>frmSearch.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmSearch.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmSettings.Designer.vb">
+      <DependentUpon>frmSettings.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmSettings.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CommonModule.vb" />
+    <Compile Include="frmStartup.Designer.vb">
+      <DependentUpon>frmStartup.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmStartup.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmTableDef.Designer.vb">
+      <DependentUpon>frmTableDef.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmTableDef.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmVersion.Designer.vb">
+      <DependentUpon>frmVersion.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmVersion.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MenuContents.vb" />
+    <Compile Include="My Project\AssemblyInfo.vb" />
+    <Compile Include="My Project\Application.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Application.myapp</DependentUpon>
+    </Compile>
+    <Compile Include="My Project\Resources.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="My Project\Settings.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="frmCRUDSearch.Designer.vb">
+      <DependentUpon>frmCRUDSearch.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmCRUDSearch.vb">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="frmFileList.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmFileList.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmFilter.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmFilter.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmGrep.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmGrep.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmList.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmList.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmMain.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmMain.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmAnalyzeQuery.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmAnalyzeQuery.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmMakeCRUD.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmMakeCRUD.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmSearch.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmSearch.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmSettings.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmSettings.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmStartup.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmStartup.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmTableDef.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmTableDef.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmVersion.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmVersion.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="My Project\Resources.resx">
+      <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.vb</LastGenOutput>
+      <CustomToolNamespace>My.Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmCRUDSearch.resx">
+      <DependentUpon>frmCRUDSearch.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="My Project\Application.myapp">
+      <Generator>MyApplicationCodeGenerator</Generator>
+      <LastGenOutput>Application.Designer.vb</LastGenOutput>
+    </None>
+    <None Include="My Project\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <CustomToolNamespace>My</CustomToolNamespace>
+      <LastGenOutput>Settings.Designer.vb</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="Scripting">
+      <Guid>{420B2830-E718-11CF-893D-00A0C9054228}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="CRUDExplorerICON.ico" />
+    <Content Include="CRUDExplorerのロゴ.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.VisualBasic.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
