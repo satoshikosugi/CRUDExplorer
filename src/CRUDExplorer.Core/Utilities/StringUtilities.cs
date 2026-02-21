@@ -8,6 +8,11 @@ namespace CRUDExplorer.Core.Utilities;
 /// </summary>
 public static class StringUtilities
 {
+    static StringUtilities()
+    {
+        // CodePagesEncodingProviderの登録は1回のみ実行
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+    }
     /// <summary>
     /// 文字列の右端から指定した長さの文字列を取得（VB.NET Right関数相当）
     /// </summary>
@@ -39,8 +44,6 @@ public static class StringUtilities
             return 0;
 
         // Shift_JIS（CodePage 932）でのバイト長を返す
-        // .NET 8ではエンコーディングプロバイダーの登録が必要
-        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         return Encoding.GetEncoding("Shift_JIS").GetByteCount(target);
     }
 

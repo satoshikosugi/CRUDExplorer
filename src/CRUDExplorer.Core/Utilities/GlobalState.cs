@@ -8,26 +8,12 @@ namespace CRUDExplorer.Core.Utilities;
 /// </summary>
 public class GlobalState
 {
-    private static GlobalState? _instance;
-    private static readonly object _lock = new();
+    private static readonly Lazy<GlobalState> _lazy = new(() => new GlobalState());
 
     /// <summary>
     /// シングルトンインスタンス
     /// </summary>
-    public static GlobalState Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                lock (_lock)
-                {
-                    _instance ??= new GlobalState();
-                }
-            }
-            return _instance;
-        }
-    }
+    public static GlobalState Instance => _lazy.Value;
 
     private GlobalState()
     {

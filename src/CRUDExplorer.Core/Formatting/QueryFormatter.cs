@@ -87,7 +87,7 @@ public class QueryFormatter
         var baseDepth = 0;
         var hadSpace = false;
 
-        if (sql.Length >= 6 && sql.Substring(0, 6).Equals("INSERT", StringComparison.OrdinalIgnoreCase))
+        if (sql.Length >= 6 && sql.StartsWith("INSERT", StringComparison.OrdinalIgnoreCase))
         {
             baseDepth = 1;
         }

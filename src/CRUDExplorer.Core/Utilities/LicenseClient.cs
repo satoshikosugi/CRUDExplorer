@@ -15,15 +15,12 @@ public class LicenseClient : IDisposable
     /// <summary>
     /// 認証サーバーのベースURL
     /// </summary>
-    public string BaseUrl { get; set; } = "https://auth.crudexplorer.com";
+    public string BaseUrl { get; }
 
     public LicenseClient(string? baseUrl = null)
     {
         _httpClient = new HttpClient();
-        if (!string.IsNullOrEmpty(baseUrl))
-        {
-            BaseUrl = baseUrl;
-        }
+        BaseUrl = !string.IsNullOrEmpty(baseUrl) ? baseUrl : "https://auth.crudexplorer.com";
         _httpClient.BaseAddress = new Uri(BaseUrl);
     }
 
