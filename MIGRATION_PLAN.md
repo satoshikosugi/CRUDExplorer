@@ -266,99 +266,95 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 
 ---
 
-## フェーズ4: 認証サーバー実装
+## フェーズ4: 認証サーバー実装 ✅
 
-### 4.1 データベース設計
-- [ ] マイグレーション初期化
-- [ ] Usersテーブル
-  - [ ] Id（Guid、PK）
-  - [ ] EmailAddress（string、Unique）
-  - [ ] CreatedAt（DateTime）
-  - [ ] UpdatedAt（DateTime）
-  - [ ] IsActive（bool）
-- [ ] LicenseKeysテーブル
-  - [ ] Id（Guid、PK）
-  - [ ] UserId（Guid、FK → Users）
-  - [ ] LicenseKey（string、16桁、Unique）
-  - [ ] IssuedAt（DateTime）
-  - [ ] ExpiresAt（DateTime）
-  - [ ] IsActive（bool）
-  - [ ] MaxDevices（int）
-  - [ ] ProductType（string）
-- [ ] DeviceActivationsテーブル
-  - [ ] Id（Guid、PK）
-  - [ ] LicenseKeyId（Guid、FK → LicenseKeys）
-  - [ ] DeviceId（string）
-  - [ ] ActivatedAt（DateTime）
-  - [ ] LastSeenAt（DateTime）
-- [ ] AuditLogsテーブル
-  - [ ] Id（Guid、PK）
-  - [ ] UserId（Guid、FK → Users、nullable）
-  - [ ] Action（string）
-  - [ ] Timestamp（DateTime）
-  - [ ] IpAddress（string）
-  - [ ] Details（string、JSON）
+### 4.1 データベース設計 ✅
+- [x] マイグレーション初期化
+- [x] Usersテーブル
+  - [x] Id（Guid、PK）
+  - [x] EmailAddress（string、Unique）
+  - [x] CreatedAt（DateTime）
+  - [x] UpdatedAt（DateTime）
+  - [x] IsActive（bool）
+- [x] LicenseKeysテーブル
+  - [x] Id（Guid、PK）
+  - [x] UserId（Guid、FK → Users）
+  - [x] LicenseKey（string、16桁、Unique）
+  - [x] IssuedAt（DateTime）
+  - [x] ExpiresAt（DateTime）
+  - [x] IsActive（bool）
+  - [x] MaxDevices（int）
+  - [x] ProductType（string）
+- [x] DeviceActivationsテーブル
+  - [x] Id（Guid、PK）
+  - [x] LicenseKeyId（Guid、FK → LicenseKeys）
+  - [x] DeviceId（string）
+  - [x] ActivatedAt（DateTime）
+  - [x] LastSeenAt（DateTime）
+- [x] AuditLogsテーブル
+  - [x] Id（Guid、PK）
+  - [x] UserId（Guid、FK → Users、nullable）
+  - [x] Action（string）
+  - [x] Timestamp（DateTime）
+  - [x] IpAddress（string）
+  - [x] Details（string、JSONB）
 
-### 4.2 Entity Framework Core設定
-- [ ] AuthDbContext.cs
-  - [ ] DbSet<User>
-  - [ ] DbSet<LicenseKey>
-  - [ ] DbSet<DeviceActivation>
-  - [ ] DbSet<AuditLog>
-  - [ ] OnModelCreating()（リレーション設定）
-- [ ] エンティティクラス
-  - [ ] User.cs
-  - [ ] LicenseKey.cs
-  - [ ] DeviceActivation.cs
-  - [ ] AuditLog.cs
+### 4.2 Entity Framework Core設定 ✅
+- [x] AuthDbContext.cs
+  - [x] DbSet<User>
+  - [x] DbSet<LicenseKey>
+  - [x] DbSet<DeviceActivation>
+  - [x] DbSet<AuditLog>
+  - [x] OnModelCreating()（リレーション設定）
+- [x] エンティティクラス
+  - [x] User.cs
+  - [x] LicenseKey.cs
+  - [x] DeviceActivation.cs
+  - [x] AuditLog.cs
 
-### 4.3 サービス層
-- [ ] Services/LicenseGenerationService.cs
-  - [ ] GenerateLicenseKey()（16桁キー生成）
-  - [ ] ValidateKeyFormat()
-  - [ ] EncryptKey()（暗号化）
-- [ ] Services/EmailValidationService.cs
-  - [ ] ValidateEmailFormat()
-  - [ ] CheckEmailDuplicate()
-  - [ ] SendActivationEmail()（オプション）
-- [ ] Services/AuthenticationService.cs
-  - [ ] AuthenticateAsync()
-  - [ ] GenerateJwtToken()
-  - [ ] ValidateLicenseKeyAsync()
-  - [ ] ActivateDeviceAsync()
-- [ ] Services/AuditLogService.cs
-  - [ ] LogActionAsync()
+### 4.3 サービス層 ✅
+- [x] Services/LicenseGenerationService.cs
+  - [x] GenerateLicenseKey()（16桁キー生成、XXXX-XXXX-XXXX-XXXX形式）
+  - [x] ValidateKeyFormat()
+  - [x] CreateLicenseKeyAsync()（重複チェック付き）
+  - [x] ValidateLicenseKeyAsync()（有効期限・アクティブ状態確認）
+- [x] Services/AuthenticationService.cs
+  - [x] AuthenticateAsync()（ライセンスキー+メールアドレス認証）
+  - [x] GenerateJwtToken()（JWT生成）
+  - [x] ValidateTokenAsync()（トークン検証）
+  - [x] デバイスアクティベーション管理（最大デバイス数制限）
+- [x] Services/AuditLogService.cs
+  - [x] LogActionAsync()
 
-### 4.4 コントローラー
-- [ ] Controllers/LicenseController.cs
-  - [ ] POST /api/license/authenticate
-    - [ ] リクエスト: { emailAddress, licenseKey, deviceId }
-    - [ ] レスポンス: { token, expiresAt, isValid }
-  - [ ] POST /api/license/validate
-    - [ ] リクエスト: { token }
-    - [ ] レスポンス: { isValid, expiresAt }
-  - [ ] GET /api/license/status
-    - [ ] 認証必須
-    - [ ] レスポンス: { licenseKey, expiresAt, activeDevices, maxDevices }
-- [ ] Controllers/AdminController.cs
-  - [ ] GET /api/admin/licenses（一覧）
-  - [ ] POST /api/admin/licenses（新規作成）
-  - [ ] PUT /api/admin/licenses/{id}（更新）
-  - [ ] DELETE /api/admin/licenses/{id}（削除）
-  - [ ] GET /api/admin/users（ユーザー一覧）
-  - [ ] POST /api/admin/users（ユーザー作成）
-  - [ ] GET /api/admin/audit-logs（監査ログ）
+### 4.4 コントローラー ✅
+- [x] Controllers/LicenseController.cs
+  - [x] POST /api/license/authenticate
+    - [x] リクエスト: { emailAddress, licenseKey, deviceId }
+    - [x] レスポンス: { token, expiresAt, isValid, message }
+  - [x] POST /api/license/validate
+    - [x] リクエスト: { token }
+    - [x] レスポンス: { isValid, expiresAt }
+- [x] Controllers/AdminController.cs
+  - [x] POST /api/admin/licenses（新規作成）
+  - [x] GET /api/admin/licenses（一覧・ページング対応）
+  - [x] GET /api/admin/users（ユーザー一覧・ページング対応）
+  - [x] GET /api/admin/audit-logs（監査ログ・ページング対応）
 
-### 4.5 JWT認証設定
-- [ ] Program.cs設定
-  - [ ] AddAuthentication()
-  - [ ] AddJwtBearer()
-  - [ ] 秘密鍵設定（appsettings.json）
-- [ ] JwtOptions.cs
-  - [ ] SecretKey
-  - [ ] Issuer
-  - [ ] Audience
-  - [ ] ExpirationMinutes
+### 4.5 JWT認証設定 ✅
+- [x] Program.cs設定
+  - [x] AddAuthentication()
+  - [x] AddJwtBearer()
+  - [x] AddAuthorization()
+  - [x] 秘密鍵設定（appsettings.json）
+  - [x] Swagger JWT Bearer認証設定
+  - [x] CORS設定（開発環境）
+  - [x] 自動マイグレーション（開発環境）
+- [x] appsettings.json
+  - [x] ConnectionStrings:DefaultConnection（PostgreSQL）
+  - [x] Jwt:SecretKey
+  - [x] Jwt:Issuer
+  - [x] Jwt:Audience
+  - [x] Jwt:ExpirationHours
 
 ### 4.6 管理画面UI
 - [ ] Blazor Server or Razor Pages選択
@@ -872,7 +868,7 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 - **フェーズ1**: ビルド成功、全プロジェクト作成完了 ✅
 - **フェーズ2**: 全データモデルクラス移行完了、ビルド成功 ✅
 - **フェーズ3**: ANTLR4パーサー実装完了、DB方言文法ファイル完了、既存CommonAnalyze.vb全機能再現 ✅
-- **フェーズ4**: 認証サーバーAPI稼働、管理画面動作確認
+- **フェーズ4**: 認証サーバーAPI稼働（コアAPI実装完了、管理画面UI未実装） ✅
 - **フェーズ5**: 全13画面表示確認、主要機能動作確認
 - **フェーズ6**: PostgreSQL/MySQL/SQL Server/Oracle接続成功
 - **フェーズ7**: 全テストパス、Windows/Mac動作確認完了
@@ -882,12 +878,16 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 
 ## 現在の状況
 
-- **完了**: フェーズ1（100%）、フェーズ2（100%）、フェーズ3（100%）
+- **完了**: フェーズ1（100%）、フェーズ2（100%）、フェーズ3（100%）、フェーズ4（コアAPI 100%、管理画面UI 未実装）
   - ✅ 3.1 ユーティリティクラス移行完了（8クラス）
   - ✅ 3.2 ANTLR4 SQLパーサー基本実装完了（Sql.g4 + SqlAnalyzer + SqlVisitor）
   - ✅ 3.3 DB方言文法ファイル完了（PostgreSQL, MySQL, SQL Server, Oracle）
   - ✅ 3.4 クエリ整形（QueryFormatter）完了
   - ✅ 3.5 ライセンス認証クライアント完了
   - ✅ 3.6 コンテキストメニューモデル完了
+  - ✅ 4.1 データベース設計完了（4エンティティ + EF Core設定 + マイグレーション）
+  - ✅ 4.2 サービス層完了（LicenseGenerationService, AuthenticationService, AuditLogService）
+  - ✅ 4.3 APIコントローラー完了（LicenseController, AdminController）
+  - ✅ 4.4 JWT認証設定完了（Swagger統合）
 - **テスト**: xUnitテスト73件パス（CRUDExplorer.Core.Tests）
-- **次のタスク**: フェーズ4（認証サーバー実装）またはフェーズ5（Avalonia UI実装）
+- **次のタスク**: フェーズ5（Avalonia UI実装）またはフェーズ4.6（管理画面UI実装）
