@@ -23,6 +23,9 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <!-- Security: Force newer versions of vulnerable transitive dependencies -->
+    <PackageReference Include="Azure.Identity" Version="1.13.1" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.66.2" />
   </ItemGroup>
 
   <ItemGroup>
