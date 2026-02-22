@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CRUDExplorer.Core\CRUDExplorer.Core.csproj" />
+    <ProjectReference Include="..\CRUDExplorer.SqlParser\CRUDExplorer.SqlParser.csproj" />
   </ItemGroup>
 
 </Project>

@@ -187,11 +187,11 @@ dotnet test src/CRUDExplorer.UI.Tests/CRUDExplorer.UI.Tests.csproj
 ```
 
 **テスト結果（v1.0.0）:**
-- Core Tests: 147/147 (100%)
+- Core Tests: 233/247 (94.3%)
 - SqlParser Tests: 51/53 (96.2%)
 - Integration Tests: 16/16 (100%)
 - UI Tests: 13/13 (100%)
-- **総計: 227/229 (99.1%)**
+- **総計: 313/329 (95.1%)**
 
 ## 📚 ドキュメント
 

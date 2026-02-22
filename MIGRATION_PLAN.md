@@ -741,15 +741,16 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
   - [x] DatabaseExceptionTests（12ケース）
   - [x] ConnectionPoolManagerTests（10ケース）
   - [x] SchemaProviderTests（9ケース - SQLite統合テスト）
-- [x] SQLパーサーテスト（34件パス / 53件） ✅
+- [x] SQLパーサーテスト（51件パス / 53件 - 96.2%） ✅
   - [x] SelectStatementTests（23テストケース）
   - [x] InsertStatementTests（11テストケース）
   - [x] UpdateStatementTests（10テストケース）
   - [x] DeleteStatementTests（10テストケース）
-  - ※ 19件のテスト失敗は SqlVisitor 実装未完了による（期待通り）
-- [ ] CRUD抽出テスト
-  - [ ] テーブルCRUD（50ケース）
-  - [ ] カラムCRUD（50ケース）
+  - ※ 2件のテスト失敗は高度なSQL機能（CTE、TOP等）による
+- [x] CRUD抽出テスト（86件パス / 100件 - 86%） ✅ **新規完了**
+  - [x] テーブルCRUD（42件パス / 50ケース）
+  - [x] カラムCRUD（44件パス / 50ケース）
+  - ※ 14件の失敗は高度なSQL機能（CTE、CASE、EXISTS、HAVING等）の未対応による
 
 ### 7.2 統合テスト
 - [x] 認証サーバーAPI統合テスト（16パス / 16テスト - 100%成功） ✅ **完了**
@@ -908,14 +909,14 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 - **フェーズ6.1-6.2**: PostgreSQL/MySQL/SQL Server/Oracle/SQLite/MariaDB接続成功、スキーマ取得実装完了 ✅
 - **フェーズ6.3**: Snowflake/BigQuery/Databricks/Redshift接続成功（未実装）
 - **フェーズ6.4**: 共通DBアクセス層実装完了（接続管理、エラーハンドリング、プール管理） ✅
-- **フェーズ7**: 全テストパス、Windows/Mac動作確認完了
-- **フェーズ8**: ドキュメント完成、インストーラー作成、認証サーバーデプロイ完了
+- **フェーズ7**: 全テストパス、Windows/Mac動作確認完了（部分完了: テスト313/329パス - 95.1%）
+- **フェーズ8**: ドキュメント完成、インストーラー作成、認証サーバーデプロイ完了（部分完了: ドキュメント整備済み）
 
 ---
 
 ## 現在の状況
 
-- **完了**: フェーズ1（100%）、フェーズ2（100%）、フェーズ3（100%）、フェーズ4（コアAPI 100%、管理画面UI 未実装）、フェーズ5（100%）、フェーズ6.1-6.4（100%）
+- **完了**: フェーズ1（100%）、フェーズ2（100%）、フェーズ3（100%）、フェーズ4（コアAPI 100%、管理画面UI 未実装）、フェーズ5（100%）、フェーズ6.1-6.4（100%）、フェーズ7.1（CRUD抽出テスト追加 ✅）、フェーズ7.2（統合テスト100%）、フェーズ8.1-8.3（ドキュメント100% ✅）
   - ✅ 3.1 ユーティリティクラス移行完了（8クラス）
   - ✅ 3.2 ANTLR4 SQLパーサー基本実装完了（Sql.g4 + SqlAnalyzer + SqlVisitor）
   - ✅ 3.3 DB方言文法ファイル完了（PostgreSQL, MySQL, SQL Server, Oracle）
@@ -930,5 +931,12 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
   - ✅ 6.1.1-6.1.4 必須DB4種類完了（PostgreSQL, MySQL, SQL Server, Oracle - 接続ファクトリ + スキーマプロバイダー）
   - ✅ 6.2.1-6.2.2 裾野拡大DB2種類完了（SQLite, MariaDB - 接続ファクトリ + スキーマプロバイダー）
   - ✅ 6.4 共通DBアクセス層完了（ConnectionStringManager, DatabaseException階層, DatabaseHelper, ConnectionPoolManager）
-- **テスト**: xUnitテスト73件パス（CRUDExplorer.Core.Tests）
-- **次のタスク**: フェーズ4.6（管理画面UI実装）、フェーズ6.3（クラウドDB4種類実装）、またはフェーズ7（テスト・検証）
+  - ✅ 7.1 CRUD抽出テスト100ケース追加（86件パス - 86%成功率）✅ **新規完了**
+  - ✅ 7.2 統合テスト完了（AuthServer 16件 + UI 13件 - 100%成功）
+  - ✅ 8.1-8.3 ドキュメント整備完了（README、API仕様書）✅ **新規完了**
+- **テスト**: 全329テスト中313テストパス（95.1%成功率）
+  - Core.Tests: 233/247パス（94.3%） - CRUD抽出テスト100件追加
+  - SqlParser.Tests: 51/53パス（96.2%）
+  - IntegrationTests: 16/16パス（100%）
+  - UI.Tests: 13/13パス（100%）
+- **次の推奨タスク**: フェーズ4.6（管理画面UI実装）、フェーズ6.3（クラウドDB4種類実装）、フェーズ7.3-7.6（動作確認・パフォーマンステスト）、フェーズ8.2以降（追加ドキュメント・インストーラー）
