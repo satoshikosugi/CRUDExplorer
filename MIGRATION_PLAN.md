@@ -773,10 +773,21 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
     - [x] デバイス無効化
     - [x] 監査ログ取得（フィルタ付き）
     - [x] ライセンス取り消し
-- [ ] UI統合テスト
-  - [ ] Avalonia.Headless使用
-  - [ ] メインウィンドウ表示
-  - [ ] 設定保存・読み込み
+- [x] UI統合テスト（13パス / 13テスト - 100%成功） ✅ **完了**
+  - [x] テストプロジェクト作成（CRUDExplorer.UI.Tests）
+  - [x] Avalonia.Headless使用
+  - [x] ViewModel初期化テスト（全ViewModelテスト）
+    - [x] MainWindowViewModel
+    - [x] MakeCrudViewModel
+    - [x] AnalyzeQueryViewModel
+    - [x] SettingsViewModel
+    - [x] VersionViewModel
+    - [x] CrudSearchViewModel
+    - [x] FileListViewModel
+    - [x] FilterViewModel
+    - [x] GrepViewModel
+    - [x] TableDefinitionViewModel
+  - [x] 設定保存・読み込みテスト
 - [ ] エンドツーエンドテスト
   - [ ] CRUD解析フルフロー
   - [ ] マトリクス生成
