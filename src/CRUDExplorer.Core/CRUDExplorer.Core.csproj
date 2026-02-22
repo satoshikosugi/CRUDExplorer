@@ -9,6 +9,12 @@
   <ItemGroup>
     <PackageReference Include="System.Text.Encoding.CodePages" Version="10.0.3" />
     <PackageReference Include="System.Text.Json" Version="10.0.3" />
+
+    <!-- Database Providers -->
+    <PackageReference Include="Npgsql" Version="8.0.6" />
+    <PackageReference Include="MySql.Data" Version="9.1.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.6.1" />
   </ItemGroup>
 
 </Project>
