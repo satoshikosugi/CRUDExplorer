@@ -844,14 +844,15 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 - [x] ANTLR4文法仕様 ✅
 - [x] DB対応状況一覧 ✅
 - [x] API仕様（認証サーバー） ✅
+- [x] デプロイメントガイド ✅
 
 ### 8.3 API仕様書（認証サーバー）
 - [x] エンドポイント一覧 ✅
 - [x] リクエスト/レスポンス例 ✅
 - [x] エラーコード一覧 ✅
 - [x] サンプルコード（C#） ✅
-- [ ] OpenAPI (Swagger)仕様
-- [ ] Swashbuckle設定
+- [x] OpenAPI (Swagger)仕様 ✅
+- [x] Swashbuckle設定 ✅
 
 ### 8.4 インストーラー作成
 - [ ] Windows Installer（.msi）
