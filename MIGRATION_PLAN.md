@@ -887,8 +887,8 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
   - [x] .NET Build & Test（Ubuntu） ✅
   - [x] 認証サーバー Docker Build ✅
   - [ ] 自動デプロイ（main ブランチ）
-- [ ] バージョン管理
-  - [ ] セマンティックバージョニング
+- [x] バージョン管理 ✅
+  - [x] セマンティックバージョニング ✅
   - [x] CHANGELOG.md作成 ✅
 
 ### 8.7 リリースノート
