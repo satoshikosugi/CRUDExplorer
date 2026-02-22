@@ -823,16 +823,16 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 ## フェーズ8: ドキュメント・デプロイ
 
 ### 8.1 ユーザーマニュアル
-- [ ] README.md（日本語）
-- [ ] README_EN.md（英語）
-- [ ] インストール手順
-  - [ ] Windows版
-  - [ ] Mac版
-  - [ ] .NET 8 Runtime要件
-- [ ] 使い方ガイド
-  - [ ] CRUD解析手順
-  - [ ] 設定方法
-  - [ ] ライセンス認証手順
+- [x] README.md（日本語） ✅
+- [x] README_EN.md（英語） ✅
+- [x] インストール手順
+  - [x] Windows版
+  - [x] Mac版
+  - [x] .NET 8 Runtime要件
+- [x] 使い方ガイド
+  - [x] CRUD解析手順
+  - [x] 設定方法
+  - [x] ライセンス認証手順
 - [ ] スクリーンショット（各画面）
 
 ### 8.2 開発者ドキュメント
@@ -842,14 +842,15 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 - [ ] シーケンス図（CRUD解析フロー）
 - [ ] ANTLR4文法仕様
 - [ ] DB対応状況一覧
-- [ ] API仕様（認証サーバー）
+- [x] API仕様（認証サーバー） ✅
 
 ### 8.3 API仕様書（認証サーバー）
+- [x] エンドポイント一覧 ✅
+- [x] リクエスト/レスポンス例 ✅
+- [x] エラーコード一覧 ✅
+- [x] サンプルコード（C#） ✅
 - [ ] OpenAPI (Swagger)仕様
 - [ ] Swashbuckle設定
-- [ ] エンドポイント一覧
-- [ ] リクエスト/レスポンス例
-- [ ] エラーコード一覧
 
 ### 8.4 インストーラー作成
 - [ ] Windows Installer（.msi）
