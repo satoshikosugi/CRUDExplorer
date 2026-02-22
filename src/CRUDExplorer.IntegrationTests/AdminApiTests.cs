@@ -87,10 +87,22 @@ public class AdminApiTests : IClassFixture<AuthServerWebApplicationFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var devices = await response.Content.ReadFromJsonAsync<List<DeviceActivation>>();
+        var devices = await response.Content.ReadFromJsonAsync<List<DeviceActivationDto>>();
         Assert.NotNull(devices);
         Assert.NotEmpty(devices);
     }
+
+// DTO for GetDevices endpoint response
+public class DeviceActivationDto
+{
+    public Guid Id { get; set; }
+    public string DeviceId { get; set; } = string.Empty;
+    public string? DeviceName { get; set; }
+    public DateTime ActivatedAt { get; set; }
+    public DateTime LastSeenAt { get; set; }
+    public string LicenseKey { get; set; } = string.Empty;
+    public string EmailAddress { get; set; } = string.Empty;
+}
 
     [Fact]
     public async Task DeactivateDevice_ValidDeviceId_ReturnsOk()
@@ -142,7 +154,7 @@ public class AdminApiTests : IClassFixture<AuthServerWebApplicationFactory>
     public async Task RevokeLicense_ValidLicenseId_ReturnsOk()
     {
         // Arrange
-        var licenseId = await SeedTestLicense("TEST-LICENSE-TO-REVOKE", true);
+        var licenseId = await SeedTestLicense("REVO-KETH-ISLI-CENS", true);
 
         // Act
         var response = await _client.PutAsync($"/api/admin/licenses/{licenseId}/revoke", null);
@@ -221,9 +233,9 @@ public class AdminApiTests : IClassFixture<AuthServerWebApplicationFactory>
     /// </summary>
     private async Task SeedTestLicenses()
     {
-        await SeedTestLicense("LICENSE-001", true);
-        await SeedTestLicense("LICENSE-002", true);
-        await SeedTestLicense("LICENSE-003", false);
+        await SeedTestLicense("LICE-NSE0-0100-TEST", true);
+        await SeedTestLicense("LICE-NSE0-0200-TEST", true);
+        await SeedTestLicense("LICE-NSE0-0300-TEST", false);
     }
 
     /// <summary>
@@ -234,7 +246,7 @@ public class AdminApiTests : IClassFixture<AuthServerWebApplicationFactory>
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
 
-        var licenseId = await SeedTestLicense($"DEVICE-LICENSE-{deviceId}", true);
+        var licenseId = await SeedTestLicense($"DEVI-CE{deviceId.Substring(deviceId.Length - 3)}-TEST-LIC1", true);
 
         var activation = new DeviceActivation
         {

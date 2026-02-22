@@ -31,6 +31,72 @@ public class AuthenticationService
     }
 
     /// <summary>
+    /// ライセンスキーとデバイスIDで認証（メールアドレス不要版）
+    /// </summary>
+    public async Task<AuthenticationResult> AuthenticateWithLicenseKeyAsync(string licenseKey, string deviceId, string? deviceName = null, string? ipAddress = null)
+    {
+        // ライセンスキー検証
+        var license = await _licenseService.ValidateLicenseKeyAsync(licenseKey);
+        if (license == null)
+        {
+            await _auditLogService.LogActionAsync(null, "AuthenticationFailed", ipAddress, $"{{\"licenseKey\":\"{licenseKey}\",\"reason\":\"Invalid license key\"}}");
+            return new AuthenticationResult { IsValid = false, Message = "Invalid license key" };
+        }
+
+        // デバイスアクティベーション確認・更新
+        var activation = await _context.DeviceActivations
+            .FirstOrDefaultAsync(da => da.LicenseKeyId == license.Id && da.DeviceId == deviceId);
+
+        if (activation == null)
+        {
+            // 新規デバイス登録
+            var activeDevicesCount = await _context.DeviceActivations
+                .CountAsync(da => da.LicenseKeyId == license.Id);
+
+            if (activeDevicesCount >= license.MaxDevices)
+            {
+                await _auditLogService.LogActionAsync(license.UserId, "AuthenticationFailed", ipAddress, $"{{\"licenseKey\":\"{licenseKey}\",\"reason\":\"Max devices reached\"}}");
+                return new AuthenticationResult { IsValid = false, Message = "Maximum device limit reached", ErrorCode = "MAX_DEVICES_EXCEEDED" };
+            }
+
+            activation = new DeviceActivation
+            {
+                Id = Guid.NewGuid(),
+                LicenseKeyId = license.Id,
+                DeviceId = deviceId,
+                DeviceName = deviceName,
+                ActivatedAt = DateTime.UtcNow,
+                LastSeenAt = DateTime.UtcNow
+            };
+            _context.DeviceActivations.Add(activation);
+        }
+        else
+        {
+            // 既存デバイス更新
+            activation.LastSeenAt = DateTime.UtcNow;
+            if (!string.IsNullOrEmpty(deviceName))
+            {
+                activation.DeviceName = deviceName;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        // JWTトークン生成
+        var token = GenerateJwtToken(license.User, license);
+
+        await _auditLogService.LogActionAsync(license.UserId, "AuthenticationSuccess", ipAddress, $"{{\"licenseKey\":\"{licenseKey}\",\"deviceId\":\"{deviceId}\"}}");
+
+        return new AuthenticationResult
+        {
+            IsValid = true,
+            Token = token,
+            ExpiresAt = license.ExpiresAt ?? DateTime.UtcNow.AddYears(100),
+            Message = "Authentication successful"
+        };
+    }
+
+    /// <summary>
     /// ライセンスキーとメールアドレスで認証
     /// </summary>
     public async Task<AuthenticationResult> AuthenticateAsync(string emailAddress, string licenseKey, string deviceId, string? ipAddress = null)
@@ -177,6 +243,7 @@ public class AuthenticationResult
     public string? Token { get; set; }
     public DateTime? ExpiresAt { get; set; }
     public string? Message { get; set; }
+    public string? ErrorCode { get; set; }
 }
 
 /// <summary>

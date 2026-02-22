@@ -1,7 +1,17 @@
 namespace CRUDExplorer.AuthServer.DTOs;
 
 /// <summary>
-/// 認証リクエスト
+/// ライセンス認証リクエスト（ライセンスキー + デバイス情報のみ）
+/// </summary>
+public class LicenseAuthRequest
+{
+    public string LicenseKey { get; set; } = string.Empty;
+    public string DeviceId { get; set; } = string.Empty;
+    public string? DeviceName { get; set; }
+}
+
+/// <summary>
+/// 認証リクエスト（旧形式 - メールアドレス必須）
 /// </summary>
 public class AuthenticationRequest
 {
@@ -15,10 +25,12 @@ public class AuthenticationRequest
 /// </summary>
 public class AuthenticationResponse
 {
-    public bool IsValid { get; set; }
+    public bool Success { get; set; }
     public string? Token { get; set; }
-    public DateTime? ExpiresAt { get; set; }
     public string? Message { get; set; }
+    // 下位互換性のため残す
+    public bool IsValid => Success;
+    public DateTime? ExpiresAt { get; set; }
 }
 
 /// <summary>
@@ -43,7 +55,8 @@ public class ValidateTokenResponse
 /// </summary>
 public class CreateLicenseRequest
 {
-    public string EmailAddress { get; set; } = string.Empty;
+    public Guid? UserId { get; set; }
+    public string? EmailAddress { get; set; }
     public int MaxDevices { get; set; } = 1;
     public string ProductType { get; set; } = "Standard";
     public DateTime? ExpiresAt { get; set; }

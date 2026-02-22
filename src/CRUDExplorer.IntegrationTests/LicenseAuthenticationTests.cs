@@ -24,11 +24,11 @@ public class LicenseAuthenticationTests : IClassFixture<AuthServerWebApplication
     public async Task Authenticate_ValidLicense_ReturnsToken()
     {
         // Arrange - テストデータの準備
-        await SeedTestLicense("TEST-VALID-LICENSE-001", true, 5);
+        await SeedTestLicense("TEST-VALI-DLIC-EN01", true, 5);
 
         var request = new
         {
-            LicenseKey = "TEST-VALID-LICENSE-001",
+            LicenseKey = "TEST-VALI-DLIC-EN01",
             DeviceId = "device-001",
             DeviceName = "TestMachine"
         };
@@ -50,7 +50,7 @@ public class LicenseAuthenticationTests : IClassFixture<AuthServerWebApplication
         // Arrange
         var request = new
         {
-            LicenseKey = "INVALID-LICENSE-KEY",
+            LicenseKey = "INVA-LIDL-ICEN-SKEY",
             DeviceId = "device-001",
             DeviceName = "TestMachine"
         };
@@ -66,11 +66,11 @@ public class LicenseAuthenticationTests : IClassFixture<AuthServerWebApplication
     public async Task Authenticate_ExpiredLicense_ReturnsUnauthorized()
     {
         // Arrange - 期限切れライセンス
-        await SeedTestLicense("TEST-EXPIRED-LICENSE", false, 5);
+        await SeedTestLicense("TEST-EXPI-REDL-IC01", false, 5);
 
         var request = new
         {
-            LicenseKey = "TEST-EXPIRED-LICENSE",
+            LicenseKey = "TEST-EXPI-REDL-IC01",
             DeviceId = "device-001",
             DeviceName = "TestMachine"
         };
@@ -86,7 +86,7 @@ public class LicenseAuthenticationTests : IClassFixture<AuthServerWebApplication
     public async Task Authenticate_MaxDevicesExceeded_ReturnsConflict()
     {
         // Arrange - 最大デバイス数が1のライセンスに2台目を追加
-        var licenseKey = "TEST-MAX-DEVICES-LICENSE";
+        var licenseKey = "TEST-MAXD-EVIC-ES01";
         await SeedTestLicense(licenseKey, true, 1);
 
         // 1台目のデバイスを認証
@@ -113,7 +113,7 @@ public class LicenseAuthenticationTests : IClassFixture<AuthServerWebApplication
     public async Task Authenticate_SameDeviceTwice_ReturnsToken()
     {
         // Arrange
-        var licenseKey = "TEST-SAME-DEVICE-LICENSE";
+        var licenseKey = "TEST-SAME-DEVI-CE01";
         await SeedTestLicense(licenseKey, true, 1);
 
         var request = new
@@ -136,7 +136,7 @@ public class LicenseAuthenticationTests : IClassFixture<AuthServerWebApplication
     public async Task Validate_ValidToken_ReturnsOk()
     {
         // Arrange - トークン取得
-        var licenseKey = "TEST-VALIDATE-LICENSE";
+        var licenseKey = "TEST-VALI-DATO-KEN1";
         await SeedTestLicense(licenseKey, true, 5);
 
         var authResponse = await _client.PostAsJsonAsync("/api/license/authenticate", new
