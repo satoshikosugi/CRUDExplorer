@@ -13,7 +13,7 @@ namespace CRUDExplorer.AuthServer.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-// [Authorize] // 統合テスト用に一時的に無効化 - TODO: 本番環境では有効化すること
+[Authorize] // ✅ 本番環境では必ず有効化 (Phase 9.1 完了)
 public class AdminController : ControllerBase
 {
     private readonly AuthDbContext _context;

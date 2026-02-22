@@ -901,18 +901,18 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 
 ## フェーズ9: 本番環境対応準備
 
-### 9.1 セキュリティ設定強化
+### 9.1 セキュリティ設定強化 ✅
 - [x] 本番環境チェックリスト作成 ✅
-- [ ] AdminController [Authorize] 属性有効化（テスト修正含む）
-- [ ] CORS設定本番化（特定オリジンのみ許可）
-- [ ] JWT秘密鍵環境変数化検証
-- [ ] データベース接続文字列環境変数化検証
+- [x] AdminController [Authorize] 属性有効化（テスト修正含む） ✅
+- [x] CORS設定本番化（環境変数による特定オリジン制御） ✅
+- [x] JWT秘密鍵環境変数化検証 ✅
+- [x] データベース接続文字列環境変数化検証 ✅
 
-### 9.2 追加セキュリティ対策
-- [ ] レート制限実装（AspNetCoreRateLimit）
-- [ ] セキュリティヘッダー追加（NWebsec）
-- [ ] Serilog構造化ロギング実装
-- [ ] Swagger UI本番環境制御
+### 9.2 追加セキュリティ対策 ✅
+- [x] レート制限実装（AspNetCoreRateLimit - 60req/min全体、10req/min認証） ✅
+- [x] セキュリティヘッダー追加（5種類: X-Content-Type-Options, X-Frame-Options等） ✅
+- [x] Serilog構造化ロギング実装（Console + File、30日ローテーション） ✅
+- [x] Swagger UI本番環境制御（開発環境のみ有効化） ✅
 
 ### 9.3 パフォーマンス最適化
 - [ ] データベースクエリ最適化

@@ -1,6 +1,11 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using CRUDExplorer.AuthServer.Data;
 using CRUDExplorer.AuthServer.Models;
 
@@ -18,6 +23,41 @@ public class AdminApiTests : IClassFixture<AuthServerWebApplicationFactory>
     {
         _factory = factory;
         _client = _factory.CreateClient();
+
+        // 管理者APIテスト用にJWTトークンを生成してヘッダーに設定
+        var token = GenerateJwtToken();
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    }
+
+    /// <summary>
+    /// テスト用JWTトークン生成
+    /// </summary>
+    private string GenerateJwtToken()
+    {
+        var secretKey = "CRUDExplorer-Default-Secret-Key-Please-Change-In-Production-Min-32-Chars";
+        var issuer = "CRUDExplorer.AuthServer";
+        var audience = "CRUDExplorer.Client";
+
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, "test-admin-user"),
+            new Claim(JwtRegisteredClaimNames.Email, "admin@test.com"),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.Role, "Admin")
+        };
+
+        var token = new JwtSecurityToken(
+            issuer: issuer,
+            audience: audience,
+            claims: claims,
+            expires: DateTime.UtcNow.AddHours(1),
+            signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
     [Fact]
