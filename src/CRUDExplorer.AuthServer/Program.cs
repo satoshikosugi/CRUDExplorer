@@ -130,3 +130,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// 統合テスト用にProgramクラスをpublicにする
+public partial class Program { }
