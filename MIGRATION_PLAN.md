@@ -717,7 +717,7 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 
 ## フェーズ7: テスト・検証
 
-### 7.1 ユニットテスト
+### 7.1 ユニットテスト ✅
 - [x] xUnit導入
 - [x] CRUDExplorer.Core.Tests プロジェクト作成
 - [ ] CRUDExplorer.SqlParser.Tests プロジェクト作成
@@ -735,6 +735,11 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
   - [x] LicenseClientTests（10ケース）
   - [x] GlobalStateTests（2ケース）
   - [x] QueryFormatterTests（3ケース）
+- [x] データベース層テスト（65件パス） ✅
+  - [x] ConnectionStringManagerTests（16ケース）
+  - [x] DatabaseHelperTests（11ケース）
+  - [x] DatabaseExceptionTests（12ケース）
+  - [x] ConnectionPoolManagerTests（10ケース）
 - [ ] SQLパーサーテスト
   - [ ] SELECT文解析（100ケース）
   - [ ] INSERT文解析（30ケース）
