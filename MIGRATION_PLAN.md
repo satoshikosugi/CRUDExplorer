@@ -634,55 +634,55 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 
 ## フェーズ6: データベース対応実装
 
-### 6.1 Phase 1（必須DB）
-#### 6.1.1 PostgreSQL
-- [ ] Npgsql NuGetパッケージ
-- [ ] ConnectionStringBuilder
-- [ ] スキーマ取得クエリ
-- [ ] テーブル一覧取得
-- [ ] カラム定義取得（PK/FK/型情報）
-- [ ] PostgreSQL固有構文対応（ANTLR）
-  - [ ] RETURNING句
-  - [ ] ON CONFLICT
-  - [ ] ARRAY型
-  - [ ] JSONB型
-  - [ ] ウィンドウ関数
+### 6.1 Phase 1（必須DB） ✅
+#### 6.1.1 PostgreSQL ✅
+- [x] Npgsql NuGetパッケージ
+- [x] ConnectionStringBuilder
+- [x] スキーマ取得クエリ
+- [x] テーブル一覧取得
+- [x] カラム定義取得（PK/FK/型情報）
+- [x] PostgreSQL固有構文対応（ANTLR）
+  - [x] RETURNING句
+  - [x] ON CONFLICT
+  - [x] ARRAY型
+  - [x] JSONB型
+  - [x] ウィンドウ関数
 
-#### 6.1.2 MySQL
-- [ ] MySql.Data NuGetパッケージ
-- [ ] スキーマ取得
-- [ ] MySQL固有構文対応
-  - [ ] LIMIT句
-  - [ ] ON DUPLICATE KEY UPDATE
-  - [ ] バッククォート識別子
+#### 6.1.2 MySQL ✅
+- [x] MySql.Data NuGetパッケージ
+- [x] スキーマ取得
+- [x] MySQL固有構文対応
+  - [x] LIMIT句
+  - [x] ON DUPLICATE KEY UPDATE
+  - [x] バッククォート識別子
 
-#### 6.1.3 SQL Server
-- [ ] Microsoft.Data.SqlClient NuGetパッケージ
-- [ ] スキーマ取得（sys.tablesビュー）
-- [ ] SQL Server固有構文対応
-  - [ ] TOP句
-  - [ ] OUTPUT句
-  - [ ] OFFSET FETCH
-  - [ ] [角括弧]識別子
+#### 6.1.3 SQL Server ✅
+- [x] Microsoft.Data.SqlClient NuGetパッケージ
+- [x] スキーマ取得（sys.tablesビュー）
+- [x] SQL Server固有構文対応
+  - [x] TOP句
+  - [x] OUTPUT句
+  - [x] OFFSET FETCH
+  - [x] [角括弧]識別子
 
-#### 6.1.4 Oracle
-- [ ] Oracle.ManagedDataAccess.Core NuGetパッケージ
-- [ ] スキーマ取得（ALL_TABLESビュー）
-- [ ] Oracle固有構文対応
-  - [ ] ROWNUM
-  - [ ] CONNECT BY（階層クエリ）
-  - [ ] (+)外部結合構文
-  - [ ] DUAL表
+#### 6.1.4 Oracle ✅
+- [x] Oracle.ManagedDataAccess.Core NuGetパッケージ
+- [x] スキーマ取得（ALL_TABLESビュー）
+- [x] Oracle固有構文対応
+  - [x] ROWNUM
+  - [x] CONNECT BY（階層クエリ）
+  - [x] (+)外部結合構文
+  - [x] DUAL表
 
-### 6.2 Phase 2（裾野拡大DB）
-#### 6.2.1 SQLite
-- [ ] Microsoft.Data.Sqlite NuGetパッケージ
-- [ ] スキーマ取得（sqlite_master）
-- [ ] SQLite固有制限対応
+### 6.2 Phase 2（裾野拡大DB） ✅
+#### 6.2.1 SQLite ✅
+- [x] Microsoft.Data.Sqlite NuGetパッケージ
+- [x] スキーマ取得（sqlite_master）
+- [x] SQLite固有制限対応
 
-#### 6.2.2 MariaDB
-- [ ] MySqlConnector NuGetパッケージ
-- [ ] MySQL互換対応
+#### 6.2.2 MariaDB ✅
+- [x] MySqlConnector NuGetパッケージ
+- [x] MySQL互換対応
 
 ### 6.3 Phase 3（分析基盤DB）
 #### 6.3.1 Snowflake
@@ -869,8 +869,9 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 - **フェーズ2**: 全データモデルクラス移行完了、ビルド成功 ✅
 - **フェーズ3**: ANTLR4パーサー実装完了、DB方言文法ファイル完了、既存CommonAnalyze.vb全機能再現 ✅
 - **フェーズ4**: 認証サーバーAPI稼働（コアAPI実装完了、管理画面UI未実装） ✅
-- **フェーズ5**: 全13画面表示確認、主要機能動作確認
-- **フェーズ6**: PostgreSQL/MySQL/SQL Server/Oracle接続成功
+- **フェーズ5**: 全13画面表示確認、主要機能動作確認 ✅
+- **フェーズ6.1-6.2**: PostgreSQL/MySQL/SQL Server/Oracle/SQLite/MariaDB接続成功、スキーマ取得実装完了 ✅
+- **フェーズ6.3**: Snowflake/BigQuery/Databricks/Redshift接続成功（未実装）
 - **フェーズ7**: 全テストパス、Windows/Mac動作確認完了
 - **フェーズ8**: ドキュメント完成、インストーラー作成、認証サーバーデプロイ完了
 
@@ -878,7 +879,7 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 
 ## 現在の状況
 
-- **完了**: フェーズ1（100%）、フェーズ2（100%）、フェーズ3（100%）、フェーズ4（コアAPI 100%、管理画面UI 未実装）
+- **完了**: フェーズ1（100%）、フェーズ2（100%）、フェーズ3（100%）、フェーズ4（コアAPI 100%、管理画面UI 未実装）、フェーズ5（100%）、フェーズ6.1-6.2（100%）
   - ✅ 3.1 ユーティリティクラス移行完了（8クラス）
   - ✅ 3.2 ANTLR4 SQLパーサー基本実装完了（Sql.g4 + SqlAnalyzer + SqlVisitor）
   - ✅ 3.3 DB方言文法ファイル完了（PostgreSQL, MySQL, SQL Server, Oracle）
@@ -889,5 +890,8 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
   - ✅ 4.2 サービス層完了（LicenseGenerationService, AuthenticationService, AuditLogService）
   - ✅ 4.3 APIコントローラー完了（LicenseController, AdminController）
   - ✅ 4.4 JWT認証設定完了（Swagger統合）
+  - ✅ 5.1-5.13 全13ウィンドウ実装完了（MainWindow, MakeCrudWindow, AnalyzeQueryWindow, VersionWindow, SettingsWindow, CrudSearchWindow, FileListWindow, FilterWindow, GrepWindow, GenericListWindow, SearchWindow, StartupWindow, TableDefinitionWindow）
+  - ✅ 6.1.1-6.1.4 必須DB4種類完了（PostgreSQL, MySQL, SQL Server, Oracle - 接続ファクトリ + スキーマプロバイダー）
+  - ✅ 6.2.1-6.2.2 裾野拡大DB2種類完了（SQLite, MariaDB - 接続ファクトリ + スキーマプロバイダー）
 - **テスト**: xUnitテスト73件パス（CRUDExplorer.Core.Tests）
-- **次のタスク**: フェーズ5（Avalonia UI実装）またはフェーズ4.6（管理画面UI実装）
+- **次のタスク**: フェーズ4.6（管理画面UI実装）、フェーズ6.3（クラウドDB4種類実装）、フェーズ6.4（共通DBアクセス層）、またはフェーズ7（テスト・検証）

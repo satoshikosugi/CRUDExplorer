@@ -18,6 +18,8 @@ public static class DbProviderFactory
             DatabaseType.MySQL => new MySqlConnectionFactory(),
             DatabaseType.SqlServer => new SqlServerConnectionFactory(),
             DatabaseType.Oracle => new OracleConnectionFactory(),
+            DatabaseType.SQLite => new SqliteConnectionFactory(),
+            DatabaseType.MariaDB => new MariaDbConnectionFactory(),
             _ => throw new NotSupportedException($"Database type {databaseType} is not supported yet.")
         };
     }
@@ -33,6 +35,8 @@ public static class DbProviderFactory
             DatabaseType.MySQL => new MySqlSchemaProvider(),
             DatabaseType.SqlServer => new SqlServerSchemaProvider(),
             DatabaseType.Oracle => new OracleSchemaProvider(),
+            DatabaseType.SQLite => new SqliteSchemaProvider(),
+            DatabaseType.MariaDB => new MariaDbSchemaProvider(),
             _ => throw new NotSupportedException($"Database type {databaseType} is not supported yet.")
         };
     }
