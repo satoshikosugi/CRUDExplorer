@@ -837,7 +837,7 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 - [ ] スクリーンショット（各画面）
 
 ### 8.2 開発者ドキュメント
-- [ ] CONTRIBUTING.md
+- [x] CONTRIBUTING.md ✅
 - [ ] アーキテクチャ図
 - [ ] クラス図（主要クラス）
 - [ ] シーケンス図（CRUD解析フロー）
