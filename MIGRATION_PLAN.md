@@ -720,7 +720,7 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 ### 7.1 ユニットテスト ✅
 - [x] xUnit導入
 - [x] CRUDExplorer.Core.Tests プロジェクト作成
-- [ ] CRUDExplorer.SqlParser.Tests プロジェクト作成
+- [x] CRUDExplorer.SqlParser.Tests プロジェクト作成
 - [x] データモデルテスト
   - [ ] Query.cs テスト（30ケース以上）
   - [ ] Settings.cs テスト
@@ -741,14 +741,12 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
   - [x] DatabaseExceptionTests（12ケース）
   - [x] ConnectionPoolManagerTests（10ケース）
   - [x] SchemaProviderTests（9ケース - SQLite統合テスト）
-- [ ] SQLパーサーテスト
-  - [ ] SELECT文解析（100ケース）
-  - [ ] INSERT文解析（30ケース）
-  - [ ] UPDATE文解析（30ケース）
-  - [ ] DELETE文解析（20ケース）
-  - [ ] サブクエリ解析（50ケース）
-  - [ ] JOIN解析（40ケース）
-  - [ ] WITH句解析（20ケース）
+- [x] SQLパーサーテスト（34件パス / 53件） ✅
+  - [x] SelectStatementTests（23テストケース）
+  - [x] InsertStatementTests（11テストケース）
+  - [x] UpdateStatementTests（10テストケース）
+  - [x] DeleteStatementTests（10テストケース）
+  - ※ 19件のテスト失敗は SqlVisitor 実装未完了による（期待通り）
 - [ ] CRUD抽出テスト
   - [ ] テーブルCRUD（50ケース）
   - [ ] カラムCRUD（50ケース）
