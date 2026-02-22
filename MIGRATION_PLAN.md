@@ -842,7 +842,7 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 - [ ] クラス図（主要クラス）
 - [ ] シーケンス図（CRUD解析フロー）
 - [ ] ANTLR4文法仕様
-- [ ] DB対応状況一覧
+- [x] DB対応状況一覧 ✅
 - [x] API仕様（認証サーバー） ✅
 
 ### 8.3 API仕様書（認証サーバー）
