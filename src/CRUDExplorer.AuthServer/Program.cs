@@ -54,8 +54,23 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "CRUDExplorer Authentication API",
         Version = "v1",
-        Description = "認証・ライセンス管理APIサーバー"
+        Description = "認証・ライセンス管理APIサーバー",
+        Contact = new OpenApiContact
+        {
+            Name = "CRUDExplorer Project",
+            Url = new Uri("https://github.com/satoshikosugi/CRUDExplorer")
+        },
+        License = new OpenApiLicense
+        {
+            Name = "MIT License",
+            Url = new Uri("https://opensource.org/licenses/MIT")
+        }
     });
+
+    // XML コメントを含める
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
 
     // JWT Bearer認証設定
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

@@ -8,6 +8,9 @@ using CRUDExplorer.AuthServer.Models;
 
 namespace CRUDExplorer.AuthServer.Controllers;
 
+/// <summary>
+/// 管理者向けAPI（ライセンス管理、ユーザー管理、監査ログ等）
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 // [Authorize] // 統合テスト用に一時的に無効化 - TODO: 本番環境では有効化すること
@@ -28,10 +31,27 @@ public class AdminController : ControllerBase
     }
 
     /// <summary>
-    /// 新規ライセンス作成
+    /// 新規ライセンスを作成
     /// </summary>
+    /// <param name="request">ライセンス作成リクエスト（ユーザーID or メールアドレス、最大デバイス数、製品タイプ、有効期限）</param>
+    /// <returns>作成されたライセンス情報</returns>
+    /// <remarks>
+    /// Sample request:
+    ///
+    ///     POST /api/admin/licenses
+    ///     {
+    ///        "emailAddress": "user@example.com",
+    ///        "maxDevices": 3,
+    ///        "productType": "Standard",
+    ///        "expiresAt": "2025-12-31T23:59:59Z"
+    ///     }
+    ///
+    /// </remarks>
+    /// <response code="201">ライセンス作成成功</response>
+    /// <response code="400">不正なリクエスト（ユーザーIDまたはメールアドレスが必要）</response>
     [HttpPost("licenses")]
     [ProducesResponseType(typeof(CreateLicenseResponse), 201)]
+    [ProducesResponseType(400)]
     public async Task<IActionResult> CreateLicense([FromBody] CreateLicenseRequest request)
     {
         User user;
@@ -96,8 +116,12 @@ public class AdminController : ControllerBase
     }
 
     /// <summary>
-    /// ライセンス一覧取得
+    /// ライセンス一覧を取得（ページネーション対応）
     /// </summary>
+    /// <param name="page">ページ番号（デフォルト: 1）</param>
+    /// <param name="pageSize">1ページあたりの件数（デフォルト: 20）</param>
+    /// <returns>ライセンス一覧</returns>
+    /// <response code="200">ライセンス一覧を返却</response>
     [HttpGet("licenses")]
     [ProducesResponseType(typeof(IEnumerable<object>), 200)]
     public async Task<IActionResult> GetLicenses([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
@@ -126,8 +150,12 @@ public class AdminController : ControllerBase
     }
 
     /// <summary>
-    /// ユーザー一覧取得
+    /// ユーザー一覧を取得（ページネーション対応）
     /// </summary>
+    /// <param name="page">ページ番号（デフォルト: 1）</param>
+    /// <param name="pageSize">1ページあたりの件数（デフォルト: 20）</param>
+    /// <returns>ユーザー一覧</returns>
+    /// <response code="200">ユーザー一覧を返却</response>
     [HttpGet("users")]
     [ProducesResponseType(typeof(IEnumerable<object>), 200)]
     public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
@@ -152,8 +180,13 @@ public class AdminController : ControllerBase
     }
 
     /// <summary>
-    /// 監査ログ取得
+    /// 監査ログを取得（ページネーション対応、ユーザーIDでフィルタ可能）
     /// </summary>
+    /// <param name="userId">フィルタ対象のユーザーID（省略可能）</param>
+    /// <param name="page">ページ番号（デフォルト: 1）</param>
+    /// <param name="pageSize">1ページあたりの件数（デフォルト: 50）</param>
+    /// <returns>監査ログ一覧</returns>
+    /// <response code="200">監査ログ一覧を返却</response>
     [HttpGet("audit-logs")]
     [ProducesResponseType(typeof(IEnumerable<object>), 200)]
     public async Task<IActionResult> GetAuditLogs(
@@ -189,8 +222,12 @@ public class AdminController : ControllerBase
     }
 
     /// <summary>
-    /// デバイスアクティベーション一覧取得
+    /// デバイスアクティベーション一覧を取得（ページネーション対応）
     /// </summary>
+    /// <param name="page">ページ番号（デフォルト: 1）</param>
+    /// <param name="pageSize">1ページあたりの件数（デフォルト: 20）</param>
+    /// <returns>デバイスアクティベーション一覧</returns>
+    /// <response code="200">デバイスアクティベーション一覧を返却</response>
     [HttpGet("devices")]
     [ProducesResponseType(typeof(IEnumerable<object>), 200)]
     public async Task<IActionResult> GetDevices([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
@@ -217,8 +254,12 @@ public class AdminController : ControllerBase
     }
 
     /// <summary>
-    /// デバイスアクティベーション無効化
+    /// デバイスアクティベーションを無効化（削除）
     /// </summary>
+    /// <param name="id">デバイスアクティベーションID</param>
+    /// <returns>無効化結果</returns>
+    /// <response code="200">デバイス無効化成功</response>
+    /// <response code="404">指定されたデバイスアクティベーションが見つからない</response>
     [HttpDelete("devices/{id}")]
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
@@ -243,8 +284,12 @@ public class AdminController : ControllerBase
     }
 
     /// <summary>
-    /// ライセンス取り消し（無効化）
+    /// ライセンスを取り消し（無効化）
     /// </summary>
+    /// <param name="id">ライセンスID</param>
+    /// <returns>取り消し結果</returns>
+    /// <response code="200">ライセンス取り消し成功</response>
+    /// <response code="404">指定されたライセンスが見つからない</response>
     [HttpPut("licenses/{id}/revoke")]
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
