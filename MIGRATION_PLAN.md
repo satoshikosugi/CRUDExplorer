@@ -704,12 +704,14 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 - [ ] Npgsql使用（PostgreSQL互換）
 - [ ] Redshift固有関数対応
 
-### 6.4 共通DBアクセス層
-- [ ] IDbConnectionFactory
-- [ ] ISchemaProvider
-- [ ] DbProviderFactory実装
-- [ ] 接続文字列管理
-- [ ] エラーハンドリング
+### 6.4 共通DBアクセス層 ✅
+- [x] IDbConnectionFactory ✅
+- [x] ISchemaProvider ✅
+- [x] DbProviderFactory実装 ✅
+- [x] 接続文字列管理（ConnectionStringManager - JSON永続化、接続テスト機能）
+- [x] エラーハンドリング（DatabaseException階層、5種類の例外クラス）
+- [x] DatabaseHelper（接続ヘルパー、リトライロジック、接続文字列マスク機能）
+- [x] ConnectionPoolManager（接続プール管理、セマフォベース、最大10接続/プール）
 
 ---
 
@@ -872,6 +874,7 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 - **フェーズ5**: 全13画面表示確認、主要機能動作確認 ✅
 - **フェーズ6.1-6.2**: PostgreSQL/MySQL/SQL Server/Oracle/SQLite/MariaDB接続成功、スキーマ取得実装完了 ✅
 - **フェーズ6.3**: Snowflake/BigQuery/Databricks/Redshift接続成功（未実装）
+- **フェーズ6.4**: 共通DBアクセス層実装完了（接続管理、エラーハンドリング、プール管理） ✅
 - **フェーズ7**: 全テストパス、Windows/Mac動作確認完了
 - **フェーズ8**: ドキュメント完成、インストーラー作成、認証サーバーデプロイ完了
 
@@ -879,7 +882,7 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 
 ## 現在の状況
 
-- **完了**: フェーズ1（100%）、フェーズ2（100%）、フェーズ3（100%）、フェーズ4（コアAPI 100%、管理画面UI 未実装）、フェーズ5（100%）、フェーズ6.1-6.2（100%）
+- **完了**: フェーズ1（100%）、フェーズ2（100%）、フェーズ3（100%）、フェーズ4（コアAPI 100%、管理画面UI 未実装）、フェーズ5（100%）、フェーズ6.1-6.4（100%）
   - ✅ 3.1 ユーティリティクラス移行完了（8クラス）
   - ✅ 3.2 ANTLR4 SQLパーサー基本実装完了（Sql.g4 + SqlAnalyzer + SqlVisitor）
   - ✅ 3.3 DB方言文法ファイル完了（PostgreSQL, MySQL, SQL Server, Oracle）
@@ -893,5 +896,6 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
   - ✅ 5.1-5.13 全13ウィンドウ実装完了（MainWindow, MakeCrudWindow, AnalyzeQueryWindow, VersionWindow, SettingsWindow, CrudSearchWindow, FileListWindow, FilterWindow, GrepWindow, GenericListWindow, SearchWindow, StartupWindow, TableDefinitionWindow）
   - ✅ 6.1.1-6.1.4 必須DB4種類完了（PostgreSQL, MySQL, SQL Server, Oracle - 接続ファクトリ + スキーマプロバイダー）
   - ✅ 6.2.1-6.2.2 裾野拡大DB2種類完了（SQLite, MariaDB - 接続ファクトリ + スキーマプロバイダー）
+  - ✅ 6.4 共通DBアクセス層完了（ConnectionStringManager, DatabaseException階層, DatabaseHelper, ConnectionPoolManager）
 - **テスト**: xUnitテスト73件パス（CRUDExplorer.Core.Tests）
-- **次のタスク**: フェーズ4.6（管理画面UI実装）、フェーズ6.3（クラウドDB4種類実装）、フェーズ6.4（共通DBアクセス層）、またはフェーズ7（テスト・検証）
+- **次のタスク**: フェーズ4.6（管理画面UI実装）、フェーズ6.3（クラウドDB4種類実装）、またはフェーズ7（テスト・検証）
