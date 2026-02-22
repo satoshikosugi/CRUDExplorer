@@ -735,11 +735,12 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
   - [x] LicenseClientTests（10ケース）
   - [x] GlobalStateTests（2ケース）
   - [x] QueryFormatterTests（3ケース）
-- [x] データベース層テスト（65件パス） ✅
+- [x] データベース層テスト（74件パス） ✅
   - [x] ConnectionStringManagerTests（16ケース）
   - [x] DatabaseHelperTests（11ケース）
   - [x] DatabaseExceptionTests（12ケース）
   - [x] ConnectionPoolManagerTests（10ケース）
+  - [x] SchemaProviderTests（9ケース - SQLite統合テスト）
 - [ ] SQLパーサーテスト
   - [ ] SELECT文解析（100ケース）
   - [ ] INSERT文解析（30ケース）
