@@ -841,7 +841,7 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 - [ ] アーキテクチャ図
 - [ ] クラス図（主要クラス）
 - [ ] シーケンス図（CRUD解析フロー）
-- [ ] ANTLR4文法仕様
+- [x] ANTLR4文法仕様 ✅
 - [x] DB対応状況一覧 ✅
 - [x] API仕様（認証サーバー） ✅
 
