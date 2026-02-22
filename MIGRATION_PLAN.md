@@ -880,11 +880,12 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
   - [ ] Mac版バイナリアップロード
   - [ ] リリースノート作成
 
-### 8.6 CI/CDパイプライン
-- [ ] GitHub Actions設定
-  - [ ] .NET Build & Test（Windows）
-  - [ ] .NET Build & Test（macOS）
-  - [ ] 認証サーバー Docker Build
+### 8.6 CI/CDパイプライン ✅
+- [x] GitHub Actions設定 ✅
+  - [x] .NET Build & Test（Windows） ✅
+  - [x] .NET Build & Test（macOS） ✅
+  - [x] .NET Build & Test（Ubuntu） ✅
+  - [x] 認証サーバー Docker Build ✅
   - [ ] 自動デプロイ（main ブランチ）
 - [ ] バージョン管理
   - [ ] セマンティックバージョニング
