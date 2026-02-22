@@ -899,6 +899,28 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 
 ---
 
+## フェーズ9: 本番環境対応準備
+
+### 9.1 セキュリティ設定強化
+- [x] 本番環境チェックリスト作成 ✅
+- [ ] AdminController [Authorize] 属性有効化（テスト修正含む）
+- [ ] CORS設定本番化（特定オリジンのみ許可）
+- [ ] JWT秘密鍵環境変数化検証
+- [ ] データベース接続文字列環境変数化検証
+
+### 9.2 追加セキュリティ対策
+- [ ] レート制限実装（AspNetCoreRateLimit）
+- [ ] セキュリティヘッダー追加（NWebsec）
+- [ ] Serilog構造化ロギング実装
+- [ ] Swagger UI本番環境制御
+
+### 9.3 パフォーマンス最適化
+- [ ] データベースクエリ最適化
+- [ ] 接続プールチューニング
+- [ ] レスポンスキャッシング設定
+
+---
+
 ## 完了基準
 
 ### 各フェーズ完了条件
@@ -917,7 +939,7 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 
 ## 現在の状況
 
-- **完了**: フェーズ1（100%）、フェーズ2（100%）、フェーズ3（100%）、フェーズ4（コアAPI 100%、管理画面UI 未実装）、フェーズ5（100%）、フェーズ6.1-6.4（100%）、フェーズ7.1（CRUD抽出テスト追加 ✅）、フェーズ7.2（統合テスト100%）、フェーズ8.1-8.3（ドキュメント100% ✅）
+- **完了**: フェーズ1（100%）、フェーズ2（100%）、フェーズ3（100%）、フェーズ4（コアAPI 100%、管理画面UI 未実装）、フェーズ5（100%）、フェーズ6.1-6.4（100%）、フェーズ7.1（CRUD抽出テスト追加 ✅）、フェーズ7.2（統合テスト100%）、フェーズ8.1-8.3（ドキュメント100% ✅）、フェーズ8.2（部分完了 4/7項目）、フェーズ9.1（部分完了 1/5項目）
   - ✅ 3.1 ユーティリティクラス移行完了（8クラス）
   - ✅ 3.2 ANTLR4 SQLパーサー基本実装完了（Sql.g4 + SqlAnalyzer + SqlVisitor）
   - ✅ 3.3 DB方言文法ファイル完了（PostgreSQL, MySQL, SQL Server, Oracle）
@@ -932,9 +954,11 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
   - ✅ 6.1.1-6.1.4 必須DB4種類完了（PostgreSQL, MySQL, SQL Server, Oracle - 接続ファクトリ + スキーマプロバイダー）
   - ✅ 6.2.1-6.2.2 裾野拡大DB2種類完了（SQLite, MariaDB - 接続ファクトリ + スキーマプロバイダー）
   - ✅ 6.4 共通DBアクセス層完了（ConnectionStringManager, DatabaseException階層, DatabaseHelper, ConnectionPoolManager）
-  - ✅ 7.1 CRUD抽出テスト100ケース追加（86件パス - 86%成功率）✅ **新規完了**
+  - ✅ 7.1 CRUD抽出テスト100ケース追加（86件パス - 86%成功率）✅
   - ✅ 7.2 統合テスト完了（AuthServer 16件 + UI 13件 - 100%成功）
-  - ✅ 8.1-8.3 ドキュメント整備完了（README、API仕様書）✅ **新規完了**
+  - ✅ 8.1-8.3 ドキュメント整備完了（README、API仕様書、Swagger/OpenAPI）✅
+  - ✅ 8.2 開発者ドキュメント部分完了（CONTRIBUTING.md、DATABASE_SUPPORT.md、ANTLR4_GRAMMAR_SPEC.md、DEPLOYMENT.md）✅
+  - ✅ 9.1 本番環境チェックリスト作成（PRODUCTION_READINESS.md）✅ **新規完了**
 - **テスト**: 全329テスト中313テストパス（95.1%成功率）
   - Core.Tests: 233/247パス（94.3%） - CRUD抽出テスト100件追加
   - SqlParser.Tests: 51/53パス（96.2%）
