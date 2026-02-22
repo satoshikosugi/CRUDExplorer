@@ -1,0 +1,152 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CRUDExplorer.UI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+        x:Class="CRUDExplorer.UI.Views.AnalyzeQueryWindow"
+        x:DataType="vm:AnalyzeQueryViewModel"
+        Title="クエリ解析" Width="1200" Height="800"
+        CanResize="True">
+
+  <DockPanel>
+    <!-- Toolbar -->
+    <Border DockPanel.Dock="Top" BorderBrush="Gray" BorderThickness="0,0,0,1" Padding="5">
+      <StackPanel Orientation="Horizontal" Spacing="5">
+        <Button Content="クイック解析" Command="{Binding QuickAnalyzeCommand}" />
+        <Separator Width="1" Background="Gray" />
+        <Button Content="論理名変換" Command="{Binding ConvertLogicalNameCommand}" />
+        <Button Content="VIEW展開" Command="{Binding ExpandViewCommand}" />
+        <Button Content="文字列抽出" Command="{Binding ExtractStringsCommand}" />
+        <Button Content="テーブル定義" Command="{Binding ShowTableDefinitionCommand}" />
+        <Separator Width="1" Background="Gray" />
+        <Button Content="前へ" Command="{Binding SearchPreviousCommand}" />
+        <Button Content="次へ" Command="{Binding SearchNextCommand}" />
+      </StackPanel>
+    </Border>
+
+    <!-- Top Query Selection Panel -->
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto,*,Auto,*" Height="35" Margin="5,5,5,0">
+      <TextBlock Grid.Column="0" Text="クエリ:" VerticalAlignment="Center" Margin="0,0,5,0" />
+      <ComboBox Grid.Column="1" ItemsSource="{Binding Queries}" SelectedItem="{Binding SelectedQuery}" />
+
+      <TextBlock Grid.Column="2" Text="ファイル:" VerticalAlignment="Center" Margin="10,0,5,0" />
+      <TextBox Grid.Column="3" Text="{Binding FileName}" IsReadOnly="True" />
+
+      <TextBlock Grid.Column="4" Text="行番号:" VerticalAlignment="Center" Margin="10,0,5,0" />
+      <TextBox Grid.Column="5" Text="{Binding LineNumber}" IsReadOnly="True" Width="80" />
+    </Grid>
+
+    <!-- Highlight Search Panel -->
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto,*,Auto,*,Auto" Height="35" Margin="5,0,5,5">
+      <TextBlock Grid.Column="0" Text="ハイライト1:" VerticalAlignment="Center" Margin="0,0,5,0" />
+      <TextBox Grid.Column="1" Text="{Binding HighlightText1}" Watermark="検索テキスト1" />
+
+      <TextBlock Grid.Column="2" Text="ハイライト2:" VerticalAlignment="Center" Margin="10,0,5,0" />
+      <TextBox Grid.Column="3" Text="{Binding HighlightText2}" Watermark="検索テキスト2" />
+
+      <TextBlock Grid.Column="4" Text="ハイライト3:" VerticalAlignment="Center" Margin="10,0,5,0" />
+      <TextBox Grid.Column="5" Text="{Binding HighlightText3}" Watermark="検索テキスト3" />
+
+      <Button Grid.Column="6" Content="クリア" Command="{Binding ClearHighlightCommand}" Margin="5,0,0,0" />
+    </Grid>
+
+    <!-- Main Content Area with Split View -->
+    <Grid ColumnDefinitions="300,5,*,5,250">
+      <!-- Left Panel: Query Tree View -->
+      <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1" Padding="5">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Text="クエリ構造" FontWeight="Bold" Margin="0,0,0,5" />
+          <TreeView ItemsSource="{Binding QueryTreeData}">
+            <TreeView.ItemTemplate>
+              <TreeDataTemplate ItemsSource="{Binding Children}">
+                <TextBlock Text="{Binding DisplayText}" />
+              </TreeDataTemplate>
+            </TreeView.ItemTemplate>
+            <TreeView.ContextMenu>
+              <ContextMenu>
+                <MenuItem Header="サブクエリ展開" Command="{Binding ExpandSubQueryCommand}" />
+                <MenuItem Header="句情報表示" Command="{Binding ShowClauseInfoCommand}" />
+                <MenuItem Header="INTO/VALUES表示" Command="{Binding ShowIntoValuesCommand}" />
+                <MenuItem Header="SET句表示" Command="{Binding ShowSetClauseCommand}" />
+              </ContextMenu>
+            </TreeView.ContextMenu>
+          </TreeView>
+        </DockPanel>
+      </Border>
+
+      <GridSplitter Grid.Column="1" Background="Gray" ResizeDirection="Columns" />
+
+      <!-- Center Panel: SQL Text Editor -->
+      <Border Grid.Column="2" BorderBrush="Gray" BorderThickness="1" Padding="5">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Text="SQL" FontWeight="Bold" Margin="0,0,0,5" />
+          <!-- TextBox with monospace font as placeholder for AvaloniaEdit -->
+          <TextBox Text="{Binding SqlText}"
+                   AcceptsReturn="True"
+                   TextWrapping="NoWrap"
+                   FontFamily="Consolas,Courier New,monospace"
+                   IsReadOnly="True"
+                   ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                   ScrollViewer.VerticalScrollBarVisibility="Auto">
+            <TextBox.ContextMenu>
+              <ContextMenu>
+                <MenuItem Header="CRUD一覧表示" Command="{Binding ShowCrudListCommand}" />
+                <Separator />
+                <MenuItem Header="Grep">
+                  <MenuItem Header="ファイル内Grep" Command="{Binding GrepInFileCommand}" />
+                  <MenuItem Header="プログラム内Grep" Command="{Binding GrepInProgramCommand}" />
+                  <MenuItem Header="全体Grep" Command="{Binding GrepAllCommand}" />
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="ハイライト">
+                  <MenuItem Header="ハイライト1" Command="{Binding HighlightColor1Command}" />
+                  <MenuItem Header="ハイライト2" Command="{Binding HighlightColor2Command}" />
+                  <MenuItem Header="ハイライト3" Command="{Binding HighlightColor3Command}" />
+                  <MenuItem Header="クリア" Command="{Binding ClearHighlightCommand}" />
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="テーブル定義表示" Command="{Binding ShowTableDefinitionCommand}" />
+              </ContextMenu>
+            </TextBox.ContextMenu>
+          </TextBox>
+        </DockPanel>
+      </Border>
+
+      <GridSplitter Grid.Column="3" Background="Gray" ResizeDirection="Columns" />
+
+      <!-- Right Panel: CRUD Lists -->
+      <Grid Grid.Column="4" RowDefinitions="*,5,*">
+        <!-- Table CRUD List -->
+        <Border Grid.Row="0" BorderBrush="Gray" BorderThickness="1" Padding="5">
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Top" Text="テーブルCRUD" FontWeight="Bold" Margin="0,0,0,5" />
+            <ListBox ItemsSource="{Binding TableCrudList}">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock Text="{Binding DisplayText}" />
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </DockPanel>
+        </Border>
+
+        <GridSplitter Grid.Row="1" Background="Gray" ResizeDirection="Rows" />
+
+        <!-- Column CRUD List -->
+        <Border Grid.Row="2" BorderBrush="Gray" BorderThickness="1" Padding="5">
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Top" Text="カラムCRUD" FontWeight="Bold" Margin="0,0,0,5" />
+            <ListBox ItemsSource="{Binding ColumnCrudList}">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock Text="{Binding DisplayText}" />
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </DockPanel>
+        </Border>
+      </Grid>
+    </Grid>
+  </DockPanel>
+</Window>

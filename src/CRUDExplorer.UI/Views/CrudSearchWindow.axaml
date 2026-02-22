@@ -1,0 +1,68 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CRUDExplorer.UI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="500"
+        x:Class="CRUDExplorer.UI.Views.CrudSearchWindow"
+        x:DataType="vm:CrudSearchViewModel"
+        Title="CRUD検索" Width="600" Height="500"
+        CanResize="True">
+
+  <DockPanel Margin="10">
+    <!-- Bottom Buttons -->
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
+      <Button Content="検索(_S)" Width="100" Command="{Binding SearchCommand}" />
+      <Button Content="閉じる(_C)" Width="100" Command="{Binding CloseCommand}" />
+    </StackPanel>
+
+    <!-- Main Content -->
+    <Grid RowDefinitions="Auto,*">
+      <!-- Search Criteria -->
+      <Border Grid.Row="0" BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,0,0,10">
+        <StackPanel Spacing="10">
+          <TextBlock Text="検索条件" FontWeight="Bold" FontSize="14" />
+          <Separator />
+
+          <!-- Table Name Search -->
+          <StackPanel Spacing="5">
+            <TextBlock Text="テーブル名:" />
+            <TextBox Text="{Binding TableNamePattern}" Watermark="部分一致検索" />
+          </StackPanel>
+
+          <!-- Column Name Search -->
+          <StackPanel Spacing="5">
+            <TextBlock Text="カラム名:" />
+            <TextBox Text="{Binding ColumnNamePattern}" Watermark="部分一致検索" />
+          </StackPanel>
+
+          <!-- CRUD Type Selection -->
+          <TextBlock Text="CRUD種別:" />
+          <StackPanel Orientation="Horizontal" Spacing="15">
+            <CheckBox Content="Create (C)" IsChecked="{Binding SearchCreate}" />
+            <CheckBox Content="Read (R)" IsChecked="{Binding SearchRead}" />
+            <CheckBox Content="Update (U)" IsChecked="{Binding SearchUpdate}" />
+            <CheckBox Content="Delete (D)" IsChecked="{Binding SearchDelete}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <!-- Search Results -->
+      <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Padding="10">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Text="{Binding ResultCount, StringFormat='検索結果: {0}件'}" FontWeight="Bold" Margin="0,0,0,5" />
+          <ListBox ItemsSource="{Binding SearchResults}">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <StackPanel>
+                  <TextBlock Text="{Binding DisplayText}" FontWeight="SemiBold" />
+                  <TextBlock Text="{Binding DetailText}" FontSize="11" Foreground="Gray" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+      </Border>
+    </Grid>
+  </DockPanel>
+</Window>
