@@ -112,7 +112,7 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 
 ---
 
-## フェーズ3: 共通モジュール移行 🔄
+## フェーズ3: 共通モジュール移行 ✅
 
 ### 3.1 ユーティリティクラス（CommonModule.vb → 複数C#クラス） ✅
 - [x] StringUtilities.cs
@@ -185,13 +185,22 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
   - [x] WITH句（CTE）
   - [x] サブクエリ
   - [x] UNION/MINUS/INTERSECT
-- [ ] PostgreSqlDialect.g4（PostgreSQL固有）
-  - [ ] PostgreSQL型
-  - [ ] PostgreSQL関数
-  - [ ] PostgreSQL演算子
-- [ ] MySqlDialect.g4（MySQL固有）
-- [ ] SqlServerDialect.g4（SQL Server固有）
-- [ ] OracleDialect.g4（Oracle固有）
+- [x] PostgreSqlDialect.g4（PostgreSQL固有）
+  - [x] PostgreSQL型（JSONB, ARRAY, UUID, TIMESTAMP WITH TIME ZONE等）
+  - [x] PostgreSQL関数（RETURNING, ON CONFLICT, ILIKE等）
+  - [x] PostgreSQL演算子（JSON演算子 ->, ->>, @>等）
+- [x] MySqlDialect.g4（MySQL固有）
+  - [x] MySQL型（TINYINT, MEDIUMINT, ENUM, SET等）
+  - [x] MySQL固有構文（ON DUPLICATE KEY UPDATE, LIMIT offset,count等）
+  - [x] MySQL演算子（REGEXP, DIV, MOD, ビット演算子等）
+- [x] SqlServerDialect.g4（SQL Server固有）
+  - [x] SQL Server型（NVARCHAR(MAX), DATETIMEOFFSET, HIERARCHYID等）
+  - [x] SQL Server固有構文（TOP, OUTPUT, OFFSET FETCH, ウィンドウ関数等）
+  - [x] SQL Server演算子（OVER, PARTITION BY等）
+- [x] OracleDialect.g4（Oracle固有）
+  - [x] Oracle型（VARCHAR2, NUMBER, CLOB, BLOB等）
+  - [x] Oracle固有構文（CONNECT BY, ROWNUM, MODEL句, RETURNING等）
+  - [x] Oracle演算子（(+)外部結合, ||結合演算子等）
 
 #### 3.2.2 ANTLR4パーサー生成 ✅
 - [x] .g4ファイルからC#コード生成設定
@@ -862,7 +871,7 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 ### 各フェーズ完了条件
 - **フェーズ1**: ビルド成功、全プロジェクト作成完了 ✅
 - **フェーズ2**: 全データモデルクラス移行完了、ビルド成功 ✅
-- **フェーズ3**: ANTLR4パーサー実装完了、既存CommonAnalyze.vb全機能再現
+- **フェーズ3**: ANTLR4パーサー実装完了、DB方言文法ファイル完了、既存CommonAnalyze.vb全機能再現 ✅
 - **フェーズ4**: 認証サーバーAPI稼働、管理画面動作確認
 - **フェーズ5**: 全13画面表示確認、主要機能動作確認
 - **フェーズ6**: PostgreSQL/MySQL/SQL Server/Oracle接続成功
@@ -873,13 +882,12 @@ Windows専用VB.NET WinFormsアプリケーションをWindows/Mac対応の.NET 
 
 ## 現在の状況
 
-- **完了**: フェーズ1（100%）、フェーズ2（100%）
-- **進行中**: フェーズ3（約80%完了）
+- **完了**: フェーズ1（100%）、フェーズ2（100%）、フェーズ3（100%）
   - ✅ 3.1 ユーティリティクラス移行完了（8クラス）
   - ✅ 3.2 ANTLR4 SQLパーサー基本実装完了（Sql.g4 + SqlAnalyzer + SqlVisitor）
-  - ✅ 3.3 クエリ整形（QueryFormatter）完了
-  - ✅ 3.4 ライセンス認証クライアント完了
-  - ✅ 3.5 コンテキストメニューモデル完了
-  - 残: DB方言拡張文法ファイル、CRUD抽出高度化
+  - ✅ 3.3 DB方言文法ファイル完了（PostgreSQL, MySQL, SQL Server, Oracle）
+  - ✅ 3.4 クエリ整形（QueryFormatter）完了
+  - ✅ 3.5 ライセンス認証クライアント完了
+  - ✅ 3.6 コンテキストメニューモデル完了
 - **テスト**: xUnitテスト73件パス（CRUDExplorer.Core.Tests）
-- **次のタスク**: フェーズ4（認証サーバー実装）またはフェーズ5（UI実装）
+- **次のタスク**: フェーズ4（認証サーバー実装）またはフェーズ5（Avalonia UI実装）
