@@ -1,0 +1,47 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CRUDExplorer.UI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        x:Class="CRUDExplorer.UI.Views.FileListWindow"
+        x:DataType="vm:FileListViewModel"
+        Title="ファイル一覧" Width="800" Height="600"
+        CanResize="True">
+
+  <DockPanel Margin="10">
+    <!-- Bottom Buttons -->
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
+      <Button Content="開く(_O)" Width="100" Command="{Binding OpenCommand}" />
+      <Button Content="閉じる(_C)" Width="100" Command="{Binding CloseCommand}" />
+    </StackPanel>
+
+    <!-- Filter Panel -->
+    <Border DockPanel.Dock="Top" Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,10">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <TextBlock Grid.Column="0" Text="フィルタ:" VerticalAlignment="Center" Margin="0,0,10,0" />
+        <TextBox Grid.Column="1" Text="{Binding FilterPattern}" Watermark="ファイル名でフィルタ（部分一致）" />
+        <Button Grid.Column="2" Content="更新" Command="{Binding RefreshCommand}" Margin="10,0,0,0" />
+      </Grid>
+    </Border>
+
+    <!-- File List -->
+    <Border BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5">
+      <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Text="{Binding FileCount, StringFormat='ファイル数: {0}件'}" FontWeight="Bold" Margin="5,0,5,5" />
+        <DataGrid ItemsSource="{Binding Files}"
+                  SelectedItem="{Binding SelectedFile}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  GridLinesVisibility="All">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="ファイル名" Binding="{Binding FileName}" Width="*" />
+            <DataGridTextColumn Header="パス" Binding="{Binding FilePath}" Width="2*" />
+            <DataGridTextColumn Header="サイズ" Binding="{Binding FileSize}" Width="100" />
+            <DataGridTextColumn Header="更新日時" Binding="{Binding LastModified}" Width="150" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </DockPanel>
+    </Border>
+  </DockPanel>
+</Window>

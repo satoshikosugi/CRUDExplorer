@@ -1,0 +1,215 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CRUDExplorer.UI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+        x:Class="CRUDExplorer.UI.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="CRUDExplorer - SQL CRUD Analysis Tool"
+        Width="1200" Height="800">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <DockPanel Background="{StaticResource AppBackgroundBrush}">
+
+        <!-- ═══ メニューバー ═══ -->
+        <Border DockPanel.Dock="Top"
+                Background="{StaticResource AppPrimaryBrush}">
+            <Menu Background="Transparent">
+                <Menu.Styles>
+                    <!-- トップレベルのメニュー項目のみ白文字（ドロップダウンは除外） -->
+                    <Style Selector="Menu > MenuItem">
+                        <Setter Property="Foreground" Value="White" />
+                    </Style>
+                    <Style Selector="Menu > MenuItem:pointerover /template/ ContentPresenter">
+                        <Setter Property="Background" Value="#1976D2" />
+                    </Style>
+                    <Style Selector="Menu > MenuItem:pointerover">
+                        <Setter Property="Background" Value="#1976D2" />
+                    </Style>
+                </Menu.Styles>
+                <MenuItem Header="ファイル(_F)">
+                    <MenuItem Header="フォルダを開く(_O)" Command="{Binding OpenFolderCommand}" />
+                    <Separator />
+                    <MenuItem Header="終了(_X)" Command="{Binding ExitCommand}" />
+                </MenuItem>
+                <MenuItem Header="解析(_A)">
+                    <MenuItem Header="CRUD解析実行(_C)" Command="{Binding AnalyzeCrudCommand}" />
+                    <MenuItem Header="テーブル定義読み込み(_T)" Command="{Binding LoadTableDefCommand}" />
+                </MenuItem>
+                <MenuItem Header="表示(_V)">
+                    <MenuItem Header="テーブルCRUD(_T)" Command="{Binding ShowTableCrudCommand}" />
+                    <MenuItem Header="カラムCRUD(_C)" Command="{Binding ShowColumnCrudCommand}" />
+                    <Separator />
+                    <MenuItem Header="フィルタ(_F)" Command="{Binding ShowFilterCommand}" />
+                </MenuItem>
+                <MenuItem Header="設定(_S)">
+                    <MenuItem Header="設定(_S)" Command="{Binding OpenSettingsCommand}" />
+                </MenuItem>
+                <MenuItem Header="ヘルプ(_H)">
+                    <MenuItem Header="バージョン情報(_A)" Command="{Binding ShowVersionCommand}" />
+                </MenuItem>
+            </Menu>
+        </Border>
+
+        <!-- ═══ ステータスバー ═══ -->
+        <Border DockPanel.Dock="Bottom"
+                Background="{StaticResource AppStatusBrush}"
+                BorderBrush="{StaticResource AppBorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="8,4">
+            <TextBlock Text="{Binding StatusMessage}"
+                       Foreground="#37474F"
+                       FontSize="12"
+                       VerticalAlignment="Center" />
+        </Border>
+
+        <!-- ═══ メインコンテンツ ═══ -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- ツールバー -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource AppSurfaceBrush}"
+                    BorderBrush="{StaticResource AppBorderBrush}"
+                    BorderThickness="0,0,0,1"
+                    Padding="10,6">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="📂 フォルダ選択"
+                            Command="{Binding OpenFolderCommand}"
+                            Padding="10,4" />
+                    <TextBlock Text="パス:"
+                               VerticalAlignment="Center"
+                               Foreground="#37474F"
+                               Margin="6,0,0,0" />
+                    <TextBox Text="{Binding SourcePath}"
+                             IsReadOnly="True"
+                             MinWidth="420"
+                             VerticalAlignment="Center"
+                             Background="White"
+                             BorderBrush="{StaticResource AppBorderBrush}" />
+                    <Button Content="⚙ CRUD解析"
+                            Command="{Binding AnalyzeCrudCommand}"
+                            Padding="10,4" />
+                    <Button Content="📋 テーブル定義"
+                            Command="{Binding LoadTableDefCommand}"
+                            Padding="10,4" />
+                </StackPanel>
+            </Border>
+
+            <!-- 左右分割ペイン -->
+            <Grid Grid.Row="1" Margin="6,6,6,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" MinWidth="300" />
+                    <ColumnDefinition Width="6" />
+                    <ColumnDefinition Width="*" MinWidth="180" />
+                </Grid.ColumnDefinitions>
+
+                <!-- ── CRUDマトリクス（左ペイン） ── -->
+                <Border Grid.Column="0"
+                        Background="{StaticResource AppPanelBrush}"
+                        BorderBrush="{StaticResource AppBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- パネルヘッダ -->
+                        <Border Grid.Row="0"
+                                Background="{StaticResource AppHeaderBrush}"
+                                BorderBrush="{StaticResource AppBorderBrush}"
+                                BorderThickness="0,0,0,1"
+                                Padding="8,6"
+                                CornerRadius="4,4,0,0">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <TextBlock Text="CRUDマトリクス"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource AppPrimaryBrush}"
+                                           VerticalAlignment="Center" />
+                                <ComboBox SelectedIndex="{Binding CrudViewType}" MinWidth="140">
+                                    <ComboBoxItem Content="テーブルCRUD" />
+                                    <ComboBoxItem Content="カラムCRUD" />
+                                </ComboBox>
+                                <TextBox Watermark="キーワードフィルタ..."
+                                         Text="{Binding FilterText}"
+                                         MinWidth="180"
+                                         Background="White" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- DataGrid (列はMainWindow.axaml.csで動的生成) -->
+                        <DataGrid Grid.Row="1"
+                                  x:Name="CrudMatrixGrid"
+                                  IsReadOnly="True"
+                                  GridLinesVisibility="All"
+                                  BorderThickness="0"
+                                  AutoGenerateColumns="False"
+                                  CanUserReorderColumns="True"
+                                  CanUserResizeColumns="True"
+                                  CanUserSortColumns="True"
+                                  Background="White"
+                                  RowBackground="White"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Auto" />
+                    </Grid>
+                </Border>
+
+                <!-- グリッドスプリッター -->
+                <GridSplitter Grid.Column="1"
+                              Background="{StaticResource AppBorderBrush}"
+                              ResizeDirection="Columns" />
+
+                <!-- ── CRUD一覧（右ペイン） ── -->
+                <Border Grid.Column="2"
+                        Background="{StaticResource AppPanelBrush}"
+                        BorderBrush="{StaticResource AppBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- パネルヘッダ -->
+                        <Border Grid.Row="0"
+                                Background="{StaticResource AppHeaderBrush}"
+                                BorderBrush="{StaticResource AppBorderBrush}"
+                                BorderThickness="0,0,0,1"
+                                Padding="8,6"
+                                CornerRadius="4,4,0,0">
+                            <TextBlock Text="CRUD一覧"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource AppPrimaryBrush}" />
+                        </Border>
+
+                        <!-- ListBox -->
+                        <ListBox Grid.Row="1"
+                                 ItemsSource="{Binding CrudListData}"
+                                 SelectedItem="{Binding SelectedCrudItem}"
+                                 DoubleTapped="OnListBoxDoubleTapped"
+                                 Background="White">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayText}"
+                                               FontSize="12"
+                                               Padding="2,1" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Window>

@@ -1,0 +1,102 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CRUDExplorer.UI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
+        x:Class="CRUDExplorer.UI.Views.TableDefinitionWindow"
+        x:DataType="vm:TableDefinitionViewModel"
+        Title="テーブル定義" Width="900" Height="700"
+        CanResize="True">
+
+  <DockPanel Margin="10">
+    <!-- Bottom Buttons -->
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
+      <Button Content="コピー(_C)" Width="100" Command="{Binding CopyToClipboardCommand}" />
+      <Button Content="閉じる(_X)" Width="100" Command="{Binding CloseCommand}" />
+    </StackPanel>
+
+    <!-- Main Content -->
+    <Grid RowDefinitions="Auto,*">
+      <!-- Table Selector -->
+      <Border Grid.Row="0" Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,10">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <TextBlock Grid.Column="0" Text="テーブル:" VerticalAlignment="Center" Margin="0,0,10,0" />
+          <ComboBox Grid.Column="1" ItemsSource="{Binding Tables}" SelectedItem="{Binding SelectedTable}" />
+          <Button Grid.Column="2" Content="更新" Command="{Binding RefreshCommand}" Margin="10,0,0,0" />
+        </Grid>
+      </Border>
+
+      <!-- Table Definition Display -->
+      <TabControl Grid.Row="1">
+        <!-- Columns Tab -->
+        <TabItem Header="カラム定義">
+          <Border BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5">
+            <DataGrid ItemsSource="{Binding Columns}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      GridLinesVisibility="All">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="カラム名" Binding="{Binding ColumnName}" Width="*" />
+                <DataGridTextColumn Header="物理名" Binding="{Binding PhysicalName}" Width="*" />
+                <DataGridTextColumn Header="データ型" Binding="{Binding DataType}" Width="150" />
+                <DataGridTextColumn Header="サイズ" Binding="{Binding Size}" Width="80" />
+                <DataGridCheckBoxColumn Header="NULL可" Binding="{Binding IsNullable}" Width="80" />
+                <DataGridCheckBoxColumn Header="PK" Binding="{Binding IsPrimaryKey}" Width="60" />
+                <DataGridTextColumn Header="デフォルト値" Binding="{Binding DefaultValue}" Width="150" />
+                <DataGridTextColumn Header="説明" Binding="{Binding Description}" Width="*" />
+              </DataGrid.Columns>
+            </DataGrid>
+          </Border>
+        </TabItem>
+
+        <!-- Indexes Tab -->
+        <TabItem Header="インデックス">
+          <Border BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5">
+            <DataGrid ItemsSource="{Binding Indexes}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      GridLinesVisibility="All">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="インデックス名" Binding="{Binding IndexName}" Width="*" />
+                <DataGridTextColumn Header="カラム" Binding="{Binding Columns}" Width="*" />
+                <DataGridCheckBoxColumn Header="ユニーク" Binding="{Binding IsUnique}" Width="100" />
+                <DataGridCheckBoxColumn Header="クラスタ化" Binding="{Binding IsClustered}" Width="100" />
+              </DataGrid.Columns>
+            </DataGrid>
+          </Border>
+        </TabItem>
+
+        <!-- Foreign Keys Tab -->
+        <TabItem Header="外部キー">
+          <Border BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5">
+            <DataGrid ItemsSource="{Binding ForeignKeys}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      GridLinesVisibility="All">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="FK名" Binding="{Binding ForeignKeyName}" Width="*" />
+                <DataGridTextColumn Header="カラム" Binding="{Binding Columns}" Width="*" />
+                <DataGridTextColumn Header="参照テーブル" Binding="{Binding ReferencedTable}" Width="*" />
+                <DataGridTextColumn Header="参照カラム" Binding="{Binding ReferencedColumns}" Width="*" />
+              </DataGrid.Columns>
+            </DataGrid>
+          </Border>
+        </TabItem>
+
+        <!-- DDL Tab -->
+        <TabItem Header="DDL">
+          <Border BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5">
+            <TextBox Text="{Binding DdlScript}"
+                     IsReadOnly="True"
+                     AcceptsReturn="True"
+                     TextWrapping="NoWrap"
+                     FontFamily="Consolas,Courier New,monospace"
+                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto" />
+          </Border>
+        </TabItem>
+      </TabControl>
+    </Grid>
+  </DockPanel>
+</Window>

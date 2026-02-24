@@ -1,0 +1,69 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CRUDExplorer.UI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="400"
+        x:Class="CRUDExplorer.UI.Views.FilterWindow"
+        x:DataType="vm:FilterViewModel"
+        Title="フィルタ" Width="500" Height="400"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+  <DockPanel Margin="15">
+    <!-- Bottom Buttons -->
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,15,0,0">
+      <Button Content="適用(_A)" Width="100" Command="{Binding ApplyCommand}" />
+      <Button Content="クリア(_C)" Width="100" Command="{Binding ClearCommand}" />
+      <Button Content="閉じる(_X)" Width="100" Command="{Binding CloseCommand}" />
+    </StackPanel>
+
+    <!-- Main Content -->
+    <ScrollViewer>
+      <StackPanel Spacing="15">
+        <!-- Table Filter -->
+        <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
+          <StackPanel Spacing="8">
+            <TextBlock Text="テーブルフィルタ" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource AppPrimaryBrush}" />
+            <Separator />
+            <TextBlock Text="表示するテーブル名のパターン:" FontSize="12" />
+            <TextBox Text="{Binding TableFilter}" Watermark="例: USER%, ORDER%" />
+            <CheckBox Content="大文字小文字を区別する" IsChecked="{Binding TableCaseSensitive}" />
+          </StackPanel>
+        </Border>
+
+        <!-- Column Filter -->
+        <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
+          <StackPanel Spacing="8">
+            <TextBlock Text="カラムフィルタ" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource AppPrimaryBrush}" />
+            <Separator />
+            <TextBlock Text="表示するカラム名のパターン:" FontSize="12" />
+            <TextBox Text="{Binding ColumnFilter}" Watermark="例: ID%, %NAME" />
+            <CheckBox Content="大文字小文字を区別する" IsChecked="{Binding ColumnCaseSensitive}" />
+          </StackPanel>
+        </Border>
+
+        <!-- CRUD Filter -->
+        <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
+          <StackPanel Spacing="8">
+            <TextBlock Text="CRUD種別フィルタ" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource AppPrimaryBrush}" />
+            <Separator />
+            <CheckBox Content="Create (C) — 作成" IsChecked="{Binding ShowCreate}" />
+            <CheckBox Content="Read (R) — 参照" IsChecked="{Binding ShowRead}" />
+            <CheckBox Content="Update (U) — 更新" IsChecked="{Binding ShowUpdate}" />
+            <CheckBox Content="Delete (D) — 削除" IsChecked="{Binding ShowDelete}" />
+          </StackPanel>
+        </Border>
+
+        <!-- Program ID Filter -->
+        <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
+          <StackPanel Spacing="8">
+            <TextBlock Text="プログラムIDフィルタ" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource AppPrimaryBrush}" />
+            <Separator />
+            <TextBox Text="{Binding ProgramIdFilter}" Watermark="例: USR0001" />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</Window>

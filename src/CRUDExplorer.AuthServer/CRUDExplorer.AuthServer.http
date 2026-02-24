@@ -1,0 +1,6 @@
+@CRUDExplorer.AuthServer_HostAddress = http://localhost:5237
+
+GET {{CRUDExplorer.AuthServer_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

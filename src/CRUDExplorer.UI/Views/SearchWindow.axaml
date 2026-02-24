@@ -1,0 +1,43 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CRUDExplorer.UI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="200"
+        x:Class="CRUDExplorer.UI.Views.SearchWindow"
+        x:DataType="vm:SearchViewModel"
+        Title="検索" Width="500" Height="200"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+  <DockPanel Margin="15">
+    <!-- Bottom Buttons -->
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,15,0,0">
+      <Button Content="次を検索(_F)" Width="100" Command="{Binding FindNextCommand}" />
+      <Button Content="前を検索(_P)" Width="100" Command="{Binding FindPreviousCommand}" />
+      <Button Content="閉じる(_C)" Width="100" Command="{Binding CloseCommand}" />
+    </StackPanel>
+
+    <!-- Main Content -->
+    <StackPanel Spacing="12">
+      <!-- Search Text -->
+      <Grid ColumnDefinitions="Auto,*">
+        <TextBlock Grid.Column="0" Text="検索文字列:" VerticalAlignment="Center" Margin="0,0,10,0" Width="100" />
+        <TextBox Grid.Column="1" Text="{Binding SearchText}" Watermark="検索する文字列" />
+      </Grid>
+
+      <!-- Search Options -->
+      <StackPanel Spacing="8">
+        <CheckBox Content="大文字小文字を区別する" IsChecked="{Binding MatchCase}" />
+        <CheckBox Content="単語全体を検索" IsChecked="{Binding MatchWholeWord}" />
+        <CheckBox Content="正規表現を使用" IsChecked="{Binding UseRegularExpression}" />
+      </StackPanel>
+
+      <!-- Status -->
+      <TextBlock Text="{Binding StatusMessage}"
+                 Foreground="{Binding StatusColor}"
+                 FontSize="11"
+                 TextWrapping="Wrap" />
+    </StackPanel>
+  </DockPanel>
+</Window>

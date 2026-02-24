@@ -1,0 +1,56 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CRUDExplorer.UI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+        x:Class="CRUDExplorer.UI.Views.StartupWindow"
+        x:DataType="vm:StartupViewModel"
+        Title="CRUD Explorer" Width="600" Height="400"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        SystemDecorations="None"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent">
+
+  <Border CornerRadius="10" Background="White" BorderBrush="#2196F3" BorderThickness="2">
+    <DockPanel>
+      <!-- Main Content -->
+      <StackPanel DockPanel.Dock="Top" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20" Margin="40">
+        <!-- Logo Placeholder -->
+        <Border Background="#2196F3" Width="120" Height="120" CornerRadius="60" HorizontalAlignment="Center">
+          <TextBlock Text="CRUD" FontSize="36" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+
+        <!-- Application Title -->
+        <StackPanel HorizontalAlignment="Center" Spacing="5">
+          <TextBlock Text="CRUD Explorer" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" />
+          <TextBlock Text="SQL分析ツール" FontSize="14" Foreground="Gray" HorizontalAlignment="Center" />
+        </StackPanel>
+
+        <!-- Version -->
+        <TextBlock Text="{Binding VersionText}"
+                   FontSize="12"
+                   Foreground="Gray"
+                   HorizontalAlignment="Center" />
+
+        <!-- Loading Indicator -->
+        <StackPanel HorizontalAlignment="Center" Spacing="10" Margin="0,20,0,0">
+          <ProgressBar IsIndeterminate="True" Width="300" Height="4" />
+          <TextBlock Text="{Binding LoadingMessage}"
+                     FontSize="12"
+                     Foreground="Gray"
+                     HorizontalAlignment="Center" />
+        </StackPanel>
+      </StackPanel>
+
+      <!-- Copyright -->
+      <TextBlock DockPanel.Dock="Bottom"
+                 Text="© 2024 CRUD Explorer Project. All rights reserved."
+                 FontSize="10"
+                 Foreground="Gray"
+                 HorizontalAlignment="Center"
+                 Margin="0,0,0,15" />
+    </DockPanel>
+  </Border>
+</Window>

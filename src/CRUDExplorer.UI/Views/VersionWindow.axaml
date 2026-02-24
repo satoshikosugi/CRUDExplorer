@@ -1,0 +1,94 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CRUDExplorer.UI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
+        x:Class="CRUDExplorer.UI.Views.VersionWindow"
+        x:DataType="vm:VersionViewModel"
+        Title="バージョン情報" Width="500" Height="450"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+  <DockPanel Margin="20">
+    <!-- Bottom Buttons -->
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+      <Button Content="閉じる" Width="100" Command="{Binding CloseCommand}" />
+    </StackPanel>
+
+    <!-- Main Content -->
+    <StackPanel Spacing="15">
+      <!-- Logo and Version Info -->
+      <Border Background="{StaticResource AppHeaderBrush}" Padding="20" CornerRadius="5" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1">
+        <StackPanel Spacing="10">
+          <!-- Application Title -->
+          <TextBlock Text="CRUD Explorer" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" />
+
+          <!-- Version Number -->
+          <TextBlock Text="{Binding VersionNumber, StringFormat='Version {0}'}"
+                     FontSize="14"
+                     HorizontalAlignment="Center" />
+
+          <!-- Demo Mode Warning -->
+          <TextBlock Text="*** デモ版 ***"
+                     FontSize="16"
+                     FontWeight="Bold"
+                     Foreground="Red"
+                     HorizontalAlignment="Center"
+                     IsVisible="{Binding IsDemoMode}" />
+
+          <!-- Copyright -->
+          <TextBlock Text="© 2024 CRUD Explorer Project. All rights reserved."
+                     FontSize="11"
+                     HorizontalAlignment="Center"
+                     Margin="0,10,0,0" />
+        </StackPanel>
+      </Border>
+
+      <!-- License Activation Section -->
+      <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" Padding="15" CornerRadius="4">
+        <StackPanel Spacing="10">
+          <TextBlock Text="ライセンス認証" FontSize="14" FontWeight="Bold" />
+
+          <!-- License Key Input -->
+          <StackPanel Spacing="5">
+            <TextBlock Text="ライセンスキー (16桁):" />
+            <TextBox Text="{Binding LicenseKey}"
+                     Watermark="XXXX-XXXX-XXXX-XXXX"
+                     MaxLength="19" />
+          </StackPanel>
+
+          <!-- Email Address Input -->
+          <StackPanel Spacing="5">
+            <TextBlock Text="メールアドレス:" />
+            <TextBox Text="{Binding EmailAddress}"
+                     Watermark="example@example.com" />
+          </StackPanel>
+
+          <!-- Authenticate Button -->
+          <Button Content="認証"
+                  HorizontalAlignment="Stretch"
+                  Command="{Binding AuthenticateCommand}"
+                  Margin="0,10,0,0" />
+
+          <!-- Authentication Status -->
+          <TextBlock Text="{Binding AuthenticationStatus}"
+                     FontWeight="SemiBold"
+                     Foreground="{Binding AuthenticationStatusColor}"
+                     TextWrapping="Wrap"
+                     HorizontalAlignment="Center" />
+        </StackPanel>
+      </Border>
+
+      <!-- License Info -->
+      <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" Padding="15" CornerRadius="4">
+        <StackPanel Spacing="5">
+          <TextBlock Text="ライセンス情報" FontSize="12" FontWeight="Bold" />
+          <TextBlock Text="{Binding LicenseInfo}"
+                     FontSize="11"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </DockPanel>
+</Window>
