@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -7,6 +8,10 @@ namespace CRUDExplorer.UI.ViewModels;
 
 public partial class SearchViewModel : ViewModelBase
 {
+    private readonly Action _closeWindow;
+    private readonly Action<string, bool, bool, bool>? _onFindNext;
+    private readonly Action<string, bool, bool, bool>? _onFindPrevious;
+
     [ObservableProperty]
     private string _searchText = string.Empty;
 
@@ -25,6 +30,16 @@ public partial class SearchViewModel : ViewModelBase
     [ObservableProperty]
     private IBrush _statusColor = Brushes.Black;
 
+    public SearchViewModel(
+        Action? closeWindow = null,
+        Action<string, bool, bool, bool>? onFindNext = null,
+        Action<string, bool, bool, bool>? onFindPrevious = null)
+    {
+        _closeWindow = closeWindow ?? (() => { });
+        _onFindNext = onFindNext;
+        _onFindPrevious = onFindPrevious;
+    }
+
     [RelayCommand]
     private void FindNext()
     {
@@ -35,12 +50,20 @@ public partial class SearchViewModel : ViewModelBase
             return;
         }
 
-        // TODO: Implement find next
-        // - Search forward from current position
-        // - Highlight match
-        // - Update status
+        try
+        {
+            if (UseRegularExpression)
+                _ = new Regex(SearchText); // パターン検証
+        }
+        catch
+        {
+            StatusMessage = "正規表現パターンが不正です";
+            StatusColor = Brushes.Red;
+            return;
+        }
 
-        StatusMessage = "検索中...";
+        _onFindNext?.Invoke(SearchText, MatchCase, MatchWholeWord, UseRegularExpression);
+        StatusMessage = $"「{SearchText}」を次方向に検索";
         StatusColor = Brushes.Blue;
     }
 
@@ -54,18 +77,26 @@ public partial class SearchViewModel : ViewModelBase
             return;
         }
 
-        // TODO: Implement find previous
-        // - Search backward from current position
-        // - Highlight match
-        // - Update status
+        try
+        {
+            if (UseRegularExpression)
+                _ = new Regex(SearchText); // パターン検証
+        }
+        catch
+        {
+            StatusMessage = "正規表現パターンが不正です";
+            StatusColor = Brushes.Red;
+            return;
+        }
 
-        StatusMessage = "検索中...";
+        _onFindPrevious?.Invoke(SearchText, MatchCase, MatchWholeWord, UseRegularExpression);
+        StatusMessage = $"「{SearchText}」を前方向に検索";
         StatusColor = Brushes.Blue;
     }
 
     [RelayCommand]
     private void Close()
     {
-        // TODO: Close window
+        _closeWindow();
     }
 }

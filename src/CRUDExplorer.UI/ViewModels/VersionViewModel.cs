@@ -7,6 +7,7 @@ using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Avalonia.Media;
+using CRUDExplorer.Core.Models;
 
 namespace CRUDExplorer.UI.ViewModels;
 
@@ -72,11 +73,10 @@ public partial class VersionViewModel : ViewModelBase
             return;
         }
 
-        // TODO: Call cloud authentication API
+        // 認証サーバーに接続して認証を実行
         AuthenticationStatus = "認証サーバーに接続中...";
         AuthenticationStatusColor = Brushes.Blue;
 
-        // Simulate authentication (replace with actual API call)
         AuthenticateWithCloudApi();
     }
 
@@ -84,8 +84,8 @@ public partial class VersionViewModel : ViewModelBase
     {
         try
         {
-            // TODO: Replace with actual authentication server URL
-            var authServerUrl = "https://localhost:5001/api/license/authenticate";
+            var settings = Settings.Load();
+            var authServerUrl = settings.AuthServerUrl;
 
             var requestData = new
             {
@@ -153,12 +153,22 @@ public partial class VersionViewModel : ViewModelBase
 
     private void LoadLicenseInfo()
     {
-        // TODO: Load saved license info from Settings.cs
+        var settings = Settings.Load();
+        if (!string.IsNullOrEmpty(settings.LicenseKey))
+        {
+            LicenseKey = settings.LicenseKey;
+            EmailAddress = settings.EmailAddress;
+            IsDemoMode = false;
+            LicenseInfo = $"ライセンス認証済み\n登録メール: {settings.EmailAddress}\nライセンスキー: {settings.LicenseKey}";
+        }
     }
 
     private void SaveAuthenticationToken(string token)
     {
-        // TODO: Save authentication token to Settings.cs
+        var settings = Settings.Load();
+        settings.LicenseKey = LicenseKey;
+        settings.EmailAddress = EmailAddress;
+        settings.Save();
     }
 }
 

@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+using CRUDExplorer.Core.Formatting;
+using CRUDExplorer.Core.Utilities;
 
 namespace CRUDExplorer.Core.Models;
 
@@ -334,13 +336,55 @@ public class Query
     }
 
     /// <summary>
-    /// クエリを整形して返す（ANTLR実装後に再実装予定）
+    /// クエリを整形して返す
     /// </summary>
     public string Arrange(bool expand = false)
     {
-        // TODO: QueryFormatterを使用して整形
-        // 現時点では元のクエリをそのまま返す
-        return QueryText;
+        var formatter = new QueryFormatter();
+        var strQuery = formatter.Format(QueryText);
+
+        if (expand)
+        {
+            foreach (var key in SubQueries.Keys)
+            {
+                var subQuery = SubQueries[key];
+                var strSubQuery = subQuery.Arrange(expand);
+
+                var intSubQueryPos = strQuery.IndexOf(key, StringComparison.OrdinalIgnoreCase);
+                if (intSubQueryPos >= 0)
+                {
+                    // インデント量を計算
+                    var intLineTop = strQuery.LastIndexOf('\n', intSubQueryPos);
+                    if (intLineTop < 0) intLineTop = 0;
+                    var linePrefix = strQuery.Substring(intLineTop);
+                    var firstNonSpace = Regex.Match(linePrefix, "[^ ]");
+                    var intIndent = 4 + (firstNonSpace.Success ? firstNonSpace.Index : 0);
+
+                    // サブクエリにインデントを付与
+                    var lines = strSubQuery.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+                    var isUnionLike = QueryKind.Contains("UNION", StringComparison.OrdinalIgnoreCase)
+                        || QueryKind.Contains("MINUS", StringComparison.OrdinalIgnoreCase)
+                        || QueryKind.Contains("INTERSECT", StringComparison.OrdinalIgnoreCase);
+
+                    var sb = new System.Text.StringBuilder();
+                    if (!isUnionLike) sb.Append('(');
+                    for (int i = 0; i < lines.Length; i++)
+                    {
+                        if (i > 0)
+                        {
+                            sb.Append('\n');
+                            sb.Append(new string(' ', intIndent));
+                        }
+                        sb.Append(lines[i]);
+                    }
+                    if (!isUnionLike) sb.Append(')');
+
+                    strQuery = strQuery.Replace(key, sb.ToString());
+                }
+            }
+        }
+
+        return strQuery;
     }
 
     /// <summary>
@@ -365,8 +409,39 @@ public class Query
     /// </summary>
     public string FindFullName(string tableColumn)
     {
-        // TODO: グローバル辞書（dctTableName, dctTableDef）へのアクセスを実装
-        // 現時点では入力をそのまま返す
-        return tableColumn;
+        if (string.IsNullOrEmpty(tableColumn))
+            return tableColumn;
+
+        var state = GlobalState.Instance;
+        var tableNames = state.TableNames;
+        var tableDefinitions = state.TableDefinitions;
+
+        var parts = tableColumn.Split('.');
+
+        if (parts.Length == 1)
+        {
+            // テーブル名のみ: 論理名を返す
+            var physicalName = parts[0];
+            if (tableNames.TryGetValue(physicalName, out var logicalName))
+                return logicalName;
+            return tableColumn;
+        }
+        else
+        {
+            // テーブル名.カラム名形式
+            var tableName = parts[0];
+            var columnName = parts[1];
+
+            var logicalTableName = tableNames.TryGetValue(tableName, out var lt) ? lt : tableName;
+
+            if (tableDefinitions.TryGetValue(tableName, out var tableDef)
+                && tableDef.Columns.TryGetValue(columnName, out var colDef)
+                && !string.IsNullOrEmpty(colDef.AttributeName))
+            {
+                return logicalTableName + "." + colDef.AttributeName;
+            }
+
+            return logicalTableName + "." + columnName;
+        }
     }
 }

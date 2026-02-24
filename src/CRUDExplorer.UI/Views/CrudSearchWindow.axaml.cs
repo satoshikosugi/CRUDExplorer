@@ -8,6 +8,6 @@ public partial class CrudSearchWindow : Window
     public CrudSearchWindow()
     {
         InitializeComponent();
-        DataContext = new CrudSearchViewModel();
+        DataContext = new CrudSearchViewModel(closeWindow: () => Close());
     }
 }

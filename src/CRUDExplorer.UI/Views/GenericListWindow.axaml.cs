@@ -8,6 +8,6 @@ public partial class GenericListWindow : Window
     public GenericListWindow()
     {
         InitializeComponent();
-        DataContext = new GenericListViewModel();
+        DataContext = new GenericListViewModel(closeWindow: () => Close());
     }
 }

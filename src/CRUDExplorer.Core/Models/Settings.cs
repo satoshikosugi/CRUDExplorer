@@ -81,6 +81,11 @@ public class Settings
     public string EmailAddress { get; set; } = string.Empty;
 
     /// <summary>
+    /// 認証サーバーURL
+    /// </summary>
+    public string AuthServerUrl { get; set; } = "https://localhost:5001/api/license/authenticate";
+
+    /// <summary>
     /// ウィンドウサイズ保存用
     /// </summary>
     public Dictionary<string, WindowState> WindowStates { get; set; } = new();

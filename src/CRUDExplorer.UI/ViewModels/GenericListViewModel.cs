@@ -9,6 +9,9 @@ namespace CRUDExplorer.UI.ViewModels;
 
 public partial class GenericListViewModel : ViewModelBase
 {
+    private readonly Action _closeWindow;
+    private readonly Action<ListItemModel?>? _onSelect;
+
     [ObservableProperty]
     private string _windowTitle = "リスト選択";
 
@@ -30,9 +33,12 @@ public partial class GenericListViewModel : ViewModelBase
     [ObservableProperty]
     private SelectionMode _selectionMode = SelectionMode.Single;
 
-    public GenericListViewModel()
+    public GenericListViewModel(
+        Action? closeWindow = null,
+        Action<ListItemModel?>? onSelect = null)
     {
-        // Initialize with empty list
+        _closeWindow = closeWindow ?? (() => { });
+        _onSelect = onSelect;
     }
 
     public void SetItems(ObservableCollection<ListItemModel> items, string title = "リスト選択")
@@ -72,15 +78,15 @@ public partial class GenericListViewModel : ViewModelBase
     [RelayCommand]
     private void Select()
     {
-        // TODO: Return selected item to parent window
-        // - Set DialogResult
-        // - Close window
+        _onSelect?.Invoke(SelectedItem);
+        _closeWindow();
     }
 
     [RelayCommand]
     private void Close()
     {
-        // TODO: Close window without selection
+        _onSelect?.Invoke(null);
+        _closeWindow();
     }
 }
 

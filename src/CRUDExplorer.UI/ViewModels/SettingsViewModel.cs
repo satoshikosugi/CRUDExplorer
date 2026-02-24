@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CRUDExplorer.Core.Models;
@@ -9,6 +10,8 @@ namespace CRUDExplorer.UI.ViewModels;
 public partial class SettingsViewModel : ViewModelBase
 {
     private readonly Action _closeWindow;
+    private readonly Func<Task<string?>>? _filePicker;
+    private readonly Func<string, Task>? _showError;
     // Editor Selection
     [ObservableProperty]
     private bool _isNotepadSelected = false;
@@ -52,17 +55,27 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private bool _debugMode = false;
 
-    public SettingsViewModel(Action? closeWindow = null)
+    public SettingsViewModel(
+        Action? closeWindow = null,
+        Func<Task<string?>>? filePicker = null,
+        Func<string, Task>? showError = null)
     {
         _closeWindow = closeWindow ?? (() => { });
+        _filePicker = filePicker;
+        _showError = showError;
         LoadSettings();
         SetDefaultEditorBasedOnOS();
     }
 
     [RelayCommand]
-    private void BrowseEditorPath()
+    private async Task BrowseEditorPath()
     {
-        // TODO: Implement file picker dialog for editor executable
+        if (_filePicker != null)
+        {
+            var path = await _filePicker();
+            if (path != null)
+                EditorPath = path;
+        }
     }
 
     [RelayCommand]
@@ -99,8 +112,10 @@ public partial class SettingsViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            // TODO: Show error dialog
-            Console.WriteLine($"設定の保存に失敗しました: {ex.Message}");
+            if (_showError != null)
+                _ = _showError($"設定の保存に失敗しました: {ex.Message}");
+            else
+                Console.WriteLine($"設定の保存に失敗しました: {ex.Message}");
         }
     }
 
