@@ -19,7 +19,7 @@
     <!-- Main Content -->
     <StackPanel Spacing="15">
       <!-- Logo and Version Info -->
-      <Border Background="#F0F0F0" Padding="20" CornerRadius="5">
+      <Border Background="{StaticResource AppHeaderBrush}" Padding="20" CornerRadius="5" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1">
         <StackPanel Spacing="10">
           <!-- Application Title -->
           <TextBlock Text="CRUD Explorer" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" />
@@ -46,7 +46,7 @@
       </Border>
 
       <!-- License Activation Section -->
-      <Border BorderBrush="Gray" BorderThickness="1" Padding="15" CornerRadius="5">
+      <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" Padding="15" CornerRadius="4">
         <StackPanel Spacing="10">
           <TextBlock Text="ライセンス認証" FontSize="14" FontWeight="Bold" />
 
@@ -81,7 +81,7 @@
       </Border>
 
       <!-- License Info -->
-      <Border BorderBrush="Gray" BorderThickness="1" Padding="15" CornerRadius="5">
+      <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" Padding="15" CornerRadius="4">
         <StackPanel Spacing="5">
           <TextBlock Text="ライセンス情報" FontSize="12" FontWeight="Bold" />
           <TextBlock Text="{Binding LicenseInfo}"

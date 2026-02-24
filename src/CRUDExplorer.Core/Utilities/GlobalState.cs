@@ -80,6 +80,11 @@ public class GlobalState
     public bool ShowStartup { get; set; } = true;
 
     /// <summary>
+    /// MakeCRUD解析の最後の出力先パス（MainWindowの自動リロード用）
+    /// </summary>
+    public string LastAnalysisDestPath { get; set; } = string.Empty;
+
+    /// <summary>
     /// グローバル状態をリセット
     /// </summary>
     public void Reset()
@@ -96,5 +101,6 @@ public class GlobalState
         Views = new ViewCollection();
         IsDemoMode = true;
         ShowStartup = true;
+        LastAnalysisDestPath = string.Empty;
     }
 }

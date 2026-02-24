@@ -13,6 +13,7 @@ namespace CRUDExplorer.UI.ViewModels;
 public partial class VersionViewModel : ViewModelBase
 {
     private static readonly HttpClient _httpClient = new HttpClient();
+    private readonly Action _closeWindow;
 
     [ObservableProperty]
     private string _versionNumber = string.Empty;
@@ -35,8 +36,10 @@ public partial class VersionViewModel : ViewModelBase
     [ObservableProperty]
     private string _licenseInfo = "ライセンスが認証されていません。デモモードで動作しています。";
 
-    public VersionViewModel()
+    public VersionViewModel(Action? closeWindow = null)
     {
+        _closeWindow = closeWindow ?? (() => { });
+
         // Get version from assembly
         var assembly = Assembly.GetExecutingAssembly();
         var version = assembly.GetName().Version;
@@ -138,7 +141,7 @@ public partial class VersionViewModel : ViewModelBase
     [RelayCommand]
     private void Close()
     {
-        // TODO: Close window
+        _closeWindow();
     }
 
     private string GetDeviceId()

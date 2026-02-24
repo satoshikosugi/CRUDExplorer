@@ -8,6 +8,6 @@ public partial class SettingsWindow : Window
     public SettingsWindow()
     {
         InitializeComponent();
-        DataContext = new SettingsViewModel();
+        DataContext = new SettingsViewModel(closeWindow: () => Close());
     }
 }

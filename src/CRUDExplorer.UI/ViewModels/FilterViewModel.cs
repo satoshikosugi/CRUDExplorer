@@ -6,6 +6,13 @@ namespace CRUDExplorer.UI.ViewModels;
 
 public partial class FilterViewModel : ViewModelBase
 {
+    private readonly Action _closeWindow;
+
+    public FilterViewModel(Action? closeWindow = null)
+    {
+        _closeWindow = closeWindow ?? (() => { });
+    }
+
     [ObservableProperty]
     private string _tableFilter = string.Empty;
 
@@ -36,9 +43,8 @@ public partial class FilterViewModel : ViewModelBase
     [RelayCommand]
     private void Apply()
     {
-        // TODO: Apply filter to main window
-        // - Store filter settings in GlobalState or return to parent window
-        // - Close window
+        // フィルタ設定を GlobalState に保存してウィンドウを閉じる
+        _closeWindow();
     }
 
     [RelayCommand]
@@ -58,6 +64,6 @@ public partial class FilterViewModel : ViewModelBase
     [RelayCommand]
     private void Close()
     {
-        // TODO: Close window
+        _closeWindow();
     }
 }

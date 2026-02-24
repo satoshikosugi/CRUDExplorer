@@ -19,7 +19,7 @@
     <!-- Main Content -->
     <Grid RowDefinitions="Auto,*">
       <!-- Table Selector -->
-      <Border Grid.Row="0" BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,0,0,10">
+      <Border Grid.Row="0" Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,10">
         <Grid ColumnDefinitions="Auto,*,Auto">
           <TextBlock Grid.Column="0" Text="テーブル:" VerticalAlignment="Center" Margin="0,0,10,0" />
           <ComboBox Grid.Column="1" ItemsSource="{Binding Tables}" SelectedItem="{Binding SelectedTable}" />
@@ -31,7 +31,7 @@
       <TabControl Grid.Row="1">
         <!-- Columns Tab -->
         <TabItem Header="カラム定義">
-          <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Padding="5">
+          <Border BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5">
             <DataGrid ItemsSource="{Binding Columns}"
                       AutoGenerateColumns="False"
                       IsReadOnly="True"
@@ -52,7 +52,7 @@
 
         <!-- Indexes Tab -->
         <TabItem Header="インデックス">
-          <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Padding="5">
+          <Border BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5">
             <DataGrid ItemsSource="{Binding Indexes}"
                       AutoGenerateColumns="False"
                       IsReadOnly="True"
@@ -69,7 +69,7 @@
 
         <!-- Foreign Keys Tab -->
         <TabItem Header="外部キー">
-          <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Padding="5">
+          <Border BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5">
             <DataGrid ItemsSource="{Binding ForeignKeys}"
                       AutoGenerateColumns="False"
                       IsReadOnly="True"
@@ -86,7 +86,7 @@
 
         <!-- DDL Tab -->
         <TabItem Header="DDL">
-          <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Padding="5">
+          <Border BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5">
             <TextBox Text="{Binding DdlScript}"
                      IsReadOnly="True"
                      AcceptsReturn="True"

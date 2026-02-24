@@ -8,6 +8,7 @@ namespace CRUDExplorer.UI.ViewModels;
 
 public partial class SettingsViewModel : ViewModelBase
 {
+    private readonly Action _closeWindow;
     // Editor Selection
     [ObservableProperty]
     private bool _isNotepadSelected = false;
@@ -51,8 +52,9 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private bool _debugMode = false;
 
-    public SettingsViewModel()
+    public SettingsViewModel(Action? closeWindow = null)
     {
+        _closeWindow = closeWindow ?? (() => { });
         LoadSettings();
         SetDefaultEditorBasedOnOS();
     }
@@ -93,8 +95,7 @@ public partial class SettingsViewModel : ViewModelBase
 
             // Save settings
             settings.Save();
-
-            // TODO: Close window with DialogResult = OK
+            _closeWindow();
         }
         catch (Exception ex)
         {
@@ -106,7 +107,7 @@ public partial class SettingsViewModel : ViewModelBase
     [RelayCommand]
     private void Cancel()
     {
-        // TODO: Close window without saving
+        _closeWindow();
     }
 
     private void LoadSettings()

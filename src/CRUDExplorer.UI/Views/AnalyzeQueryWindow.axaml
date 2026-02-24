@@ -11,7 +11,7 @@
 
   <DockPanel>
     <!-- Toolbar -->
-    <Border DockPanel.Dock="Top" BorderBrush="Gray" BorderThickness="0,0,0,1" Padding="5">
+    <Border DockPanel.Dock="Top" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,0,1" Padding="5" Background="{StaticResource AppSurfaceBrush}">
       <StackPanel Orientation="Horizontal" Spacing="5">
         <Button Content="クイック解析" Command="{Binding QuickAnalyzeCommand}" />
         <Separator Width="1" Background="Gray" />
@@ -54,7 +54,7 @@
     <!-- Main Content Area with Split View -->
     <Grid ColumnDefinitions="300,5,*,5,250">
       <!-- Left Panel: Query Tree View -->
-      <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1" Padding="5">
+      <Border Grid.Column="0" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" Padding="5">
         <DockPanel>
           <TextBlock DockPanel.Dock="Top" Text="クエリ構造" FontWeight="Bold" Margin="0,0,0,5" />
           <TreeView ItemsSource="{Binding QueryTreeData}">
@@ -75,10 +75,10 @@
         </DockPanel>
       </Border>
 
-      <GridSplitter Grid.Column="1" Background="Gray" ResizeDirection="Columns" />
+      <GridSplitter Grid.Column="1" Background="{StaticResource AppBorderBrush}" ResizeDirection="Columns" />
 
       <!-- Center Panel: SQL Text Editor -->
-      <Border Grid.Column="2" BorderBrush="Gray" BorderThickness="1" Padding="5">
+      <Border Grid.Column="2" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" Padding="5">
         <DockPanel>
           <TextBlock DockPanel.Dock="Top" Text="SQL" FontWeight="Bold" Margin="0,0,0,5" />
           <!-- TextBox with monospace font as placeholder for AvaloniaEdit -->
@@ -113,12 +113,12 @@
         </DockPanel>
       </Border>
 
-      <GridSplitter Grid.Column="3" Background="Gray" ResizeDirection="Columns" />
+      <GridSplitter Grid.Column="3" Background="{StaticResource AppBorderBrush}" ResizeDirection="Columns" />
 
       <!-- Right Panel: CRUD Lists -->
       <Grid Grid.Column="4" RowDefinitions="*,5,*">
         <!-- Table CRUD List -->
-        <Border Grid.Row="0" BorderBrush="Gray" BorderThickness="1" Padding="5">
+        <Border Grid.Row="0" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" Padding="5">
           <DockPanel>
             <TextBlock DockPanel.Dock="Top" Text="テーブルCRUD" FontWeight="Bold" Margin="0,0,0,5" />
             <ListBox ItemsSource="{Binding TableCrudList}">
@@ -131,10 +131,10 @@
           </DockPanel>
         </Border>
 
-        <GridSplitter Grid.Row="1" Background="Gray" ResizeDirection="Rows" />
+        <GridSplitter Grid.Row="1" Background="{StaticResource AppBorderBrush}" ResizeDirection="Rows" />
 
         <!-- Column CRUD List -->
-        <Border Grid.Row="2" BorderBrush="Gray" BorderThickness="1" Padding="5">
+        <Border Grid.Row="2" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" Padding="5">
           <DockPanel>
             <TextBlock DockPanel.Dock="Top" Text="カラムCRUD" FontWeight="Bold" Margin="0,0,0,5" />
             <ListBox ItemsSource="{Binding ColumnCrudList}">

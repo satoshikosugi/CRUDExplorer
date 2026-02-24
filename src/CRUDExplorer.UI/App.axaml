@@ -2,14 +2,42 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="CRUDExplorer.UI.App"
              xmlns:local="using:CRUDExplorer.UI"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             RequestedThemeVariant="Light">
 
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
-  
+
     <Application.Styles>
         <FluentTheme />
     </Application.Styles>
+
+    <Application.Resources>
+        <!-- === CRUDExplorer カラーパレット === -->
+        <!-- プライマリ （ヘッダ・アクセントバー） -->
+        <Color x:Key="AppPrimaryColor">#1565C0</Color>
+        <SolidColorBrush x:Key="AppPrimaryBrush" Color="{StaticResource AppPrimaryColor}" />
+        <!-- セカンダリ（ツールバー背景） -->
+        <Color x:Key="AppSurfaceColor">#E3F2FD</Color>
+        <SolidColorBrush x:Key="AppSurfaceBrush" Color="{StaticResource AppSurfaceColor}" />
+        <!-- ページ背景 -->
+        <Color x:Key="AppBackgroundColor">#F5F7FA</Color>
+        <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundColor}" />
+        <!-- パネル背景 -->
+        <Color x:Key="AppPanelColor">#FFFFFF</Color>
+        <SolidColorBrush x:Key="AppPanelBrush" Color="{StaticResource AppPanelColor}" />
+        <!-- セクションヘッダ -->
+        <Color x:Key="AppHeaderColor">#DDEEFF</Color>
+        <SolidColorBrush x:Key="AppHeaderBrush" Color="{StaticResource AppHeaderColor}" />
+        <!-- ボーダー -->
+        <Color x:Key="AppBorderColor">#BDBDBD</Color>
+        <SolidColorBrush x:Key="AppBorderBrush" Color="{StaticResource AppBorderColor}" />
+        <!-- ステータスバー -->
+        <Color x:Key="AppStatusColor">#ECEFF1</Color>
+        <SolidColorBrush x:Key="AppStatusBrush" Color="{StaticResource AppStatusColor}" />
+        <!-- プライマリテキスト（ヘッダ上） -->
+        <SolidColorBrush x:Key="AppPrimaryTextBrush" Color="White" />
+        <!-- セカンダリテキスト -->
+        <SolidColorBrush x:Key="AppSecondaryTextBrush" Color="#546E7A" />
+    </Application.Resources>
 </Application>

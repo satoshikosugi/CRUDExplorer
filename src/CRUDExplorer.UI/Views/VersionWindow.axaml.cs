@@ -8,6 +8,6 @@ public partial class VersionWindow : Window
     public VersionWindow()
     {
         InitializeComponent();
-        DataContext = new VersionViewModel();
+        DataContext = new VersionViewModel(closeWindow: () => Close());
     }
 }
