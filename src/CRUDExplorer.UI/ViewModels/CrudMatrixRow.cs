@@ -13,13 +13,19 @@ public class CrudMatrixRow
     public string Total { get; set; } = string.Empty;
 
     /// <summary>
-    /// プログラムIDをキーとしたCRUD値（内部用）。
+    /// プログラムIDをキーとしたCRUD値。DataGrid の Binding("[programId]") からアクセスされる。
     /// </summary>
-    public Dictionary<string, string> Values { get; set; } = new();
+    public Dictionary<string, string> Values { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// ヘッダー順に並べた配列。DataGridテキスト列を CellValues[i] でバインドする。
-    /// Avalonia は整数インデクサーを確実にサポートするため、文字列インデクサーより安全。
+    /// 文字列インデクサー。DataGridTextColumn の Binding("[key]") で利用される。
+    /// Avalonia の [key] バインディングはブラケット内の文字列（"." 含む）を
+    /// パス区切りではなくキー文字として扱うため、ファイル名キーも正しく解決される。
+    /// </summary>
+    public string this[string key] => Values.TryGetValue(key, out var v) ? v : string.Empty;
+
+    /// <summary>
+    /// 後方互換のためCellValues配列も保持（テスト等で利用）。
     /// </summary>
     public string[] CellValues { get; set; } = Array.Empty<string>();
 }

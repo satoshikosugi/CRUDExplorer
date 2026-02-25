@@ -29,6 +29,13 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private int _crudViewType = 0; // 0: TableCRUD, 1: ColumnCRUD
 
+    partial void OnCrudViewTypeChanged(int value)
+    {
+        // ComboBox でビュー種別が変更されたら自動的にデータを再読み込み
+        if (!string.IsNullOrEmpty(SourcePath))
+            _ = LoadCrudDataAsync();
+    }
+
     [ObservableProperty]
     private ObservableCollection<CrudListItem> _crudListData = new();
 

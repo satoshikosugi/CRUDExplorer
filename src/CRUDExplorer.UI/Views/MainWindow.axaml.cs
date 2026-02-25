@@ -79,15 +79,15 @@ public partial class MainWindow : Window
         });
 
         // プログラムごとの動的列
-        // CellValues[i] でバインド（整数インデクサーは Avalonia が確実にサポート）
-        // ヘッダー名に "." が含まれるため文字列インデクサーは使用しない
-        for (int idx = 0; idx < vm.MatrixHeaders.Length; idx++)
+        // "[header]" バインディングで CrudMatrixRow.this[string key] を参照する。
+        // Avalonia の [key] 記法はブラケット内全体をキーとして扱うため、
+        // "SP_ORDER.sql" のように "." を含むキーも正しく解決される。
+        foreach (var header in vm.MatrixHeaders)
         {
-            var header = vm.MatrixHeaders[idx];
             grid.Columns.Add(new DataGridTextColumn
             {
                 Header  = header,
-                Binding = new Binding($"CellValues[{idx}]"),
+                Binding = new Binding($"[{header}]"),
                 Width   = new DataGridLength(80),
             });
         }
