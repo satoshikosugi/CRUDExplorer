@@ -79,14 +79,15 @@ public partial class MainWindow : Window
         });
 
         // プログラムごとの動的列
-        // Binding の "[key]" 記法: CrudMatrixRow のインデクサーを使用
-        // [] 内の . はパス区切りではなくキー文字として扱われる
-        foreach (var header in vm.MatrixHeaders)
+        // CellValues[i] でバインド（整数インデクサーは Avalonia が確実にサポート）
+        // ヘッダー名に "." が含まれるため文字列インデクサーは使用しない
+        for (int idx = 0; idx < vm.MatrixHeaders.Length; idx++)
         {
+            var header = vm.MatrixHeaders[idx];
             grid.Columns.Add(new DataGridTextColumn
             {
                 Header  = header,
-                Binding = new Binding($"[{header}]"),
+                Binding = new Binding($"CellValues[{idx}]"),
                 Width   = new DataGridLength(80),
             });
         }

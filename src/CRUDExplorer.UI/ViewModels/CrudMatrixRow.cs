@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace CRUDExplorer.UI.ViewModels;
@@ -12,12 +13,13 @@ public class CrudMatrixRow
     public string Total { get; set; } = string.Empty;
 
     /// <summary>
-    /// プログラムIDをキーとしたCRUD値。DataGridの動的列バインディングに使用。
+    /// プログラムIDをキーとしたCRUD値（内部用）。
     /// </summary>
     public Dictionary<string, string> Values { get; set; } = new();
 
     /// <summary>
-    /// インデクサー — DataGridTextColumnのBinding("[key]")から参照される
+    /// ヘッダー順に並べた配列。DataGridテキスト列を CellValues[i] でバインドする。
+    /// Avalonia は整数インデクサーを確実にサポートするため、文字列インデクサーより安全。
     /// </summary>
-    public string this[string key] => Values.TryGetValue(key, out var v) ? v : string.Empty;
+    public string[] CellValues { get; set; } = Array.Empty<string>();
 }

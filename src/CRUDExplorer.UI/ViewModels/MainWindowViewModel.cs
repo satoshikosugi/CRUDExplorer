@@ -254,13 +254,16 @@ public partial class MainWindowViewModel : ViewModelBase
                     LogicalName = cols.Length > 1 ? cols[1] : string.Empty,
                     Total       = cols.Length > 2 ? cols[2] : string.Empty
                 };
+                var cellValues = new string[programHeaders.Length];
                 for (int j = 0; j < programHeaders.Length; j++)
                 {
                     var header = programHeaders[j];
                     var value  = cols.Length > 3 + j ? cols[3 + j] : string.Empty;
+                    cellValues[j] = value;
                     if (!string.IsNullOrEmpty(header))
                         row.Values[header] = value;
                 }
+                row.CellValues = cellValues;
                 if (!string.IsNullOrEmpty(row.TableName) || row.Values.Values.Any(v => !string.IsNullOrEmpty(v)))
                     newRows.Add(row);
             }
