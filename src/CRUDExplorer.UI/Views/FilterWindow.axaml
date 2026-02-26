@@ -3,67 +3,143 @@
         xmlns:vm="using:CRUDExplorer.UI.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="400"
+        mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="520"
         x:Class="CRUDExplorer.UI.Views.FilterWindow"
         x:DataType="vm:FilterViewModel"
-        Title="フィルタ" Width="500" Height="400"
-        CanResize="False"
+        Title="フィルタ" Width="640" Height="520"
         WindowStartupLocation="CenterOwner">
 
-  <DockPanel Margin="15">
-    <!-- Bottom Buttons -->
-    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,15,0,0">
+  <DockPanel Margin="10">
+
+    <!-- ボタンバー（下部） -->
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
       <Button Content="適用(_A)" Width="100" Command="{Binding ApplyCommand}" />
-      <Button Content="クリア(_C)" Width="100" Command="{Binding ClearCommand}" />
+      <Button Content="全クリア(_C)" Width="100" Command="{Binding ClearCommand}" />
       <Button Content="閉じる(_X)" Width="100" Command="{Binding CloseCommand}" />
     </StackPanel>
 
-    <!-- Main Content -->
-    <ScrollViewer>
-      <StackPanel Spacing="15">
-        <!-- Table Filter -->
-        <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
-          <StackPanel Spacing="8">
-            <TextBlock Text="テーブルフィルタ" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource AppPrimaryBrush}" />
-            <Separator />
-            <TextBlock Text="表示するテーブル名のパターン:" FontSize="12" />
-            <TextBox Text="{Binding TableFilter}" Watermark="例: USER%, ORDER%" />
-            <CheckBox Content="大文字小文字を区別する" IsChecked="{Binding TableCaseSensitive}" />
-          </StackPanel>
-        </Border>
+    <!-- 本体: 左右分割 -->
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="10" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
 
-        <!-- Column Filter -->
-        <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
-          <StackPanel Spacing="8">
-            <TextBlock Text="カラムフィルタ" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource AppPrimaryBrush}" />
-            <Separator />
-            <TextBlock Text="表示するカラム名のパターン:" FontSize="12" />
-            <TextBox Text="{Binding ColumnFilter}" Watermark="例: ID%, %NAME" />
-            <CheckBox Content="大文字小文字を区別する" IsChecked="{Binding ColumnCaseSensitive}" />
-          </StackPanel>
-        </Border>
+      <!-- ─── 左: プログラムID一覧 ─── -->
+      <Border Grid.Column="0"
+              BorderBrush="{StaticResource AppBorderBrush}"
+              BorderThickness="1" CornerRadius="4">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
 
-        <!-- CRUD Filter -->
-        <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
-          <StackPanel Spacing="8">
-            <TextBlock Text="CRUD種別フィルタ" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource AppPrimaryBrush}" />
-            <Separator />
-            <CheckBox Content="Create (C) — 作成" IsChecked="{Binding ShowCreate}" />
-            <CheckBox Content="Read (R) — 参照" IsChecked="{Binding ShowRead}" />
-            <CheckBox Content="Update (U) — 更新" IsChecked="{Binding ShowUpdate}" />
-            <CheckBox Content="Delete (D) — 削除" IsChecked="{Binding ShowDelete}" />
-          </StackPanel>
-        </Border>
+          <!-- ヘッダ -->
+          <Border Grid.Row="0" Background="{StaticResource AppHeaderBrush}"
+                  BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,0,1"
+                  Padding="8,6" CornerRadius="4,4,0,0">
+            <TextBlock Text="プログラムID" FontWeight="SemiBold"
+                       Foreground="{StaticResource AppPrimaryBrush}" />
+          </Border>
 
-        <!-- Program ID Filter -->
-        <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
-          <StackPanel Spacing="8">
-            <TextBlock Text="プログラムIDフィルタ" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource AppPrimaryBrush}" />
-            <Separator />
-            <TextBox Text="{Binding ProgramIdFilter}" Watermark="例: USR0001" />
+          <!-- フィルタ入力 -->
+          <TextBox Grid.Row="1" Text="{Binding ProgramFilter}"
+                   Watermark="正規表現でフィルタ..."
+                   Margin="6,6,6,2" />
+
+          <!-- チェックリスト -->
+          <ListBox Grid.Row="2"
+                   ItemsSource="{Binding ProgramItems}"
+                   Background="White" BorderThickness="0"
+                   Margin="4,2,4,2">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:FilterItem">
+                <CheckBox IsChecked="{Binding IsChecked}"
+                          Content="{Binding Name}" />
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+          <!-- 全選択/全解除 -->
+          <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="6"
+                      HorizontalAlignment="Center" Margin="6,4,6,6">
+            <Button Content="全選択" FontSize="11" Padding="6,2"
+                    Command="{Binding SelectAllProgramsCommand}" />
+            <Button Content="全解除" FontSize="11" Padding="6,2"
+                    Command="{Binding DeselectAllProgramsCommand}" />
           </StackPanel>
-        </Border>
-      </StackPanel>
-    </ScrollViewer>
+        </Grid>
+      </Border>
+
+      <!-- ─── 右: テーブル名一覧 ─── -->
+      <Border Grid.Column="2"
+              BorderBrush="{StaticResource AppBorderBrush}"
+              BorderThickness="1" CornerRadius="4">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+
+          <!-- ヘッダ -->
+          <Border Grid.Row="0" Background="{StaticResource AppHeaderBrush}"
+                  BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,0,1"
+                  Padding="8,6" CornerRadius="4,4,0,0">
+            <TextBlock Text="テーブル名" FontWeight="SemiBold"
+                       Foreground="{StaticResource AppPrimaryBrush}" />
+          </Border>
+
+          <!-- フィルタ入力 -->
+          <TextBox Grid.Row="1" Text="{Binding TableFilter}"
+                   Watermark="正規表現でフィルタ..."
+                   Margin="6,6,6,2" />
+
+          <!-- CRUD 種別フィルタ -->
+          <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8"
+                      Margin="8,4,8,4">
+            <CheckBox Content="C" IsChecked="{Binding ShowC}" />
+            <CheckBox Content="R" IsChecked="{Binding ShowR}" />
+            <CheckBox Content="U" IsChecked="{Binding ShowU}" />
+            <CheckBox Content="D" IsChecked="{Binding ShowD}" />
+          </StackPanel>
+
+          <!-- チェックリスト -->
+          <ListBox Grid.Row="3"
+                   ItemsSource="{Binding TableItems}"
+                   Background="White" BorderThickness="0"
+                   Margin="4,2,4,2">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:FilterItem">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <CheckBox IsChecked="{Binding IsChecked}"
+                            Content="{Binding Name}" />
+                  <TextBlock Text="{Binding SubText}"
+                             Foreground="#666" FontSize="11"
+                             VerticalAlignment="Center" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+          <!-- 全選択/全解除 -->
+          <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="6"
+                      HorizontalAlignment="Center" Margin="6,4,6,6">
+            <Button Content="全選択" FontSize="11" Padding="6,2"
+                    Command="{Binding SelectAllTablesCommand}" />
+            <Button Content="全解除" FontSize="11" Padding="6,2"
+                    Command="{Binding DeselectAllTablesCommand}" />
+          </StackPanel>
+        </Grid>
+      </Border>
+    </Grid>
   </DockPanel>
 </Window>

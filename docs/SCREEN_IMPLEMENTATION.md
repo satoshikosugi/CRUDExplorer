@@ -162,10 +162,18 @@
 
 ## 実装優先順位
 
-1. **[Critical] MainWindow DataGrid バインディング修正** — セルが空欄になるバグを修正
-2. **[High] MainWindow セルクリック → CRUD一覧フィルタ** — マトリクスの基本インタラクション
-3. **[High] MainWindow 不足メニュー追加** — ソースファイル一覧・クエリ表示・サポートサイト
-4. **[High] MainWindow ツールバー補完** — フィルタ入力・C/R/U/Dチェック・エディタ/クエリボタン
-5. **[Medium] FilterWindow 機能強化** — マトリクスへの実フィルタ反映
-6. **[Medium] TableDefinitionWindow 起動コマンド修正** — メニューから直接開く
-7. **[Low] FileList/Grep/CrudSearch メニュー追加** — 既存ViewModel を利用
+1. **[Critical] ✅ MainWindow DataGrid バインディング修正** — セルが空欄になるバグを修正（IValueConverter + CellValues[idx]）
+2. **[High] ✅ MainWindow セルクリック → CRUD一覧フィルタ** — CellPointerPressed イベント実装
+3. **[High] ✅ MainWindow 不足メニュー追加** — ソースファイル一覧・クエリ表示・サポートサイト・マトリクスコピー
+4. **[High] ✅ MainWindow ツールバー補完** — PGフィルタ・テーブルフィルタ・C/R/U/Dチェック・適用/クリアボタン
+5. **[High] ✅ CRUD一覧 アクションボタン** — エディタ起動・クエリ解析ボタン追加
+6. **[Medium] ✅ FilterWindow 機能強化** — プログラム/テーブルチェックリスト表示、Apply が GlobalState 経由でマトリクスへ反映
+7. **[Medium] ✅ TableDefinitionWindow 起動コマンド修正** — メニューから ShowDialog で開く
+8. **[Low] ✅ FileList/QueryAnalyze メニュー追加** — 既存ViewModel を利用したメニュー項目追加
+
+## 残課題
+
+- **カラムヘッダ縦書き表示**: Avalonia ではカスタム DataGridColumnHeader スタイルが必要（低優先）
+- **CRUD一覧列クリックによるソート**: ListBox では難しい。将来的に DataGrid 化が必要
+- **フィルタウィンドウのプログラムID一覧**: GlobalState.ProgramNames が空の場合リスト表示なし（解析実行後は表示される）
+- **GrepWindow / CrudSearchWindow メニュー**: MainWindowViewModel に追加コマンドが必要

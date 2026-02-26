@@ -146,10 +146,21 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task ShowFilter()
     {
+        GlobalState.Instance.FilterState.WasApplied = false;
         await _windowService.ShowDialog<FilterWindow>();
-        // FilterWindow が Apply を押して閉じた場合、フィルタを反映
-        if (!string.IsNullOrEmpty(SourcePath))
-            await LoadCrudDataAsync();
+        // FilterViewModel.Apply() が GlobalState.FilterState を書き込む
+        var fs = GlobalState.Instance.FilterState;
+        if (fs.WasApplied)
+        {
+            FilterProgram = fs.ProgramFilter;
+            FilterTable   = fs.TableFilter;
+            FilterC = fs.ShowC;
+            FilterR = fs.ShowR;
+            FilterU = fs.ShowU;
+            FilterD = fs.ShowD;
+            if (!string.IsNullOrEmpty(SourcePath))
+                await LoadCrudDataAsync();
+        }
     }
 
     [RelayCommand]
@@ -194,7 +205,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private void OpenSupportSite()
     {
         try { Process.Start(new ProcessStartInfo("http://crudexplorer.ks-serv.com") { UseShellExecute = true }); }
-        catch { /* ブラウザ起動失敗は無視 */ }
+        catch (Exception ex) { StatusMessage = $"ブラウザの起動に失敗しました: {ex.Message}"; }
     }
 
     // ─── 設定・ヘルプ メニュー ───────────────────────────────────────
@@ -384,12 +395,14 @@ public partial class MainWindowViewModel : ViewModelBase
         bool[]   colShow        = Array.Empty<bool>();
         var newRows = new List<CrudMatrixRow>();
 
-        for (int i = 0; i < lines.Length; i++)
+        // nonEmptyLineIndex は空行をスキップした後の行番号（0=ヘッダ、1=集計、2+=データ）
+        int nonEmptyLineIndex = 0;
+        foreach (var line in lines)
         {
-            if (string.IsNullOrEmpty(lines[i])) continue;
-            var cols = lines[i].Split('\t');
+            if (string.IsNullOrEmpty(line)) continue;
+            var cols = line.Split('\t');
 
-            if (i == 0)
+            if (nonEmptyLineIndex == 0)
             {
                 // ヘッダ行: col3以降がプログラムID。FilterProgramでフィルタリング。
                 var allHeaders = cols.Length > 3 ? cols[3..] : Array.Empty<string>();
@@ -406,7 +419,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 }
                 programHeaders = filteredHeaders.ToArray();
             }
-            else if (i == 1)
+            else if (nonEmptyLineIndex == 1)
             {
                 // 集計行スキップ
             }
@@ -418,7 +431,10 @@ public partial class MainWindowViewModel : ViewModelBase
                     !System.Text.RegularExpressions.Regex.IsMatch(
                         tableKey, FilterTable,
                         System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                {
+                    nonEmptyLineIndex++;
                     continue;
+                }
 
                 var row = new CrudMatrixRow
                 {
@@ -427,35 +443,36 @@ public partial class MainWindowViewModel : ViewModelBase
                     Total       = cols.Length > 2 ? cols[2] : string.Empty
                 };
 
-                // FilterC/R/U/D を合計列に適用（空でなければ表示）
+                // FilterC/R/U/D を合計列に適用
                 if (!string.IsNullOrEmpty(row.Total))
                 {
-                    var filtered = FilterCrudString(row.Total);
-                    if (string.IsNullOrEmpty(filtered)) continue;
-                    row.Total = filtered;
+                    var filteredTotal = FilterCrudString(row.Total);
+                    if (string.IsNullOrEmpty(filteredTotal)) { nonEmptyLineIndex++; continue; }
+                    row.Total = filteredTotal;
                 }
 
                 // 表示する列だけを取り出して CellValues に格納
-                int rawColBase = 3; // col0=テーブル名, col1=論理名, col2=合計, col3+=プログラム
-                int colCount   = colShow.Length;
-                var cellValues = new List<string>();
-                for (int j = 0; j < colCount; j++)
+                const int RawColBase = 3; // col0=テーブル名, col1=論理名, col2=合計, col3+=プログラム
+                var cellValues = new List<string>(programHeaders.Length);
+                int visibleIdx = 0;
+                for (int j = 0; j < colShow.Length; j++)
                 {
                     if (!colShow[j]) continue;
-                    var rawIdx = rawColBase + j;
+                    var rawIdx = RawColBase + j;
                     var value  = cols.Length > rawIdx ? cols[rawIdx] : string.Empty;
                     var fv     = FilterCrudString(value);
                     cellValues.Add(fv);
-                    if (!string.IsNullOrEmpty(programHeaders[cellValues.Count - 1]))
-                        row.Values[programHeaders[cellValues.Count - 1]] = fv;
+                    row.Values[programHeaders[visibleIdx]] = fv;
+                    visibleIdx++;
                 }
                 row.CellValues = cellValues.ToArray();
 
                 // 全セルが空なら行をスキップ（オリジナルと同じ「空行削除」）
-                if (row.CellValues.All(string.IsNullOrEmpty)) continue;
+                if (row.CellValues.All(string.IsNullOrEmpty)) { nonEmptyLineIndex++; continue; }
 
                 newRows.Add(row);
             }
+            nonEmptyLineIndex++;
         }
 
         MatrixHeaders = programHeaders;
