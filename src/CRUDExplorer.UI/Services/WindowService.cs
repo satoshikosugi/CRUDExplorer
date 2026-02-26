@@ -45,6 +45,11 @@ public interface IWindowService
     /// ファイル選択ダイアログを表示
     /// </summary>
     Task<string?> ShowFilePickerAsync(string title = "ファイルを選択", string[]? extensions = null);
+
+    /// <summary>
+    /// クリップボードにテキストをセットする
+    /// </summary>
+    Task SetClipboardTextAsync(string text);
 }
 
 public class WindowService : IWindowService
@@ -99,5 +104,13 @@ public class WindowService : IWindowService
                 : null
         });
         return result.Count > 0 ? result[0].Path.LocalPath : null;
+    }
+
+    public async Task SetClipboardTextAsync(string text)
+    {
+        if (MainWindow == null) return;
+        var clipboard = Avalonia.Controls.TopLevel.GetTopLevel(MainWindow)?.Clipboard;
+        if (clipboard != null)
+            await clipboard.SetTextAsync(text);
     }
 }

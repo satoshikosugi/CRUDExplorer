@@ -85,6 +85,70 @@ public class GlobalState
     public string LastAnalysisDestPath { get; set; } = string.Empty;
 
     /// <summary>
+    /// クエリ解析ウィンドウへのリクエスト（MainWindow → AnalyzeQueryWindow）
+    /// </summary>
+    public object? AnalyzeQueryRequest { get; set; }
+
+    /// <summary>
+    /// ソースフォルダを開いたときに querys/*.query や views.txt などを読み込む
+    /// </summary>
+    public void LoadFromFolder(string sourcePath)
+    {
+        Files.Clear();
+        QueryList.Clear();
+        Views = new ViewCollection();
+
+        var querysDir = System.IO.Path.Combine(sourcePath, "querys");
+        if (System.IO.Directory.Exists(querysDir))
+        {
+            foreach (var file in System.IO.Directory.GetFiles(querysDir, "*.query"))
+            {
+                if (new System.IO.FileInfo(file).Length == 0) continue;
+                var name = System.IO.Path.GetFileNameWithoutExtension(file);
+                Files[$"K{Files.Count + 1}"] = name;
+
+                var lines = System.IO.File.ReadAllLines(file);
+                foreach (var line in lines)
+                {
+                    if (string.IsNullOrEmpty(line)) continue;
+                    var cols = line.Split('\t');
+                    if (cols.Length >= 3)
+                    {
+                        var key = $"{name}\t{cols[0]}";
+                        if (!QueryList.ContainsKey(key))
+                            QueryList[key] = new Query { QueryText = cols[1] };
+                    }
+                }
+            }
+
+            var viewsFile = System.IO.Path.Combine(querysDir, "views.txt");
+            if (System.IO.File.Exists(viewsFile))
+            {
+                foreach (var line in System.IO.File.ReadAllLines(viewsFile))
+                {
+                    if (string.IsNullOrEmpty(line)) continue;
+                    var cols = line.Split('\t');
+                    if (cols.Length >= 4)
+                        Views.Add(new View(cols[0], cols[1], cols[2], cols[3]));
+                }
+            }
+
+            // テーブル名辞書
+            var tableNameFile = System.IO.Path.Combine(querysDir, "tablename.tsv");
+            if (System.IO.File.Exists(tableNameFile))
+                TableNames = FileSystemHelper.ReadDictionary(tableNameFile);
+
+            // テーブル定義
+            var tableDefFile = System.IO.Path.Combine(querysDir, "tabledef.tsv");
+            if (System.IO.File.Exists(tableDefFile))
+            {
+                TableDefinitions.Clear();
+                FileSystemHelper.ReadTableDef(tableDefFile, TableDefinitions);
+            }
+        }
+    }
+
+    /// <summary>
     /// グローバル状態をリセット
     /// </summary>
     public void Reset()

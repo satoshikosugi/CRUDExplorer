@@ -39,19 +39,26 @@
                 </MenuItem>
                 <MenuItem Header="解析(_A)">
                     <MenuItem Header="CRUD解析実行(_C)" Command="{Binding AnalyzeCrudCommand}" />
-                    <MenuItem Header="テーブル定義読み込み(_T)" Command="{Binding LoadTableDefCommand}" />
+                    <Separator />
+                    <MenuItem Header="テーブル定義(_T)" Command="{Binding LoadTableDefCommand}" />
+                    <MenuItem Header="ソースファイル一覧(_L)" Command="{Binding ShowFileListCommand}" />
+                    <MenuItem Header="クエリ表示(_Q)" Command="{Binding ShowQueryAnalyzeCommand}" />
                 </MenuItem>
                 <MenuItem Header="表示(_V)">
                     <MenuItem Header="テーブルCRUD(_T)" Command="{Binding ShowTableCrudCommand}" />
                     <MenuItem Header="カラムCRUD(_C)" Command="{Binding ShowColumnCrudCommand}" />
                     <Separator />
                     <MenuItem Header="フィルタ(_F)" Command="{Binding ShowFilterCommand}" />
+                    <Separator />
+                    <MenuItem Header="マトリクスをコピー(_M)" Command="{Binding CopyMatrixToClipboardCommand}" />
                 </MenuItem>
                 <MenuItem Header="設定(_S)">
                     <MenuItem Header="設定(_S)" Command="{Binding OpenSettingsCommand}" />
                 </MenuItem>
                 <MenuItem Header="ヘルプ(_H)">
                     <MenuItem Header="バージョン情報(_A)" Command="{Binding ShowVersionCommand}" />
+                    <Separator />
+                    <MenuItem Header="サポートサイト(_S)" Command="{Binding OpenSupportSiteCommand}" />
                 </MenuItem>
             </Menu>
         </Border>
@@ -91,16 +98,39 @@
                                Margin="6,0,0,0" />
                     <TextBox Text="{Binding SourcePath}"
                              IsReadOnly="True"
-                             MinWidth="420"
+                             MinWidth="300"
                              VerticalAlignment="Center"
                              Background="White"
                              BorderBrush="{StaticResource AppBorderBrush}" />
                     <Button Content="⚙ CRUD解析"
                             Command="{Binding AnalyzeCrudCommand}"
                             Padding="10,4" />
-                    <Button Content="📋 テーブル定義"
-                            Command="{Binding LoadTableDefCommand}"
-                            Padding="10,4" />
+                    <Separator Margin="4,0" />
+                    <!-- プログラムIDフィルタ -->
+                    <TextBlock Text="PGフィルタ:" VerticalAlignment="Center" Foreground="#37474F" />
+                    <TextBox Text="{Binding FilterProgram}"
+                             Watermark="正規表現..."
+                             MinWidth="120"
+                             VerticalAlignment="Center"
+                             Background="White" />
+                    <!-- テーブルフィルタ -->
+                    <TextBlock Text="テーブル:" VerticalAlignment="Center" Foreground="#37474F" />
+                    <TextBox Text="{Binding FilterTable}"
+                             Watermark="正規表現..."
+                             MinWidth="120"
+                             VerticalAlignment="Center"
+                             Background="White" />
+                    <!-- CRUD種別チェック -->
+                    <CheckBox Content="C" IsChecked="{Binding FilterC}" VerticalAlignment="Center" />
+                    <CheckBox Content="R" IsChecked="{Binding FilterR}" VerticalAlignment="Center" />
+                    <CheckBox Content="U" IsChecked="{Binding FilterU}" VerticalAlignment="Center" />
+                    <CheckBox Content="D" IsChecked="{Binding FilterD}" VerticalAlignment="Center" />
+                    <Button Content="▶ 適用"
+                            Command="{Binding ApplyFilterCommand}"
+                            Padding="8,4" />
+                    <Button Content="✕ クリア"
+                            Command="{Binding ClearFilterCommand}"
+                            Padding="8,4" />
                 </StackPanel>
             </Border>
 
@@ -140,10 +170,6 @@
                                     <ComboBoxItem Content="テーブルCRUD" />
                                     <ComboBoxItem Content="カラムCRUD" />
                                 </ComboBox>
-                                <TextBox Watermark="キーワードフィルタ..."
-                                         Text="{Binding FilterText}"
-                                         MinWidth="180"
-                                         Background="White" />
                             </StackPanel>
                         </Border>
 
@@ -160,7 +186,8 @@
                                   Background="White"
                                   RowBackground="White"
                                   HorizontalScrollBarVisibility="Auto"
-                                  VerticalScrollBarVisibility="Auto" />
+                                  VerticalScrollBarVisibility="Auto"
+                                  CellPointerPressed="OnMatrixCellPointerPressed" />
                     </Grid>
                 </Border>
 
@@ -179,6 +206,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <!-- パネルヘッダ -->
@@ -207,6 +235,24 @@
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
+
+                        <!-- アクションボタン -->
+                        <Border Grid.Row="2"
+                                Background="{StaticResource AppHeaderBrush}"
+                                BorderBrush="{StaticResource AppBorderBrush}"
+                                BorderThickness="0,1,0,0"
+                                Padding="6,4">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Button Content="📝 エディタ"
+                                        Command="{Binding OpenEditorCommand}"
+                                        Padding="6,3" FontSize="11"
+                                        ToolTip.Tip="選択行をテキストエディタで開く" />
+                                <Button Content="🔍 クエリ解析"
+                                        Command="{Binding AnalyzeQueryForSelectedCommand}"
+                                        Padding="6,3" FontSize="11"
+                                        ToolTip.Tip="選択行のクエリを解析する" />
+                            </StackPanel>
+                        </Border>
                     </Grid>
                 </Border>
             </Grid>
