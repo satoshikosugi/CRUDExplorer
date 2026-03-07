@@ -397,14 +397,24 @@ public class E2EAnalysisPipelineTests : IDisposable
 
         _output.WriteLine($"MatrixRows 件数: {mainVm.MatrixRows.Count}");
         _output.WriteLine($"MatrixHeaders 件数: {mainVm.MatrixHeaders.Length}");
-        _output.WriteLine($"CrudListData 件数: {mainVm.CrudListData.Count}");
+        _output.WriteLine($"CrudListData 件数（初期状態=未選択）: {mainVm.CrudListData.Count}");
         foreach (var row in mainVm.MatrixRows)
             _output.WriteLine($"  [{row.TableName}] 合計={row.Total} Values={row.Values.Count}");
 
         // Assert
         Assert.True(mainVm.MatrixRows.Count > 0, "MatrixRows が空です");
         Assert.True(mainVm.MatrixHeaders.Length > 0, "MatrixHeaders が空です");
-        Assert.True(mainVm.CrudListData.Count > 0, "CrudListData が空です");
+
+        // CrudListData は初期状態（セル未選択）では空。セル選択でフィルタされる仕様。
+        // テーブル名で絞り込んで全件取得できることを検証
+        mainVm.FilterCrudListBySelection("ORDERS", null);
+        _output.WriteLine($"CrudListData 件数（ORDERS選択後）: {mainVm.CrudListData.Count}");
+        Assert.True(mainVm.CrudListData.Count > 0, "FilterCrudListBySelection(ORDERS, null) で CrudListData が空です");
+
+        // テーブル＋プログラムで絞り込み
+        mainVm.FilterCrudListBySelection("ORDERS", "SP_ORDER.sql");
+        _output.WriteLine($"CrudListData 件数（ORDERS+SP_ORDER.sql選択後）: {mainVm.CrudListData.Count}");
+        Assert.True(mainVm.CrudListData.Count > 0, "FilterCrudListBySelection(ORDERS, SP_ORDER.sql) で CrudListData が空です");
 
         // 期待テーブルが全行に含まれる
         var rowTableNames = mainVm.MatrixRows.Select(r => r.TableName.ToUpperInvariant()).ToList();

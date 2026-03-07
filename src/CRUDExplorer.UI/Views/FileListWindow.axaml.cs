@@ -8,6 +8,6 @@ public partial class FileListWindow : Window
     public FileListWindow()
     {
         InitializeComponent();
-        DataContext = new FileListViewModel();
+        DataContext = new FileListViewModel(closeWindow: () => Close());
     }
 }

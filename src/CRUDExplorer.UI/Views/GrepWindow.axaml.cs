@@ -9,7 +9,7 @@ public partial class GrepWindow : Window
     public GrepWindow()
     {
         InitializeComponent();
-        DataContext = new GrepViewModel();
+        DataContext = new GrepViewModel(closeWindow: () => Close());
     }
 
     private void OnResultDoubleClicked(object? sender, TappedEventArgs e)

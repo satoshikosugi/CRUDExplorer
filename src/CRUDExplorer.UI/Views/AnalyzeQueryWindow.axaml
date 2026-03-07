@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:CRUDExplorer.UI.ViewModels"
+        xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
@@ -57,7 +58,12 @@
       <Border Grid.Column="0" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" Padding="5">
         <DockPanel>
           <TextBlock DockPanel.Dock="Top" Text="クエリ構造" FontWeight="Bold" Margin="0,0,0,5" />
-          <TreeView ItemsSource="{Binding QueryTreeData}">
+          <TreeView x:Name="QueryTreeView" ItemsSource="{Binding QueryTreeData}" SelectionChanged="OnTreeViewSelectionChanged">
+            <TreeView.Styles>
+              <Style Selector="TreeViewItem">
+                <Setter Property="IsExpanded" Value="True" />
+              </Style>
+            </TreeView.Styles>
             <TreeView.ItemTemplate>
               <TreeDataTemplate ItemsSource="{Binding Children}">
                 <TextBlock Text="{Binding DisplayText}" />
@@ -81,15 +87,14 @@
       <Border Grid.Column="2" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" Padding="5">
         <DockPanel>
           <TextBlock DockPanel.Dock="Top" Text="SQL" FontWeight="Bold" Margin="0,0,0,5" />
-          <!-- TextBox with monospace font as placeholder for AvaloniaEdit -->
-          <TextBox Text="{Binding SqlText}"
-                   AcceptsReturn="True"
-                   TextWrapping="NoWrap"
-                   FontFamily="Consolas,Courier New,monospace"
-                   IsReadOnly="True"
-                   ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                   ScrollViewer.VerticalScrollBarVisibility="Auto">
-            <TextBox.ContextMenu>
+          <ae:TextEditor x:Name="SqlEditor"
+                         IsReadOnly="True"
+                         WordWrap="True"
+                         FontFamily="Consolas,Courier New,monospace"
+                         ShowLineNumbers="False"
+                         HorizontalScrollBarVisibility="Auto"
+                         VerticalScrollBarVisibility="Auto">
+            <ae:TextEditor.ContextMenu>
               <ContextMenu>
                 <MenuItem Header="CRUD一覧表示" Command="{Binding ShowCrudListCommand}" />
                 <Separator />
@@ -108,8 +113,8 @@
                 <Separator />
                 <MenuItem Header="テーブル定義表示" Command="{Binding ShowTableDefinitionCommand}" />
               </ContextMenu>
-            </TextBox.ContextMenu>
-          </TextBox>
+            </ae:TextEditor.ContextMenu>
+          </ae:TextEditor>
         </DockPanel>
       </Border>
 

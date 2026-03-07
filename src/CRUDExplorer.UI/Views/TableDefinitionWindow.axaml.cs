@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using CRUDExplorer.UI.ViewModels;
 
@@ -8,6 +9,13 @@ public partial class TableDefinitionWindow : Window
     public TableDefinitionWindow()
     {
         InitializeComponent();
-        DataContext = new TableDefinitionViewModel();
+        DataContext = new TableDefinitionViewModel(
+            closeWindow: () => Close(),
+            setClipboard: async (text) =>
+            {
+                var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                if (clipboard != null)
+                    await clipboard.SetTextAsync(text);
+            });
     }
 }

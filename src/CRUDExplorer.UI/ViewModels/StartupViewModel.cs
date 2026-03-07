@@ -7,14 +7,18 @@ namespace CRUDExplorer.UI.ViewModels;
 
 public partial class StartupViewModel : ViewModelBase
 {
+    private readonly Action _closeWindow;
+
     [ObservableProperty]
     private string _versionText = string.Empty;
 
     [ObservableProperty]
     private string _loadingMessage = "初期化中...";
 
-    public StartupViewModel()
+    public StartupViewModel(Action? closeWindow = null)
     {
+        _closeWindow = closeWindow ?? (() => { });
+
         // Get version from assembly
         var assembly = Assembly.GetExecutingAssembly();
         var version = assembly.GetName().Version;
@@ -40,7 +44,8 @@ public partial class StartupViewModel : ViewModelBase
             LoadingMessage = "準備完了";
             await Task.Delay(300);
 
-            // TODO: Close splash screen and show main window
+            // スプラッシュ画面を閉じてメインウィンドウへ
+            _closeWindow();
         }
         catch (Exception ex)
         {

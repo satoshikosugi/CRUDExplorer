@@ -1,13 +1,17 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CRUDExplorer.Core.Models;
+using CRUDExplorer.Core.Utilities;
 
 namespace CRUDExplorer.UI.ViewModels;
 
 public partial class TableDefinitionViewModel : ViewModelBase
 {
+    private readonly Action _closeWindow;
+    private readonly Func<string, System.Threading.Tasks.Task>? _setClipboard;
+
     [ObservableProperty]
     private ObservableCollection<string> _tables = new();
 
@@ -26,9 +30,13 @@ public partial class TableDefinitionViewModel : ViewModelBase
     [ObservableProperty]
     private string _ddlScript = string.Empty;
 
-    public TableDefinitionViewModel()
+    public TableDefinitionViewModel(
+        Action? closeWindow = null,
+        Func<string, System.Threading.Tasks.Task>? setClipboard = null)
     {
-        // TODO: Load tables from GlobalState or database
+        _closeWindow = closeWindow ?? (() => { });
+        _setClipboard = setClipboard;
+        LoadTables();
     }
 
     partial void OnSelectedTableChanged(string? value)
@@ -42,7 +50,7 @@ public partial class TableDefinitionViewModel : ViewModelBase
     [RelayCommand]
     private void Refresh()
     {
-        // TODO: Refresh table list and reload current table
+        LoadTables();
         if (SelectedTable != null)
         {
             LoadTableDefinition(SelectedTable);
@@ -50,15 +58,26 @@ public partial class TableDefinitionViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void CopyToClipboard()
+    private async System.Threading.Tasks.Task CopyToClipboard()
     {
-        // TODO: Copy DDL script to clipboard
+        if (_setClipboard != null)
+            await _setClipboard(DdlScript);
     }
 
     [RelayCommand]
     private void Close()
     {
-        // TODO: Close window
+        _closeWindow();
+    }
+
+    private void LoadTables()
+    {
+        Tables.Clear();
+        var tableDefinitions = GlobalState.Instance.TableDefinitions;
+        foreach (var tableName in tableDefinitions.Keys)
+        {
+            Tables.Add(tableName);
+        }
     }
 
     private void LoadTableDefinition(string tableName)
@@ -68,11 +87,68 @@ public partial class TableDefinitionViewModel : ViewModelBase
         ForeignKeys.Clear();
         DdlScript = string.Empty;
 
-        // TODO: Load table definition from database or GlobalState
-        // - Populate Columns from TableDefinition
-        // - Populate Indexes
-        // - Populate ForeignKeys
-        // - Generate DDL script
+        var tableDefinitions = GlobalState.Instance.TableDefinitions;
+        var tableNames = GlobalState.Instance.TableNames;
+
+        if (!tableDefinitions.TryGetValue(tableName, out var tableDef))
+            return;
+
+        // カラム情報を設定
+        foreach (var col in tableDef.Columns.Values)
+        {
+            Columns.Add(new ColumnDefinition
+            {
+                ColumnName = col.AttributeName,
+                PhysicalName = col.ColumnName,
+                DataType = col.DataType,
+                Size = string.IsNullOrEmpty(col.Accuracy)
+                    ? col.Digits
+                    : $"{col.Digits},{col.Accuracy}",
+                IsNullable = col.Required != "Yes",
+                IsPrimaryKey = col.PrimaryKey == "Yes",
+                DefaultValue = string.Empty,
+                Description = col.AttributeName
+            });
+        }
+
+        // DDLスクリプトを生成
+        var logicalName = tableNames.TryGetValue(tableName, out var ln) ? ln : tableName;
+        DdlScript = GenerateDdlScript(tableName, logicalName, tableDef);
+    }
+
+    private static string GenerateDdlScript(string tableName, string logicalName, CRUDExplorer.Core.Models.TableDefinition tableDef)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"-- {logicalName} ({tableName})");
+        sb.AppendLine($"CREATE TABLE {tableName} (");
+
+        var cols = new System.Collections.Generic.List<string>();
+        var pkCols = new System.Collections.Generic.List<string>();
+
+        foreach (var col in tableDef.Columns.Values)
+        {
+            var notNull = col.Required == "Yes" ? " NOT NULL" : string.Empty;
+            string sizeStr;
+            if (string.IsNullOrEmpty(col.Digits))
+                sizeStr = string.Empty;
+            else if (string.IsNullOrEmpty(col.Accuracy))
+                sizeStr = $"({col.Digits})";
+            else
+                sizeStr = $"({col.Digits},{col.Accuracy})";
+            cols.Add($"    {col.ColumnName} {col.DataType}{sizeStr}{notNull}");
+            if (col.PrimaryKey == "Yes")
+                pkCols.Add(col.ColumnName);
+        }
+
+        sb.AppendLine(string.Join(",\n", cols));
+
+        if (pkCols.Count > 0)
+        {
+            sb.AppendLine($"    , PRIMARY KEY ({string.Join(", ", pkCols)})");
+        }
+
+        sb.AppendLine(");");
+        return sb.ToString();
     }
 }
 

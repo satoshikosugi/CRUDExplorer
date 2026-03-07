@@ -17,4 +17,5 @@ public class NullWindowService : IWindowService
     public Task ShowDialog<T>(object dataContext) where T : Window, new() => Task.CompletedTask;
     public Task<string?> ShowFolderPickerAsync(string title = "フォルダを選択") => Task.FromResult<string?>(null);
     public Task<string?> ShowFilePickerAsync(string title = "ファイルを選択", string[]? extensions = null) => Task.FromResult<string?>(null);
+    public Task SetClipboardTextAsync(string text) => Task.CompletedTask;
 }
