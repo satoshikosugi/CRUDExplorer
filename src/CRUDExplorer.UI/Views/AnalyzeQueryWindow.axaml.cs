@@ -21,6 +21,17 @@ public partial class AnalyzeQueryWindow : Window
         InitializeComponent();
         // DataContextはWindowService経由で設定される
         DataContextChanged += OnDataContextChanged;
+        Loaded += OnWindowLoaded;
+    }
+
+    private void OnWindowLoaded(object? sender, RoutedEventArgs e)
+    {
+        Loaded -= OnWindowLoaded;
+        // ウィンドウがロードされた後、エディタとViewModelのテキストを同期する
+        if (_sqlEditor != null && DataContext is AnalyzeQueryViewModel vm)
+        {
+            _sqlEditor.Text = vm.SqlText;
+        }
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e)
