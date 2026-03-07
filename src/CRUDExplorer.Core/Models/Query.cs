@@ -336,6 +336,11 @@ public class Query
     }
 
     /// <summary>
+    /// ドロップダウン表示用（ファイル名:行番号）
+    /// </summary>
+    public override string ToString() => $"{System.IO.Path.GetFileName(FileName)}:{LineNo}";
+
+    /// <summary>
     /// クエリを整形して返す
     /// </summary>
     public string Arrange(bool expand = false)

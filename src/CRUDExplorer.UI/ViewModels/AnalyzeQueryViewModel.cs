@@ -13,10 +13,10 @@ namespace CRUDExplorer.UI.ViewModels;
 
 public partial class AnalyzeQueryViewModel : ViewModelBase
 {
-    private readonly Action<string>? _showGrepWindow;
-    private readonly Action<string>? _showTableDefinitionWindow;
-    private readonly Action<IEnumerable<CrudDisplayItem>, string>? _showCrudListWindow;
-    private readonly Func<string, string?>? _getSelectedText;
+    private Action<string>? _showGrepWindow;
+    private Action<string>? _showTableDefinitionWindow;
+    private Action<IEnumerable<CrudDisplayItem>, string>? _showCrudListWindow;
+    private Func<string, string?>? _getSelectedText;
 
     // テキスト検索状態
     private MatchCollection? _searchMatches;
@@ -74,6 +74,21 @@ public partial class AnalyzeQueryViewModel : ViewModelBase
         _getSelectedText = getSelectedText;
     }
 
+    /// <summary>
+    /// コールバックを後から設定する（WindowService経由でDataContextが設定された後に呼び出す）
+    /// </summary>
+    public void SetCallbacks(
+        Action<string>? showGrepWindow = null,
+        Action<string>? showTableDefinitionWindow = null,
+        Action<IEnumerable<CrudDisplayItem>, string>? showCrudListWindow = null,
+        Func<string, string?>? getSelectedText = null)
+    {
+        _showGrepWindow = showGrepWindow;
+        _showTableDefinitionWindow = showTableDefinitionWindow;
+        _showCrudListWindow = showCrudListWindow;
+        _getSelectedText = getSelectedText;
+    }
+
     partial void OnSelectedQueryChanged(Query? value)
     {
         if (value != null)
@@ -82,6 +97,14 @@ public partial class AnalyzeQueryViewModel : ViewModelBase
             LineNumber = value.LineNo.ToString();
             SqlText = value.Arrange();
             LoadQueryAnalysis(value);
+        }
+    }
+
+    partial void OnSelectedTreeNodeChanged(QueryTreeNode? value)
+    {
+        if (value?.Tag is Query query)
+        {
+            SqlText = query.Arrange();
         }
     }
 

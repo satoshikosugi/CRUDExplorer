@@ -7,7 +7,7 @@
         x:Class="CRUDExplorer.UI.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="CRUDExplorer - SQL CRUD Analysis Tool"
+        Title="{Binding Title}"
         Width="1200" Height="800">
 
     <Design.DataContext>
@@ -33,17 +33,23 @@
                     </Style>
                 </Menu.Styles>
                 <MenuItem Header="ファイル(_F)">
-                    <MenuItem Header="フォルダを開く(_O)" Command="{Binding OpenFolderCommand}" />
+                    <MenuItem Header="フォルダを開く(_O)">
+                        <MenuItem Header="テーブルCRUD" Command="{Binding OpenFolderCommand}" />
+                        <MenuItem Header="カラムCRUD" Command="{Binding OpenFolderCommand}" />
+                        <MenuItem Header="CRUDは開かない" Command="{Binding OpenFolderWithoutCrudCommand}" />
+                    </MenuItem>
+                    <MenuItem Header="CRUD解析(_A)" Command="{Binding AnalyzeCrudCommand}" />
+                    <MenuItem Header="ソースファイル一覧(_L)" Command="{Binding ShowFileListCommand}" />
+                    <MenuItem Header="マトリクスをクリップボードに(_C)" Command="{Binding CopyMatrixToClipboardCommand}" />
                     <Separator />
                     <MenuItem Header="終了(_X)" Command="{Binding ExitCommand}" />
-                </MenuItem>
-                <MenuItem Header="解析(_A)">
-                    <MenuItem Header="CRUD解析実行(_C)" Command="{Binding AnalyzeCrudCommand}" />
-                    <MenuItem Header="テーブル定義読み込み(_T)" Command="{Binding LoadTableDefCommand}" />
                 </MenuItem>
                 <MenuItem Header="表示(_V)">
                     <MenuItem Header="テーブルCRUD(_T)" Command="{Binding ShowTableCrudCommand}" />
                     <MenuItem Header="カラムCRUD(_C)" Command="{Binding ShowColumnCrudCommand}" />
+                    <Separator />
+                    <MenuItem Header="テーブル定義参照(_T)" Command="{Binding LoadTableDefCommand}" />
+                    <MenuItem Header="クエリ解析ウィンドウ(_Q)" Command="{Binding ShowQueryAnalyzerCommand}" />
                     <Separator />
                     <MenuItem Header="フィルタ(_F)" Command="{Binding ShowFilterCommand}" />
                 </MenuItem>
@@ -51,6 +57,7 @@
                     <MenuItem Header="設定(_S)" Command="{Binding OpenSettingsCommand}" />
                 </MenuItem>
                 <MenuItem Header="ヘルプ(_H)">
+                    <MenuItem Header="サポートサイト" Command="{Binding OpenSupportSiteCommand}" />
                     <MenuItem Header="バージョン情報(_A)" Command="{Binding ShowVersionCommand}" />
                 </MenuItem>
             </Menu>
@@ -160,7 +167,15 @@
                                   Background="White"
                                   RowBackground="White"
                                   HorizontalScrollBarVisibility="Auto"
-                                  VerticalScrollBarVisibility="Auto" />
+                                  VerticalScrollBarVisibility="Auto"
+                                  KeyDown="OnMatrixKeyDown">
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="マトリクスをクリップボードにコピー" Command="{Binding CopyMatrixToClipboardCommand}" />
+                                    <MenuItem Header="テーブル定義" Click="OnContextMenuTableDef" />
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
+                        </DataGrid>
                     </Grid>
                 </Border>
 
@@ -179,6 +194,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <!-- パネルヘッダ -->
@@ -195,9 +211,11 @@
 
                         <!-- ListBox -->
                         <ListBox Grid.Row="1"
+                                 x:Name="CrudListBox"
                                  ItemsSource="{Binding CrudListData}"
                                  SelectedItem="{Binding SelectedCrudItem}"
                                  DoubleTapped="OnListBoxDoubleTapped"
+                                 KeyDown="OnListBoxKeyDown"
                                  Background="White">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
@@ -207,6 +225,29 @@
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
+
+                        <!-- 下部アクションボタン -->
+                        <Border Grid.Row="2"
+                                Background="{StaticResource AppSurfaceBrush}"
+                                BorderBrush="{StaticResource AppBorderBrush}"
+                                BorderThickness="0,1,0,0"
+                                Padding="4,4"
+                                CornerRadius="0,0,4,4">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <Button Content="エディタ起動(_E)"
+                                        Command="{Binding RunTextEditorCommand}"
+                                        Padding="8,3"
+                                        FontSize="11" />
+                                <Button Content="クエリ分析(_A)"
+                                        Command="{Binding AnalyzeSelectedQueryCommand}"
+                                        Padding="8,3"
+                                        FontSize="11" />
+                                <Button Content="テーブル定義"
+                                        Command="{Binding ShowSelectedTableDefCommand}"
+                                        Padding="8,3"
+                                        FontSize="11" />
+                            </StackPanel>
+                        </Border>
                     </Grid>
                 </Border>
             </Grid>

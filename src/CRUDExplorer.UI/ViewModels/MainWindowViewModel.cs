@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -19,6 +20,9 @@ public partial class MainWindowViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _sourcePath = string.Empty;
+
+    [ObservableProperty]
+    private string _title = "CRUD Explorer";
 
     [ObservableProperty]
     private string _statusMessage = "フォルダを選択してCRUDマトリクスを表示するか、「CRUD解析を実行」で解析を行ってください";
@@ -41,6 +45,9 @@ public partial class MainWindowViewModel : ViewModelBase
 
     [ObservableProperty]
     private object? _selectedCrudItem;
+
+    /// <summary>CRUD.tsv から読み込んだ全アイテム（フィルタ前）</summary>
+    private List<CrudListItem> _allCrudListItems = new();
 
     /// <summary>DataGridのヘッダ列（プログラムID一覧）</summary>
     public string[] MatrixHeaders { get; private set; } = Array.Empty<string>();
@@ -65,6 +72,7 @@ public partial class MainWindowViewModel : ViewModelBase
         if (path == null) return;
 
         SourcePath = path;
+        Title = $"{Path.GetFileName(path)} - CRUD Explorer";
         await LoadCrudDataAsync();
     }
 
@@ -84,6 +92,7 @@ public partial class MainWindowViewModel : ViewModelBase
         if (!string.IsNullOrEmpty(destPath) && Directory.Exists(destPath))
         {
             SourcePath = destPath;
+            Title = $"{Path.GetFileName(destPath)} - CRUD Explorer";
             await LoadCrudDataAsync();
         }
     }
@@ -172,6 +181,220 @@ public partial class MainWindowViewModel : ViewModelBase
     private async Task ShowVersion()
     {
         await _windowService.ShowDialog<VersionWindow>();
+    }
+
+    // ─── 追加メニューコマンド ─────────────────────────────────────────
+
+    [RelayCommand]
+    private void ShowFileList()
+    {
+        if (string.IsNullOrEmpty(SourcePath))
+        {
+            StatusMessage = "先にフォルダを選択してください";
+            return;
+        }
+        _windowService.ShowWindow<FileListWindow>();
+    }
+
+    [RelayCommand]
+    private void ShowQueryAnalyzer()
+    {
+        _windowService.ShowWindow<AnalyzeQueryWindow>();
+    }
+
+    [RelayCommand]
+    private void CopyMatrixToClipboard()
+    {
+        if (MatrixRows.Count == 0)
+        {
+            StatusMessage = "コピーするデータがありません";
+            return;
+        }
+
+        var sb = new StringBuilder();
+
+        // ヘッダ行1: プログラムID
+        sb.Append('\t');
+        foreach (var h in MatrixHeaders)
+            sb.Append('\t').Append(h);
+        sb.AppendLine();
+
+        // ヘッダ行2: テーブル名, 論理名, プログラム名
+        sb.Append("テーブル名\tエンティティ名");
+        foreach (var h in MatrixHeaders)
+        {
+            GlobalState.Instance.ProgramNames.TryGetValue(h, out var pname);
+            sb.Append('\t').Append(pname ?? h);
+        }
+        sb.AppendLine();
+
+        // データ行
+        foreach (var row in MatrixRows)
+        {
+            sb.Append(row.TableName).Append('\t').Append(row.LogicalName);
+            foreach (var h in MatrixHeaders)
+                sb.Append('\t').Append(row[h]);
+            sb.AppendLine();
+        }
+
+        ClipboardText = sb.ToString();
+        MatrixClipboardReady?.Invoke(this, EventArgs.Empty);
+        StatusMessage = "マトリクスをクリップボードにコピーしました";
+    }
+
+    /// <summary>クリップボードにセットすべきテキスト（コードビハインドが実際にセット）</summary>
+    public string ClipboardText { get; private set; } = string.Empty;
+
+    /// <summary>クリップボードへのコピー準備完了イベント</summary>
+    public event EventHandler? MatrixClipboardReady;
+
+    [RelayCommand]
+    private void OpenFolderWithoutCrud()
+    {
+        // CRUDは開かない: フォルダ選択のみでマトリクスはクリアする
+        _ = OpenFolderWithoutCrudAsync();
+    }
+
+    private async Task OpenFolderWithoutCrudAsync()
+    {
+        var path = await _windowService.ShowFolderPickerAsync("ソースフォルダを選択");
+        if (path == null) return;
+
+        SourcePath = path;
+        Title = $"{Path.GetFileName(path)} - CRUD Explorer";
+        MatrixHeaders = Array.Empty<string>();
+        MatrixRows.Clear();
+        MatrixColumnsChanged?.Invoke(this, EventArgs.Empty);
+        CrudListData.Clear();
+        _allCrudListItems.Clear();
+        StatusMessage = $"フォルダを選択しました: {path}（CRUD未読込）";
+    }
+
+    [RelayCommand]
+    private void OpenSupportSite()
+    {
+        try
+        {
+            var psi = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "https://github.com/your-repo/CRUDExplorer",
+                UseShellExecute = true,
+            };
+            System.Diagnostics.Process.Start(psi);
+        }
+        catch
+        {
+            StatusMessage = "サポートサイトを開けませんでした";
+        }
+    }
+
+    // ─── CRUD一覧アクションコマンド（下部ボタン用） ─────────────────
+
+    [RelayCommand]
+    private void RunTextEditor()
+    {
+        if (SelectedCrudItem is not CrudListItem item) return;
+
+        var settings = Settings.Load();
+        var launcher = new ExternalEditorLauncher(settings);
+        var filePath = Path.Combine(SourcePath, item.FileName);
+        launcher.RunTextEditor(filePath, item.LineNo, item.TableName);
+    }
+
+    [RelayCommand]
+    private void AnalyzeSelectedQuery()
+    {
+        if (SelectedCrudItem is not CrudListItem item) return;
+        OpenAnalyzeQueryWindow(item);
+    }
+
+    [RelayCommand]
+    private void ShowSelectedTableDef()
+    {
+        if (SelectedCrudItem is not CrudListItem item) return;
+        if (string.IsNullOrEmpty(item.TableName)) return;
+
+        var win = new TableDefinitionWindow();
+        if (win.DataContext is TableDefinitionViewModel vm)
+            vm.SelectedTable = item.TableName;
+        // NOTE: MainWindow参照はWindowServiceが持つ
+        _windowService.ShowWindow<TableDefinitionWindow>();
+    }
+
+    /// <summary>
+    /// CRUD一覧のダブルクリック処理（設定に応じてエディタ起動/クエリ解析を切り替え）
+    /// </summary>
+    public void HandleCrudListDoubleClick()
+    {
+        if (SelectedCrudItem is not CrudListItem item) return;
+
+        var settings = Settings.Load();
+        switch (settings.DoubleClickMode)
+        {
+            case Settings.ListDoubleClickMode.ExecTextEditor:
+                var launcher = new ExternalEditorLauncher(settings);
+                var filePath = Path.Combine(SourcePath, item.FileName);
+                launcher.RunTextEditor(filePath, item.LineNo, item.TableName);
+                StatusMessage = $"エディタ起動: {item.FileName}:{item.LineNo}";
+                break;
+            case Settings.ListDoubleClickMode.AnalyzeQuery:
+                OpenAnalyzeQueryWindow(item);
+                break;
+            case Settings.ListDoubleClickMode.NoAction:
+                break;
+        }
+    }
+
+    private void OpenAnalyzeQueryWindow(CrudListItem item)
+    {
+        var vm = new AnalyzeQueryViewModel();
+        // クエリファイルを読み込んで全クエリをドロップダウンに表示
+        var queryFile = Path.Combine(SourcePath, "querys", item.FileName + ".query");
+        if (File.Exists(queryFile))
+        {
+            try
+            {
+                var lines = File.ReadAllLines(queryFile);
+                Query? targetQuery = null;
+                var sqlAnalyzer = new SqlParser.Analyzers.SqlAnalyzer();
+                foreach (var line in lines)
+                {
+                    if (string.IsNullOrEmpty(line)) continue;
+                    var cols = line.Split('\t');
+                    if (cols.Length > 1 && int.TryParse(cols[0], out var lineNo))
+                    {
+                        var query = sqlAnalyzer.AnalyzeSql(cols[1], item.FileName, lineNo);
+                        vm.Queries.Add(query);
+                        if (lineNo == item.LineNo)
+                            targetQuery = query;
+                    }
+                }
+                if (targetQuery != null)
+                    vm.SelectedQuery = targetQuery;
+                else if (vm.Queries.Count > 0)
+                    vm.SelectedQuery = vm.Queries[0];
+            }
+            catch { /* クエリファイル読み込み失敗 */ }
+        }
+
+        vm.FileName = item.FileName;
+        vm.LineNumber = item.LineNo.ToString();
+        vm.HighlightText1 = item.TableName;
+        _windowService.ShowWindow<AnalyzeQueryWindow>(vm);
+        StatusMessage = $"クエリ解析: {item.FileName}:{item.LineNo} {item.TableName}";
+    }
+
+    /// <summary>
+    /// マトリクス上で選択されたテーブルのテーブル定義を表示
+    /// </summary>
+    public void ShowTableDefForSelectedRow(string? tableName)
+    {
+        if (string.IsNullOrEmpty(tableName)) return;
+
+        var win = new TableDefinitionWindow();
+        if (win.DataContext is TableDefinitionViewModel vm)
+            vm.SelectedTable = tableName;
+        _windowService.ShowWindow<TableDefinitionWindow>();
     }
 
     // ─── CRUD データ読み込み ─────────────────────────────────────────
@@ -289,6 +512,7 @@ public partial class MainWindowViewModel : ViewModelBase
     /// </summary>
     private void LoadCrudList(string filePath)
     {
+        _allCrudListItems.Clear();
         CrudListData.Clear();
         foreach (var line in File.ReadAllLines(filePath))
         {
@@ -307,8 +531,44 @@ public partial class MainWindowViewModel : ViewModelBase
                 LogicalName = cols.Length > 6 ? cols[6] : string.Empty,
             };
             item.DisplayText = $"{item.TableName}\t{item.Crud}\t{item.ProgramId}  ({item.FileName}:{item.LineNo})";
-            CrudListData.Add(item);
+            _allCrudListItems.Add(item);
         }
+        // 初期状態: 全件表示（セル選択でフィルタされる）
+    }
+
+    // ─── マトリクスセル選択による CRUD 一覧フィルタ ───────────────────
+
+    /// <summary>
+    /// マトリクスのセル選択に応じて CRUD 一覧をフィルタする。
+    /// originalの仕様:
+    ///   - セルクリック: テーブル名＋プログラムIDの両方で絞り込み
+    ///   - 行ヘッダクリック（programId=null）: テーブル名のみで絞り込み
+    ///   - 列ヘッダクリック（tableName=null）: プログラムIDのみで絞り込み
+    ///   - 両方null: 一覧クリア
+    /// </summary>
+    public void FilterCrudListBySelection(string? tableName, string? programId)
+    {
+        CrudListData.Clear();
+
+        if (tableName == null && programId == null)
+        {
+            StatusMessage = $"選択: なし";
+            return;
+        }
+
+        var filtered = _allCrudListItems.Where(item =>
+        {
+            if (tableName != null && !item.TableName.Equals(tableName, StringComparison.OrdinalIgnoreCase))
+                return false;
+            if (programId != null && !item.FileName.Equals(programId, StringComparison.OrdinalIgnoreCase))
+                return false;
+            return true;
+        });
+
+        foreach (var item in filtered)
+            CrudListData.Add(item);
+
+        StatusMessage = $"選択: {tableName ?? "(全テーブル)"} [{programId ?? "(全プログラム)"}] {CrudListData.Count} 件";
     }
 }
 
