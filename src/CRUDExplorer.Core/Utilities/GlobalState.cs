@@ -85,6 +85,76 @@ public class GlobalState
     public string LastAnalysisDestPath { get; set; } = string.Empty;
 
     /// <summary>
+    /// クエリ解析ウィンドウへのリクエスト（MainWindow → AnalyzeQueryWindow）
+    /// </summary>
+    public object? AnalyzeQueryRequest { get; set; }
+
+    /// <summary>
+    /// フィルタウィンドウが適用したフィルタ状態（MainWindowViewModel が参照する）
+    /// </summary>
+    public AppFilterState FilterState { get; set; } = new();
+
+    /// <summary>
+    /// ソースフォルダを開いたときに querys/*.query や views.txt などを読み込む
+    /// </summary>
+    public void LoadFromFolder(string sourcePath)
+    {
+        Files.Clear();
+        QueryList.Clear();
+        Views = new ViewCollection();
+
+        var querysDir = System.IO.Path.Combine(sourcePath, "querys");
+        if (System.IO.Directory.Exists(querysDir))
+        {
+            foreach (var file in System.IO.Directory.GetFiles(querysDir, "*.query"))
+            {
+                if (new System.IO.FileInfo(file).Length == 0) continue;
+                var name = System.IO.Path.GetFileNameWithoutExtension(file);
+                // "K{n}" キーは VB.NET オリジナルの dctFiles の Key 命名規則（K1, K2,...）に準拠
+                Files[$"K{Files.Count + 1}"] = name;
+
+                var lines = System.IO.File.ReadAllLines(file);
+                foreach (var line in lines)
+                {
+                    if (string.IsNullOrEmpty(line)) continue;
+                    var cols = line.Split('\t');
+                    if (cols.Length >= 3)
+                    {
+                        var key = $"{name}\t{cols[0]}";
+                        if (!QueryList.ContainsKey(key))
+                            QueryList[key] = new Query { QueryText = cols[1] };
+                    }
+                }
+            }
+
+            var viewsFile = System.IO.Path.Combine(querysDir, "views.txt");
+            if (System.IO.File.Exists(viewsFile))
+            {
+                foreach (var line in System.IO.File.ReadAllLines(viewsFile))
+                {
+                    if (string.IsNullOrEmpty(line)) continue;
+                    var cols = line.Split('\t');
+                    if (cols.Length >= 4)
+                        Views.Add(new View(cols[0], cols[1], cols[2], cols[3]));
+                }
+            }
+
+            // テーブル名辞書
+            var tableNameFile = System.IO.Path.Combine(querysDir, "tablename.tsv");
+            if (System.IO.File.Exists(tableNameFile))
+                TableNames = FileSystemHelper.ReadDictionary(tableNameFile);
+
+            // テーブル定義
+            var tableDefFile = System.IO.Path.Combine(querysDir, "tabledef.tsv");
+            if (System.IO.File.Exists(tableDefFile))
+            {
+                TableDefinitions.Clear();
+                FileSystemHelper.ReadTableDef(tableDefFile, TableDefinitions);
+            }
+        }
+    }
+
+    /// <summary>
     /// グローバル状態をリセット
     /// </summary>
     public void Reset()
@@ -102,5 +172,27 @@ public class GlobalState
         IsDemoMode = true;
         ShowStartup = true;
         LastAnalysisDestPath = string.Empty;
+        FilterState = new();
     }
+}
+
+/// <summary>
+/// フィルタウィンドウの適用結果を MainWindowViewModel に伝達する共有状態。
+/// </summary>
+public class AppFilterState
+{
+    /// <summary>プログラムIDフィルタ（正規表現）。空なら全プログラム表示。</summary>
+    public string ProgramFilter { get; set; } = string.Empty;
+    /// <summary>テーブル名フィルタ（正規表現）。空なら全テーブル表示。</summary>
+    public string TableFilter { get; set; } = string.Empty;
+    /// <summary>Create を表示するか</summary>
+    public bool ShowC { get; set; } = true;
+    /// <summary>Read を表示するか</summary>
+    public bool ShowR { get; set; } = true;
+    /// <summary>Update を表示するか</summary>
+    public bool ShowU { get; set; } = true;
+    /// <summary>Delete を表示するか</summary>
+    public bool ShowD { get; set; } = true;
+    /// <summary>Apply が押されたか（キャンセルとの区別）</summary>
+    public bool WasApplied { get; set; } = false;
 }

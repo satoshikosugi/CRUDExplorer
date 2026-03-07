@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,6 +19,13 @@ public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly IWindowService _windowService;
 
+    // すべての CRUD 一覧（フィルタ前の全件）
+    private readonly List<CrudListItem> _allCrudItems = new();
+
+    // CRUD辞書: "PROGRAMID:TABLE" → CrudListItem のリスト（セル選択時の高速絞り込み用）
+    private readonly Dictionary<string, List<CrudListItem>> _crudDict =
+        new(StringComparer.OrdinalIgnoreCase);
+
     [ObservableProperty]
     private string _sourcePath = string.Empty;
 
@@ -31,11 +39,28 @@ public partial class MainWindowViewModel : ViewModelBase
     private string _filterText = string.Empty;
 
     [ObservableProperty]
+    private string _filterProgram = string.Empty;
+
+    [ObservableProperty]
+    private string _filterTable = string.Empty;
+
+    [ObservableProperty]
+    private bool _filterC = true;
+
+    [ObservableProperty]
+    private bool _filterR = true;
+
+    [ObservableProperty]
+    private bool _filterU = true;
+
+    [ObservableProperty]
+    private bool _filterD = true;
+
+    [ObservableProperty]
     private int _crudViewType = 0; // 0: TableCRUD, 1: ColumnCRUD
 
     partial void OnCrudViewTypeChanged(int value)
     {
-        // ComboBox でビュー種別が変更されたら自動的にデータを再読み込み
         if (!string.IsNullOrEmpty(SourcePath))
             _ = LoadCrudDataAsync();
     }
@@ -84,10 +109,8 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task AnalyzeCrud()
     {
-        // CRUD解析実行ウィンドウを開く
         await _windowService.ShowDialog<MakeCrudWindow>();
 
-        // 解析完了後、出力フォルダを自動的に読み込む
         var destPath = GlobalState.Instance.LastAnalysisDestPath;
         if (!string.IsNullOrEmpty(destPath) && Directory.Exists(destPath))
         {
@@ -106,39 +129,7 @@ public partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        // querys/tabledef.tsv を自動検索、なければファイルピッカー
-        var defaultPath = Path.Combine(SourcePath, "querys", "tabledef.tsv");
-        string? filePath;
-
-        if (File.Exists(defaultPath))
-        {
-            filePath = defaultPath;
-        }
-        else
-        {
-            filePath = await _windowService.ShowFilePickerAsync(
-                "テーブル定義TSVファイルを選択", new[] { "tsv", "txt" });
-        }
-
-        if (filePath == null) return;
-
-        StatusMessage = "テーブル定義を読み込み中...";
-        try
-        {
-            var state = GlobalState.Instance;
-            state.TableDefinitions.Clear();
-            FileSystemHelper.ReadTableDef(filePath, state.TableDefinitions);
-
-            var tableNamePath = Path.Combine(Path.GetDirectoryName(filePath)!, "tablename.tsv");
-            if (File.Exists(tableNamePath))
-                state.TableNames = FileSystemHelper.ReadDictionary(tableNamePath);
-
-            StatusMessage = $"テーブル定義読み込み完了：{state.TableDefinitions.Count} テーブル";
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"テーブル定義の読み込みに失敗しました: {ex.Message}";
-        }
+        await _windowService.ShowDialog<TableDefinitionWindow>();
     }
 
     // ─── 表示 メニュー ───────────────────────────────────────────────
@@ -149,8 +140,6 @@ public partial class MainWindowViewModel : ViewModelBase
         CrudViewType = 0;
         if (!string.IsNullOrEmpty(SourcePath))
             await LoadCrudDataAsync();
-        else
-            StatusMessage = "テーブルCRUDビューを選択しました";
     }
 
     [RelayCommand]
@@ -159,14 +148,71 @@ public partial class MainWindowViewModel : ViewModelBase
         CrudViewType = 1;
         if (!string.IsNullOrEmpty(SourcePath))
             await LoadCrudDataAsync();
-        else
-            StatusMessage = "カラムCRUDビューを選択しました";
     }
 
     [RelayCommand]
     private async Task ShowFilter()
     {
+        GlobalState.Instance.FilterState.WasApplied = false;
         await _windowService.ShowDialog<FilterWindow>();
+        // FilterViewModel.Apply() が GlobalState.FilterState を書き込む
+        var fs = GlobalState.Instance.FilterState;
+        if (fs.WasApplied)
+        {
+            FilterProgram = fs.ProgramFilter;
+            FilterTable   = fs.TableFilter;
+            FilterC = fs.ShowC;
+            FilterR = fs.ShowR;
+            FilterU = fs.ShowU;
+            FilterD = fs.ShowD;
+            if (!string.IsNullOrEmpty(SourcePath))
+                await LoadCrudDataAsync();
+        }
+    }
+
+    [RelayCommand]
+    private async Task ApplyFilter()
+    {
+        if (string.IsNullOrEmpty(SourcePath))
+        {
+            StatusMessage = "先にフォルダを選択してください";
+            return;
+        }
+        await LoadCrudDataAsync();
+    }
+
+    [RelayCommand]
+    private async Task ClearFilter()
+    {
+        FilterProgram = string.Empty;
+        FilterTable   = string.Empty;
+        FilterC = FilterR = FilterU = FilterD = true;
+        if (!string.IsNullOrEmpty(SourcePath))
+            await LoadCrudDataAsync();
+    }
+
+    [RelayCommand]
+    private async Task ShowFileList()
+    {
+        if (string.IsNullOrEmpty(SourcePath))
+        {
+            StatusMessage = "先にフォルダを選択してください";
+            return;
+        }
+        await _windowService.ShowDialog<FileListWindow>();
+    }
+
+    [RelayCommand]
+    private async Task ShowQueryAnalyze()
+    {
+        await _windowService.ShowDialog<AnalyzeQueryWindow>();
+    }
+
+    [RelayCommand]
+    private void OpenSupportSite()
+    {
+        try { Process.Start(new ProcessStartInfo("http://crudexplorer.ks-serv.com") { UseShellExecute = true }); }
+        catch (Exception ex) { StatusMessage = $"ブラウザの起動に失敗しました: {ex.Message}"; }
     }
 
     // ─── 設定・ヘルプ メニュー ───────────────────────────────────────
@@ -399,9 +445,6 @@ public partial class MainWindowViewModel : ViewModelBase
 
     // ─── CRUD データ読み込み ─────────────────────────────────────────
 
-    /// <summary>
-    /// 選択フォルダから CRUDMatrix.tsv / CRUD.tsv を読み込んでマトリクスを更新する
-    /// </summary>
     private async Task LoadCrudDataAsync()
     {
         if (string.IsNullOrEmpty(SourcePath)) return;
@@ -446,6 +489,8 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         else
         {
+            _allCrudItems.Clear();
+            _crudDict.Clear();
             CrudListData.Clear();
         }
 
@@ -454,49 +499,95 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// CRUDMatrix.tsv を解析。
+    /// CRUDMatrix.tsv を解析してマトリクスを更新する。
+    /// フィルタ（FilterProgram / FilterTable / FilterC~D）を適用する。
     /// 行0=ヘッダ(col3+=プログラムID), 行1=集計(スキップ), 行2+=データ行
     /// </summary>
     private Task LoadMatrixAsync(string filePath)
     {
         var lines = File.ReadAllLines(filePath);
         string[] programHeaders = Array.Empty<string>();
+        bool[]   colShow        = Array.Empty<bool>();
         var newRows = new List<CrudMatrixRow>();
 
-        for (int i = 0; i < lines.Length; i++)
+        // nonEmptyLineIndex は空行をスキップした後の行番号（0=ヘッダ、1=集計、2+=データ）
+        int nonEmptyLineIndex = 0;
+        foreach (var line in lines)
         {
-            if (string.IsNullOrEmpty(lines[i])) continue;
-            var cols = lines[i].Split('\t');
+            if (string.IsNullOrEmpty(line)) continue;
+            var cols = line.Split('\t');
 
-            if (i == 0)
+            if (nonEmptyLineIndex == 0)
             {
-                programHeaders = cols.Length > 3 ? cols[3..] : Array.Empty<string>();
+                // ヘッダ行: col3以降がプログラムID。FilterProgramでフィルタリング。
+                var allHeaders = cols.Length > 3 ? cols[3..] : Array.Empty<string>();
+                colShow = new bool[allHeaders.Length];
+                var filteredHeaders = new List<string>();
+                for (int j = 0; j < allHeaders.Length; j++)
+                {
+                    bool show = string.IsNullOrEmpty(FilterProgram) ||
+                                System.Text.RegularExpressions.Regex.IsMatch(
+                                    allHeaders[j], FilterProgram,
+                                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    colShow[j] = show;
+                    if (show) filteredHeaders.Add(allHeaders[j]);
+                }
+                programHeaders = filteredHeaders.ToArray();
             }
-            else if (i == 1)
+            else if (nonEmptyLineIndex == 1)
             {
                 // 集計行スキップ
             }
             else
             {
+                // データ行。FilterTableでフィルタリング。
+                var tableKey = cols.Length > 0 ? cols[0] : string.Empty;
+                if (!string.IsNullOrEmpty(FilterTable) &&
+                    !System.Text.RegularExpressions.Regex.IsMatch(
+                        tableKey, FilterTable,
+                        System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                {
+                    nonEmptyLineIndex++;
+                    continue;
+                }
+
                 var row = new CrudMatrixRow
                 {
-                    TableName   = cols.Length > 0 ? cols[0] : string.Empty,
+                    TableName   = tableKey,
                     LogicalName = cols.Length > 1 ? cols[1] : string.Empty,
                     Total       = cols.Length > 2 ? cols[2] : string.Empty
                 };
-                var cellValues = new string[programHeaders.Length];
-                for (int j = 0; j < programHeaders.Length; j++)
+
+                // FilterC/R/U/D を合計列に適用
+                if (!string.IsNullOrEmpty(row.Total))
                 {
-                    var header = programHeaders[j];
-                    var value  = cols.Length > 3 + j ? cols[3 + j] : string.Empty;
-                    cellValues[j] = value;
-                    if (!string.IsNullOrEmpty(header))
-                        row.Values[header] = value;
+                    var filteredTotal = FilterCrudString(row.Total);
+                    if (string.IsNullOrEmpty(filteredTotal)) { nonEmptyLineIndex++; continue; }
+                    row.Total = filteredTotal;
                 }
-                row.CellValues = cellValues;
-                if (!string.IsNullOrEmpty(row.TableName) || row.Values.Values.Any(v => !string.IsNullOrEmpty(v)))
-                    newRows.Add(row);
+
+                // 表示する列だけを取り出して CellValues に格納
+                const int RawColBase = 3; // col0=テーブル名, col1=論理名, col2=合計, col3+=プログラム
+                var cellValues = new List<string>(programHeaders.Length);
+                int visibleIdx = 0;
+                for (int j = 0; j < colShow.Length; j++)
+                {
+                    if (!colShow[j]) continue;
+                    var rawIdx = RawColBase + j;
+                    var value  = cols.Length > rawIdx ? cols[rawIdx] : string.Empty;
+                    var fv     = FilterCrudString(value);
+                    cellValues.Add(fv);
+                    row.Values[programHeaders[visibleIdx]] = fv;
+                    visibleIdx++;
+                }
+                row.CellValues = cellValues.ToArray();
+
+                // 全セルが空なら行をスキップ（オリジナルと同じ「空行削除」）
+                if (row.CellValues.All(string.IsNullOrEmpty)) { nonEmptyLineIndex++; continue; }
+
+                newRows.Add(row);
             }
+            nonEmptyLineIndex++;
         }
 
         MatrixHeaders = programHeaders;
@@ -506,8 +597,20 @@ public partial class MainWindowViewModel : ViewModelBase
         return Task.CompletedTask;
     }
 
+    /// <summary>FilterC/R/U/D に基づいて CRUD 文字列をフィルタリングする</summary>
+    private string FilterCrudString(string crud)
+    {
+        if (string.IsNullOrEmpty(crud)) return crud;
+        var result = crud;
+        if (!FilterC) result = result.Replace("C", "");
+        if (!FilterR) result = result.Replace("R", "");
+        if (!FilterU) result = result.Replace("U", "");
+        if (!FilterD) result = result.Replace("D", "");
+        return result;
+    }
+
     /// <summary>
-    /// CRUD.tsv を読み込んでリスト表示用データを更新する。
+    /// CRUD.tsv を読み込んでリスト表示用データと検索辞書を更新する。
     /// 形式: col0=ファイル, col1=プログラムID, col2=行番号, col3=テーブル名, col4=CRUD, col5=関数名, col6=論理名
     /// </summary>
     private void LoadCrudList(string filePath)
@@ -585,3 +688,15 @@ public class CrudListItem
     public string LogicalName  { get; set; } = string.Empty;
     public Query? Query        { get; set; }
 }
+
+/// <summary>クエリ解析ウィンドウへ渡すリクエスト情報</summary>
+public class AnalyzeQueryRequest
+{
+    public string SourcePath { get; set; } = string.Empty;
+    public string FileName   { get; set; } = string.Empty;
+    public int    LineNo     { get; set; }
+    public string TableName  { get; set; } = string.Empty;
+    public string FuncName   { get; set; } = string.Empty;
+}
+
+

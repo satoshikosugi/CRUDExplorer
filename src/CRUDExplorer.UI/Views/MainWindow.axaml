@@ -52,6 +52,8 @@
                     <MenuItem Header="クエリ解析ウィンドウ(_Q)" Command="{Binding ShowQueryAnalyzerCommand}" />
                     <Separator />
                     <MenuItem Header="フィルタ(_F)" Command="{Binding ShowFilterCommand}" />
+                    <Separator />
+                    <MenuItem Header="マトリクスをコピー(_M)" Command="{Binding CopyMatrixToClipboardCommand}" />
                 </MenuItem>
                 <MenuItem Header="設定(_S)">
                     <MenuItem Header="設定(_S)" Command="{Binding OpenSettingsCommand}" />
@@ -59,6 +61,8 @@
                 <MenuItem Header="ヘルプ(_H)">
                     <MenuItem Header="サポートサイト" Command="{Binding OpenSupportSiteCommand}" />
                     <MenuItem Header="バージョン情報(_A)" Command="{Binding ShowVersionCommand}" />
+                    <Separator />
+                    <MenuItem Header="サポートサイト(_S)" Command="{Binding OpenSupportSiteCommand}" />
                 </MenuItem>
             </Menu>
         </Border>
@@ -98,16 +102,39 @@
                                Margin="6,0,0,0" />
                     <TextBox Text="{Binding SourcePath}"
                              IsReadOnly="True"
-                             MinWidth="420"
+                             MinWidth="300"
                              VerticalAlignment="Center"
                              Background="White"
                              BorderBrush="{StaticResource AppBorderBrush}" />
                     <Button Content="⚙ CRUD解析"
                             Command="{Binding AnalyzeCrudCommand}"
                             Padding="10,4" />
-                    <Button Content="📋 テーブル定義"
-                            Command="{Binding LoadTableDefCommand}"
-                            Padding="10,4" />
+                    <Separator Margin="4,0" />
+                    <!-- プログラムIDフィルタ -->
+                    <TextBlock Text="PGフィルタ:" VerticalAlignment="Center" Foreground="#37474F" />
+                    <TextBox Text="{Binding FilterProgram}"
+                             Watermark="正規表現..."
+                             MinWidth="120"
+                             VerticalAlignment="Center"
+                             Background="White" />
+                    <!-- テーブルフィルタ -->
+                    <TextBlock Text="テーブル:" VerticalAlignment="Center" Foreground="#37474F" />
+                    <TextBox Text="{Binding FilterTable}"
+                             Watermark="正規表現..."
+                             MinWidth="120"
+                             VerticalAlignment="Center"
+                             Background="White" />
+                    <!-- CRUD種別チェック -->
+                    <CheckBox Content="C" IsChecked="{Binding FilterC}" VerticalAlignment="Center" />
+                    <CheckBox Content="R" IsChecked="{Binding FilterR}" VerticalAlignment="Center" />
+                    <CheckBox Content="U" IsChecked="{Binding FilterU}" VerticalAlignment="Center" />
+                    <CheckBox Content="D" IsChecked="{Binding FilterD}" VerticalAlignment="Center" />
+                    <Button Content="▶ 適用"
+                            Command="{Binding ApplyFilterCommand}"
+                            Padding="8,4" />
+                    <Button Content="✕ クリア"
+                            Command="{Binding ClearFilterCommand}"
+                            Padding="8,4" />
                 </StackPanel>
             </Border>
 
@@ -147,10 +174,6 @@
                                     <ComboBoxItem Content="テーブルCRUD" />
                                     <ComboBoxItem Content="カラムCRUD" />
                                 </ComboBox>
-                                <TextBox Watermark="キーワードフィルタ..."
-                                         Text="{Binding FilterText}"
-                                         MinWidth="180"
-                                         Background="White" />
                             </StackPanel>
                         </Border>
 

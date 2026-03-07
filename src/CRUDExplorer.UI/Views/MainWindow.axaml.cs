@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Threading;
 using CRUDExplorer.UI.ViewModels;
@@ -19,7 +20,6 @@ public partial class MainWindow : Window
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
-        // 旧VMのイベント解除（多重購読防止）
         if (_attachedVm != null)
         {
             _attachedVm.MatrixColumnsChanged -= OnMatrixColumnsChanged;
@@ -110,8 +110,12 @@ public partial class MainWindow : Window
         {
             grid.Columns.Add(new DataGridTextColumn
             {
-                Header  = header,
-                Binding = new Binding($"[{header}]"),
+                Header  = vm.MatrixHeaders[idx],
+                Binding = new Binding(nameof(CrudMatrixRow.CellValues))
+                {
+                    Converter      = new CellValueConverter(),
+                    ConverterParameter = idx,
+                },
                 Width   = new DataGridLength(80),
             });
         }
@@ -234,5 +238,32 @@ public partial class MainWindow : Window
         {
             _attachedVm.ShowTableDefForSelectedRow(row.TableName);
         }
+    }
+
+    // ── CRUD一覧 ダブルクリック ────────────────────────────────────
+
+    internal void OnListBoxDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (_attachedVm?.SelectedCrudItem is CrudListItem item)
+            _attachedVm.OpenEditorForSelectedItem();
+    }
+
+    // ── IValueConverter（動的列用）──────────────────────────────────
+
+    /// <summary>
+    /// CrudMatrixRow.CellValues (string[]) から指定インデックスの値を取り出すコンバーター。
+    /// ConverterParameter に整数インデックスを渡す。
+    /// </summary>
+    private sealed class CellValueConverter : IValueConverter
+    {
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (value is string[] arr && parameter is int idx && idx < arr.Length)
+                return arr[idx];
+            return string.Empty;
+        }
+
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+            => throw new NotSupportedException();
     }
 }
