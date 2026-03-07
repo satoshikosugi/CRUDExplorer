@@ -59,10 +59,8 @@
                     <MenuItem Header="設定(_S)" Command="{Binding OpenSettingsCommand}" />
                 </MenuItem>
                 <MenuItem Header="ヘルプ(_H)">
-                    <MenuItem Header="サポートサイト" Command="{Binding OpenSupportSiteCommand}" />
-                    <MenuItem Header="バージョン情報(_A)" Command="{Binding ShowVersionCommand}" />
-                    <Separator />
                     <MenuItem Header="サポートサイト(_S)" Command="{Binding OpenSupportSiteCommand}" />
+                    <MenuItem Header="バージョン情報(_A)" Command="{Binding ShowVersionCommand}" />
                 </MenuItem>
             </Menu>
         </Border>

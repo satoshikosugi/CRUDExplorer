@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
@@ -106,7 +107,7 @@ public partial class MainWindow : Window
         });
 
         // プログラムごとの動的列
-        foreach (var header in vm.MatrixHeaders)
+        for (int idx = 0; idx < vm.MatrixHeaders.Length; idx++)
         {
             grid.Columns.Add(new DataGridTextColumn
             {
@@ -238,14 +239,6 @@ public partial class MainWindow : Window
         {
             _attachedVm.ShowTableDefForSelectedRow(row.TableName);
         }
-    }
-
-    // ── CRUD一覧 ダブルクリック ────────────────────────────────────
-
-    internal void OnListBoxDoubleTapped(object? sender, TappedEventArgs e)
-    {
-        if (_attachedVm?.SelectedCrudItem is CrudListItem item)
-            _attachedVm.OpenEditorForSelectedItem();
     }
 
     // ── IValueConverter（動的列用）──────────────────────────────────

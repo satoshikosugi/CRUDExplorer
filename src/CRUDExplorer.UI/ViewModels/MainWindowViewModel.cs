@@ -203,7 +203,7 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private async Task ShowQueryAnalyze()
+    private async Task ShowQueryAnalyzer()
     {
         await _windowService.ShowDialog<AnalyzeQueryWindow>();
     }
@@ -230,23 +230,6 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     // ─── 追加メニューコマンド ─────────────────────────────────────────
-
-    [RelayCommand]
-    private void ShowFileList()
-    {
-        if (string.IsNullOrEmpty(SourcePath))
-        {
-            StatusMessage = "先にフォルダを選択してください";
-            return;
-        }
-        _windowService.ShowWindow<FileListWindow>();
-    }
-
-    [RelayCommand]
-    private void ShowQueryAnalyzer()
-    {
-        _windowService.ShowWindow<AnalyzeQueryWindow>();
-    }
 
     [RelayCommand]
     private void CopyMatrixToClipboard()
@@ -314,24 +297,6 @@ public partial class MainWindowViewModel : ViewModelBase
         CrudListData.Clear();
         _allCrudListItems.Clear();
         StatusMessage = $"フォルダを選択しました: {path}（CRUD未読込）";
-    }
-
-    [RelayCommand]
-    private void OpenSupportSite()
-    {
-        try
-        {
-            var psi = new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = "https://github.com/your-repo/CRUDExplorer",
-                UseShellExecute = true,
-            };
-            System.Diagnostics.Process.Start(psi);
-        }
-        catch
-        {
-            StatusMessage = "サポートサイトを開けませんでした";
-        }
     }
 
     // ─── CRUD一覧アクションコマンド（下部ボタン用） ─────────────────
