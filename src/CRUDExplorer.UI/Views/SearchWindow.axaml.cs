@@ -8,6 +8,5 @@ public partial class SearchWindow : Window
     public SearchWindow()
     {
         InitializeComponent();
-        DataContext = new SearchViewModel(closeWindow: () => Close());
     }
 }

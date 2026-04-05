@@ -130,6 +130,56 @@ public partial class MainWindowViewModel : ViewModelBase
         }
 
         await _windowService.ShowDialog<TableDefinitionWindow>();
+        // テーブル定義読込後、論理名を更新
+        if (GlobalState.Instance.TableDefinitions.Count > 0)
+            RefreshLogicalNames();
+    }
+
+    [RelayCommand]
+    private async Task ImportTableDef()
+    {
+        await _windowService.ShowDialog<ImportTableDefWindow>();
+        // ダイアログで取込完了後、テーブル名リストを更新
+        if (GlobalState.Instance.TableDefinitions.Count > 0)
+        {
+            StatusMessage = $"テーブル定義取込完了: {GlobalState.Instance.TableDefinitions.Count} テーブル";
+            RefreshLogicalNames();
+        }
+    }
+
+    /// <summary>
+    /// テーブル定義取込後、マトリクスとCRUD一覧の論理名をGlobalStateから再解決する。
+    /// </summary>
+    private void RefreshLogicalNames()
+    {
+        var gs = GlobalState.Instance;
+        foreach (var row in MatrixRows)
+        {
+            if (string.IsNullOrEmpty(row.LogicalName) &&
+                gs.TableNames.TryGetValue(row.TableName.ToUpperInvariant(), out var ln))
+            {
+                row.LogicalName = ln;
+            }
+        }
+        foreach (var item in _allCrudListItems)
+        {
+            if (string.IsNullOrEmpty(item.LogicalName) &&
+                gs.TableNames.TryGetValue(item.TableName.ToUpperInvariant(), out var ln))
+            {
+                item.LogicalName = ln;
+            }
+        }
+        // 表示中の一覧も更新
+        foreach (var item in CrudListData)
+        {
+            if (string.IsNullOrEmpty(item.LogicalName) &&
+                gs.TableNames.TryGetValue(item.TableName.ToUpperInvariant(), out var ln))
+            {
+                item.LogicalName = ln;
+            }
+        }
+        // DataGridを再描画させるためにイベントを発火
+        MatrixColumnsChanged?.Invoke(this, EventArgs.Empty);
     }
 
     // ─── 表示 メニュー ───────────────────────────────────────────────
@@ -519,7 +569,10 @@ public partial class MainWindowViewModel : ViewModelBase
                 var row = new CrudMatrixRow
                 {
                     TableName   = tableKey,
-                    LogicalName = cols.Length > 1 ? cols[1] : string.Empty,
+                    LogicalName = cols.Length > 1 && !string.IsNullOrEmpty(cols[1])
+                        ? cols[1]
+                        : (GlobalState.Instance.TableNames.TryGetValue(tableKey.ToUpperInvariant(), out var ln)
+                            ? ln : string.Empty),
                     Total       = cols.Length > 2 ? cols[2] : string.Empty
                 };
 
@@ -582,21 +635,28 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         _allCrudListItems.Clear();
         CrudListData.Clear();
+        var gs = GlobalState.Instance;
         foreach (var line in File.ReadAllLines(filePath))
         {
             if (string.IsNullOrEmpty(line)) continue;
             var cols = line.Split('\t');
             if (cols.Length < 5) continue;
 
+            var tableName = cols.Length > 3 ? cols[3] : string.Empty;
+            // テーブル名から論理名（エンティティ名）を取得
+            var logicalName = cols.Length > 6 && !string.IsNullOrEmpty(cols[6])
+                ? cols[6]
+                : (gs.TableNames.TryGetValue(tableName.ToUpperInvariant(), out var ln) ? ln : string.Empty);
+
             var item = new CrudListItem
             {
                 FileName    = cols.Length > 0 ? cols[0] : string.Empty,
                 ProgramId   = cols.Length > 1 ? cols[1] : string.Empty,
-                LineNo      = int.TryParse(cols.Length > 2 ? cols[2] : "0", out var ln) ? ln : 0,
-                TableName   = cols.Length > 3 ? cols[3] : string.Empty,
+                LineNo      = int.TryParse(cols.Length > 2 ? cols[2] : "0", out var lineNo) ? lineNo : 0,
+                TableName   = tableName,
                 Crud        = cols.Length > 4 ? cols[4] : string.Empty,
                 FuncName    = cols.Length > 5 ? cols[5] : string.Empty,
-                LogicalName = cols.Length > 6 ? cols[6] : string.Empty,
+                LogicalName = logicalName,
             };
             item.DisplayText = $"{item.TableName}\t{item.Crud}\t{item.ProgramId}  ({item.FileName}:{item.LineNo})";
             _allCrudListItems.Add(item);
@@ -651,6 +711,7 @@ public class CrudListItem
     public string Crud         { get; set; } = string.Empty;
     public string FuncName     { get; set; } = string.Empty;
     public string LogicalName  { get; set; } = string.Empty;
+    public string AltName      { get; set; } = string.Empty;
     public Query? Query        { get; set; }
 }
 

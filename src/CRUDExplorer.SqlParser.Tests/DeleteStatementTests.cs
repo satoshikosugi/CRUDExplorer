@@ -46,7 +46,10 @@ public class DeleteStatementTests
 
         Assert.Equal("DELETE", query.QueryKind);
         Assert.Contains("users", query.TableD.Keys);
-        Assert.Contains("inactive_users", query.TableR.Keys);
+        // inactive_usersはサブクエリ内のテーブル → GetAllTableR経由で取得
+        var allTableR = query.GetAllTableR();
+        Assert.True(allTableR.Values.Any(v => v.Contains("INACTIVE_USERS", StringComparison.OrdinalIgnoreCase)),
+            "inactive_users table should be found in subquery's TableR via GetAllTableR");
     }
 
     [Fact]

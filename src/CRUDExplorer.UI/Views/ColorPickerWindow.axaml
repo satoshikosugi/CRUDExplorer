@@ -1,0 +1,51 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="410" d:DesignHeight="380"
+        x:Class="CRUDExplorer.UI.Views.ColorPickerWindow"
+        Title="色の選択" Width="410" Height="380"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+  <DockPanel Margin="12">
+    <!-- 下部: OK/キャンセル -->
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,10,0,0">
+      <Button Content="OK" Width="80" x:Name="BtnOk" Click="OnOkClick" />
+      <Button Content="キャンセル" Width="80" x:Name="BtnCancel" Click="OnCancelClick" />
+    </StackPanel>
+
+    <!-- カスタムカラー入力 -->
+    <Border DockPanel.Dock="Bottom" Margin="0,8,0,0">
+      <StackPanel Spacing="6">
+        <!-- 1行目: Hex + プレビュー -->
+        <Grid ColumnDefinitions="Auto,80,*,Auto">
+          <TextBlock Grid.Column="0" Text="Hex:" VerticalAlignment="Center" Margin="0,0,6,0" />
+          <TextBox Grid.Column="1" x:Name="TxtHex" MaxLength="7" FontFamily="Consolas" FontSize="12"
+                   TextChanged="OnHexTextChanged" />
+          <Border Grid.Column="3" Width="40" Height="28" BorderBrush="Gray" BorderThickness="1" CornerRadius="3">
+            <Border x:Name="PreviewRect" CornerRadius="2" />
+          </Border>
+        </Grid>
+        <!-- 2行目: R/G/B -->
+        <Grid ColumnDefinitions="Auto,70,16,Auto,70,16,Auto,70">
+          <TextBlock Grid.Column="0" Text="R:" VerticalAlignment="Center" Margin="0,0,4,0" />
+          <NumericUpDown Grid.Column="1" x:Name="NudR" Minimum="0" Maximum="255" Increment="1"
+                         FormatString="0" ValueChanged="OnRgbChanged" />
+          <TextBlock Grid.Column="3" Text="G:" VerticalAlignment="Center" Margin="0,0,4,0" />
+          <NumericUpDown Grid.Column="4" x:Name="NudG" Minimum="0" Maximum="255" Increment="1"
+                         FormatString="0" ValueChanged="OnRgbChanged" />
+          <TextBlock Grid.Column="6" Text="B:" VerticalAlignment="Center" Margin="0,0,4,0" />
+          <NumericUpDown Grid.Column="7" x:Name="NudB" Minimum="0" Maximum="255" Increment="1"
+                         FormatString="0" ValueChanged="OnRgbChanged" />
+        </Grid>
+      </StackPanel>
+    </Border>
+
+    <!-- 基本色グリッド -->
+    <StackPanel Spacing="6">
+      <TextBlock Text="基本色:" FontSize="12" Foreground="Gray" />
+      <WrapPanel x:Name="ColorPalette" Orientation="Horizontal" />
+    </StackPanel>
+  </DockPanel>
+</Window>

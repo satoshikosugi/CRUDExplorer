@@ -1,0 +1,74 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CRUDExplorer.UI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
+        x:Class="CRUDExplorer.UI.Views.ImportTableDefWindow"
+        x:DataType="vm:ImportTableDefViewModel"
+        Title="テーブル定義取込" Width="520" Height="510"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+  <DockPanel Margin="15">
+    <!-- Bottom Buttons -->
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
+      <Button Content="接続テスト" Width="100" Command="{Binding TestConnectionCommand}" IsEnabled="{Binding !IsLoading}" />
+      <Button Content="取込" Width="100" Command="{Binding ImportWithCommentsCommand}" IsEnabled="{Binding !IsLoading}" />
+      <Button Content="閉じる" Width="80" Command="{Binding CloseCommand}" />
+    </StackPanel>
+
+    <!-- Status -->
+    <Border DockPanel.Dock="Bottom" Background="#F0F0F0" CornerRadius="4" Padding="8" Margin="0,10,0,0">
+      <StackPanel>
+        <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" Spacing="20" Margin="0,5,0,0" IsVisible="{Binding ImportedTableCount}">
+          <TextBlock Text="{Binding ImportedTableCount, StringFormat='テーブル: {0}'}" />
+          <TextBlock Text="{Binding ImportedColumnCount, StringFormat='カラム: {0}'}" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <!-- Connection History -->
+    <Border DockPanel.Dock="Top" Margin="0,0,0,10">
+      <Grid ColumnDefinitions="100,*,Auto">
+        <TextBlock Grid.Column="0" Text="接続履歴:" VerticalAlignment="Center" />
+        <ComboBox Grid.Column="1"
+                  ItemsSource="{Binding ConnectionHistoryList}"
+                  SelectedItem="{Binding SelectedConnectionHistory}"
+                  HorizontalAlignment="Stretch"
+                  PlaceholderText="過去の接続から選択...">
+          <ComboBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding DisplayName}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+        <Button Grid.Column="2" Content="削除" Width="50" Margin="5,0,0,0"
+                Command="{Binding DeleteSelectedHistoryCommand}"
+                IsEnabled="{Binding SelectedConnectionHistory, Converter={x:Static ObjectConverters.IsNotNull}}" />
+      </Grid>
+    </Border>
+
+    <!-- Connection Settings -->
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="100,*" RowSpacing="8" ColumnSpacing="10">
+      <TextBlock Grid.Row="0" Grid.Column="0" Text="DB種別:" VerticalAlignment="Center" />
+      <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding DbTypes}" SelectedIndex="{Binding SelectedDbType}" HorizontalAlignment="Stretch" />
+
+      <TextBlock Grid.Row="1" Grid.Column="0" Text="サーバ:" VerticalAlignment="Center" />
+      <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Server}" />
+
+      <TextBlock Grid.Row="2" Grid.Column="0" Text="ポート:" VerticalAlignment="Center" />
+      <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Port}" Width="80" HorizontalAlignment="Left" />
+
+      <TextBlock Grid.Row="3" Grid.Column="0" Text="データベース:" VerticalAlignment="Center" />
+      <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Database}" />
+
+      <TextBlock Grid.Row="4" Grid.Column="0" Text="ユーザ名:" VerticalAlignment="Center" />
+      <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding UserName}" />
+
+      <TextBlock Grid.Row="5" Grid.Column="0" Text="パスワード:" VerticalAlignment="Center" />
+      <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding Password}" PasswordChar="●" />
+    </Grid>
+  </DockPanel>
+</Window>

@@ -48,7 +48,10 @@ public class UpdateStatementTests
 
         Assert.Equal("UPDATE", query.QueryKind);
         Assert.Contains("users", query.TableU.Keys);
-        Assert.Contains("settings", query.TableR.Keys);
+        // settingsはサブクエリ内のテーブル → GetAllTableR経由で取得
+        var allTableR = query.GetAllTableR();
+        Assert.True(allTableR.Values.Any(v => v.Contains("SETTINGS", StringComparison.OrdinalIgnoreCase)),
+            "settings table should be found in subquery's TableR via GetAllTableR");
     }
 
     [Fact]

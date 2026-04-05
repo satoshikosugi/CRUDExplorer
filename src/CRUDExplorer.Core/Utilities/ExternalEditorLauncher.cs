@@ -31,14 +31,12 @@ public class ExternalEditorLauncher
         {
             switch (_settings.TextEditor.ToLowerInvariant())
             {
-                case "sakura":
+                case "sakura" or "sakuraeditor":
                     return LaunchSakuraEditor(filePath, lineNo, search1, search2);
                 case "hidemaru":
                     return LaunchHidemaruEditor(filePath, lineNo, search1, search2);
                 case "vscode":
                     return LaunchVSCode(filePath, lineNo);
-                case "textedit":
-                    return LaunchTextEdit(filePath);
                 default:
                     return LaunchNotepad(filePath);
             }
@@ -119,34 +117,6 @@ public class ExternalEditorLauncher
             UseShellExecute = false
         };
         Process.Start(psi);
-        return true;
-    }
-
-    /// <summary>
-    /// TextEditを起動（Mac対応）
-    /// </summary>
-    private bool LaunchTextEdit(string filePath)
-    {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            var psi = new ProcessStartInfo
-            {
-                FileName = "open",
-                Arguments = $"-a TextEdit \"{filePath}\"",
-                UseShellExecute = false
-            };
-            Process.Start(psi);
-        }
-        else
-        {
-            var psi = new ProcessStartInfo
-            {
-                FileName = _settings.TextEditPath,
-                Arguments = $"\"{filePath}\"",
-                UseShellExecute = false
-            };
-            Process.Start(psi);
-        }
         return true;
     }
 

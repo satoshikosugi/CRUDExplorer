@@ -1,87 +1,233 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:CRUDExplorer.UI.ViewModels"
+        xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="550"
+        mc:Ignorable="d" d:DesignWidth="750" d:DesignHeight="550"
         x:Class="CRUDExplorer.UI.Views.SettingsWindow"
         x:DataType="vm:SettingsViewModel"
-        Title="設定" Width="600" Height="550"
-        CanResize="False"
+        Title="設定" Width="750" Height="550"
+        MinWidth="650" MinHeight="480"
         WindowStartupLocation="CenterOwner">
 
-  <DockPanel Margin="15">
-    <!-- Bottom Buttons -->
-    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,15,0,0">
+  <DockPanel Margin="10">
+    <!-- 下部ボタン -->
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
       <Button Content="保存(_S)" Width="100" Command="{Binding SaveCommand}" />
       <Button Content="キャンセル(_C)" Width="100" Command="{Binding CancelCommand}" />
     </StackPanel>
 
-    <!-- Main Content -->
-    <ScrollViewer>
-      <StackPanel Spacing="15">
-        <!-- External Editor Section -->
-        <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
-          <StackPanel Spacing="10">
-            <TextBlock Text="外部エディタ設定" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource AppPrimaryBrush}" />
-            <Separator />
-            <TextBlock Text="使用するエディタを選択してください:" FontWeight="SemiBold" />
+    <!-- タブコントロール -->
+    <TabControl>
 
-            <!-- Editor Selection Radio Buttons -->
-            <StackPanel Spacing="5">
-              <RadioButton Content="Notepad (Windows)" IsChecked="{Binding IsNotepadSelected}" />
-              <RadioButton Content="Sakura Editor (Windows)" IsChecked="{Binding IsSakuraEditorSelected}" />
-              <RadioButton Content="Hidemaru (Windows)" IsChecked="{Binding IsHidemaruSelected}" />
-              <RadioButton Content="Visual Studio Code (Cross-platform)" IsChecked="{Binding IsVSCodeSelected}" />
-              <RadioButton Content="TextEdit (macOS)" IsChecked="{Binding IsTextEditSelected}" />
-              <RadioButton Content="nano (Linux)" IsChecked="{Binding IsNanoSelected}" />
-              <RadioButton Content="vim (Linux)" IsChecked="{Binding IsVimSelected}" />
-            </StackPanel>
+      <!-- ═══ タブ1: 外部エディタ ═══ -->
+      <TabItem Header="外部エディタ">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+          <StackPanel Margin="10" Spacing="12">
+            <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
+              <StackPanel Spacing="6">
+                <TextBlock Text="使用するエディタ" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource AppPrimaryBrush}" />
+                <Separator />
 
-            <!-- Editor Path Configuration -->
-            <TextBlock Text="エディタのパス:" FontWeight="SemiBold" Margin="0,10,0,0" />
-            <Grid ColumnDefinitions="*,Auto">
-              <TextBox Grid.Column="0" Text="{Binding EditorPath}" />
-              <Button Grid.Column="1" Content="参照..." Width="80" Margin="5,0,0,0" Command="{Binding BrowseEditorPathCommand}" />
-            </Grid>
-            <TextBlock Text="※ システムPATHに含まれている場合は空欄で構いません" FontSize="10" Foreground="{StaticResource AppSecondaryTextBrush}" />
+                <Grid ColumnDefinitions="170,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="6">
+                  <RadioButton Grid.Row="0" Grid.Column="0" GroupName="Editor" Content="Notepad"
+                               IsChecked="{Binding IsNotepadSelected}" VerticalAlignment="Center" />
+                  <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding NotepadPath}" VerticalAlignment="Center" />
+                  <Button Grid.Row="0" Grid.Column="2" Content="参照..." Width="65" Margin="5,0,0,0"
+                          Command="{Binding BrowseNotepadPathCommand}" VerticalAlignment="Center" />
+
+                  <RadioButton Grid.Row="1" Grid.Column="0" GroupName="Editor" Content="サクラエディタ"
+                               IsChecked="{Binding IsSakuraEditorSelected}" VerticalAlignment="Center" />
+                  <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SakuraPath}" VerticalAlignment="Center" />
+                  <Button Grid.Row="1" Grid.Column="2" Content="参照..." Width="65" Margin="5,0,0,0"
+                          Command="{Binding BrowseSakuraPathCommand}" VerticalAlignment="Center" />
+
+                  <RadioButton Grid.Row="2" Grid.Column="0" GroupName="Editor" Content="秀丸エディタ"
+                               IsChecked="{Binding IsHidemaruSelected}" VerticalAlignment="Center" />
+                  <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding HidemaruPath}" VerticalAlignment="Center" />
+                  <Button Grid.Row="2" Grid.Column="2" Content="参照..." Width="65" Margin="5,0,0,0"
+                          Command="{Binding BrowseHidemaruPathCommand}" VerticalAlignment="Center" />
+
+                  <RadioButton Grid.Row="3" Grid.Column="0" GroupName="Editor" Content="Visual Studio Code"
+                               IsChecked="{Binding IsVSCodeSelected}" VerticalAlignment="Center" />
+                  <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding VsCodePath}" VerticalAlignment="Center" />
+                  <Button Grid.Row="3" Grid.Column="2" Content="参照..." Width="65" Margin="5,0,0,0"
+                          Command="{Binding BrowseVSCodePathCommand}" VerticalAlignment="Center" />
+                </Grid>
+
+                <TextBlock Text="※ ラジオボタンで選択したエディタがCRUD一覧からの起動時に使用されます"
+                           FontSize="10" Foreground="{StaticResource AppSecondaryTextBrush}" Margin="0,2,0,0" />
+              </StackPanel>
+            </Border>
           </StackPanel>
-        </Border>
+        </ScrollViewer>
+      </TabItem>
 
-        <!-- Double Click Behavior Section -->
-        <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
-          <StackPanel Spacing="8">
-            <TextBlock Text="リストダブルクリック動作" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource AppPrimaryBrush}" />
-            <Separator />
-            <RadioButton Content="テキストエディタで開く" IsChecked="{Binding IsOpenInEditorMode}" />
-            <RadioButton Content="クエリ解析画面を表示" IsChecked="{Binding IsShowAnalysisMode}" />
-            <RadioButton Content="何もしない" IsChecked="{Binding IsNoActionMode}" />
-          </StackPanel>
-        </Border>
+      <!-- ═══ タブ2: 動作設定 ═══ -->
+      <TabItem Header="動作設定">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+          <StackPanel Margin="10" Spacing="12">
 
-        <!-- Program ID Pattern Section -->
-        <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
-          <StackPanel Spacing="8">
-            <TextBlock Text="プログラムID抽出パターン" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource AppPrimaryBrush}" />
-            <Separator />
-            <TextBlock Text="プログラムIDを抽出する正規表現パターン:" />
-            <TextBox Text="{Binding ProgramIdPattern}"
-                     FontFamily="Consolas,Courier New,monospace"
-                     Watermark="例: ^[A-Z]{3}[0-9]{4}$" />
-            <TextBlock Text="※ファイル名からプログラムIDを抽出するための正規表現" FontSize="10" Foreground="{StaticResource AppSecondaryTextBrush}" />
-          </StackPanel>
-        </Border>
+            <!-- ダブルクリック動作 -->
+            <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
+              <StackPanel Spacing="6">
+                <TextBlock Text="リストダブルクリック動作" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource AppPrimaryBrush}" />
+                <Separator />
+                <RadioButton GroupName="DblClick" Content="テキストエディタで開く" IsChecked="{Binding IsOpenInEditorMode}" />
+                <RadioButton GroupName="DblClick" Content="クエリ解析画面を表示" IsChecked="{Binding IsShowAnalysisMode}" />
+                <RadioButton GroupName="DblClick" Content="何もしない" IsChecked="{Binding IsNoActionMode}" />
+              </StackPanel>
+            </Border>
 
-        <!-- Advanced Options Section -->
-        <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
-          <StackPanel Spacing="8">
-            <TextBlock Text="詳細設定" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource AppPrimaryBrush}" />
-            <Separator />
-            <CheckBox Content="デバッグモードを有効にする" IsChecked="{Binding DebugMode}" />
-            <TextBlock Text="※ デバッグモードでは詳細なログが出力されます" FontSize="10" Foreground="{StaticResource AppSecondaryTextBrush}" Margin="20,0,0,0" />
+            <!-- CRUD解析設定 -->
+            <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
+              <StackPanel Spacing="8">
+                <TextBlock Text="プログラムID抽出パターン" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource AppPrimaryBrush}" />
+                <Separator />
+
+                <TextBlock Text="プリセットから選択:" />
+                <ComboBox ItemsSource="{Binding ProgramIdPresets}"
+                          SelectedItem="{Binding SelectedPreset}"
+                          HorizontalAlignment="Stretch" />
+
+                <TextBlock Text="正規表現パターン:" Margin="0,6,0,0" />
+                <TextBox Text="{Binding ProgramIdPattern}"
+                         FontFamily="Consolas,Courier New,monospace"
+                         Watermark="例: (...[OB]Z\d\d\d\d)" />
+
+                <TextBlock Text="※ ファイル名からプログラムIDを抽出するための正規表現パターンです。&#x0a;　空欄の場合はファイル名がそのままプログラムIDになります。&#x0a;　プリセットを選んでからカスタマイズすることもできます。"
+                           FontSize="10" Foreground="{StaticResource AppSecondaryTextBrush}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+
+            <!-- 詳細設定 -->
+            <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
+              <StackPanel Spacing="6">
+                <TextBlock Text="詳細設定" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource AppPrimaryBrush}" />
+                <Separator />
+                <CheckBox Content="デバッグモードを有効にする" IsChecked="{Binding DebugMode}" />
+                <TextBlock Text="※ デバッグモードでは詳細なログが出力されます"
+                           FontSize="10" Foreground="{StaticResource AppSecondaryTextBrush}" Margin="20,0,0,0" />
+              </StackPanel>
+            </Border>
+
           </StackPanel>
-        </Border>
-      </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- ═══ タブ3: SQLエディタ ═══ -->
+      <TabItem Header="SQLエディタ">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+          <StackPanel Margin="10" Spacing="12">
+
+            <!-- フォント設定 -->
+            <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
+              <StackPanel Spacing="8">
+                <TextBlock Text="フォント設定" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource AppPrimaryBrush}" />
+                <Separator />
+                <Grid ColumnDefinitions="100,120,20,80,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8" ColumnSpacing="6">
+                  <TextBlock Grid.Row="0" Grid.Column="0" Text="フォント名:" VerticalAlignment="Center" />
+                  <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="4"
+                            ItemsSource="{Binding SystemFontFamilies}"
+                            SelectedItem="{Binding SqlEditorFontFamily}"
+                            IsEditable="True"
+                            HorizontalAlignment="Stretch" />
+
+                  <TextBlock Grid.Row="1" Grid.Column="0" Text="フォントサイズ:" VerticalAlignment="Center" />
+                  <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding SqlEditorFontSize}"
+                                 Minimum="8" Maximum="36" Increment="1" Width="100" HorizontalAlignment="Left" />
+                  <TextBlock Grid.Row="1" Grid.Column="3" Text="タブ文字数:" VerticalAlignment="Center" />
+                  <NumericUpDown Grid.Row="1" Grid.Column="4" Value="{Binding SqlEditorTabSize}"
+                                 Minimum="1" Maximum="16" Increment="1" Width="80" HorizontalAlignment="Left"
+                                 FormatString="0" />
+
+                  <TextBlock Grid.Row="2" Grid.Column="0" Text="行の折り返し:" VerticalAlignment="Center" />
+                  <CheckBox Grid.Row="2" Grid.Column="1" Content="折り返して表示する"
+                            IsChecked="{Binding SqlEditorWordWrap}" />
+                </Grid>
+              </StackPanel>
+            </Border>
+
+            <!-- カラー設定 + プレビュー -->
+            <Border Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
+              <StackPanel Spacing="8">
+                <TextBlock Text="カラー設定" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource AppPrimaryBrush}" />
+                <Separator />
+
+                <Grid ColumnDefinitions="220,12,*">
+
+                  <!-- 左: 色ボタン5行 -->
+                  <StackPanel Grid.Column="0" Spacing="6">
+                    <!-- 文字色 -->
+                    <Grid ColumnDefinitions="90,36,8,*">
+                      <TextBlock Grid.Column="0" Text="文字色:" VerticalAlignment="Center" />
+                      <Button Grid.Column="1" x:Name="BtnForeground" Width="36" Height="24" Padding="2" CornerRadius="3"
+                              BorderBrush="Gray" BorderThickness="1" Tag="Foreground" Click="OnColorButtonClick">
+                        <Border Width="30" Height="18" CornerRadius="2" Background="{Binding SqlForegroundPreviewBrush}" />
+                      </Button>
+                      <TextBox Grid.Column="3" Text="{Binding SqlForegroundColor}" FontFamily="Consolas" MaxLength="7" FontSize="11" />
+                    </Grid>
+                    <!-- 背景色 -->
+                    <Grid ColumnDefinitions="90,36,8,*">
+                      <TextBlock Grid.Column="0" Text="背景色:" VerticalAlignment="Center" />
+                      <Button Grid.Column="1" x:Name="BtnBackground" Width="36" Height="24" Padding="2" CornerRadius="3"
+                              BorderBrush="Gray" BorderThickness="1" Tag="Background" Click="OnColorButtonClick">
+                        <Border Width="30" Height="18" CornerRadius="2" Background="{Binding SqlBackgroundPreviewBrush}" />
+                      </Button>
+                      <TextBox Grid.Column="3" Text="{Binding SqlBackgroundColor}" FontFamily="Consolas" MaxLength="7" FontSize="11" />
+                    </Grid>
+                    <!-- 予約語の色 -->
+                    <Grid ColumnDefinitions="90,36,8,*">
+                      <TextBlock Grid.Column="0" Text="予約語の色:" VerticalAlignment="Center" />
+                      <Button Grid.Column="1" x:Name="BtnKeyword" Width="36" Height="24" Padding="2" CornerRadius="3"
+                              BorderBrush="Gray" BorderThickness="1" Tag="Keyword" Click="OnColorButtonClick">
+                        <Border Width="30" Height="18" CornerRadius="2" Background="{Binding SqlKeywordPreviewBrush}" />
+                      </Button>
+                      <TextBox Grid.Column="3" Text="{Binding SqlKeywordColor}" FontFamily="Consolas" MaxLength="7" FontSize="11" />
+                    </Grid>
+                    <!-- コメントの色 -->
+                    <Grid ColumnDefinitions="90,36,8,*">
+                      <TextBlock Grid.Column="0" Text="コメントの色:" VerticalAlignment="Center" />
+                      <Button Grid.Column="1" x:Name="BtnComment" Width="36" Height="24" Padding="2" CornerRadius="3"
+                              BorderBrush="Gray" BorderThickness="1" Tag="Comment" Click="OnColorButtonClick">
+                        <Border Width="30" Height="18" CornerRadius="2" Background="{Binding SqlCommentPreviewBrush}" />
+                      </Button>
+                      <TextBox Grid.Column="3" Text="{Binding SqlCommentColor}" FontFamily="Consolas" MaxLength="7" FontSize="11" />
+                    </Grid>
+                    <!-- 文字列の色 -->
+                    <Grid ColumnDefinitions="90,36,8,*">
+                      <TextBlock Grid.Column="0" Text="文字列の色:" VerticalAlignment="Center" />
+                      <Button Grid.Column="1" x:Name="BtnStringLiteral" Width="36" Height="24" Padding="2" CornerRadius="3"
+                              BorderBrush="Gray" BorderThickness="1" Tag="StringLiteral" Click="OnColorButtonClick">
+                        <Border Width="30" Height="18" CornerRadius="2" Background="{Binding SqlStringLiteralPreviewBrush}" />
+                      </Button>
+                      <TextBox Grid.Column="3" Text="{Binding SqlStringLiteralColor}" FontFamily="Consolas" MaxLength="7" FontSize="11" />
+                    </Grid>
+
+                    <Button Content="既定の色設定に戻す" Command="{Binding ResetColorsCommand}" Margin="0,4,0,0" HorizontalAlignment="Left" />
+                  </StackPanel>
+
+                  <!-- 右: サンプルプレビュー -->
+                  <Border Grid.Column="2" BorderBrush="Gray" BorderThickness="1" CornerRadius="3" ClipToBounds="True">
+                    <StackPanel>
+                      <TextBlock Text="サンプル" FontSize="11" Foreground="Gray" Margin="4,2" />
+                      <ae:TextEditor x:Name="SqlColorPreview"
+                                     IsReadOnly="True"
+                                     ShowLineNumbers="False"
+                                     HorizontalScrollBarVisibility="Disabled"
+                                     VerticalScrollBarVisibility="Disabled"
+                                     MinHeight="120" />
+                    </StackPanel>
+                  </Border>
+                </Grid>
+              </StackPanel>
+            </Border>
+
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+    </TabControl>
   </DockPanel>
 </Window>

@@ -1,3 +1,4 @@
+using System.Linq;
 using CRUDExplorer.SqlParser.Analyzers;
 using CRUDExplorer.Core.Models;
 using Xunit;
@@ -166,7 +167,7 @@ public class CrudExtractionTests
         var query = _analyzer.AnalyzeSql(sql);
 
         Assert.Contains("users", query.TableR.Keys);
-        Assert.Contains("orders", query.TableR.Keys);
+        Assert.True(query.GetAllTableR().Values.Any(v => v.Contains("ORDERS", StringComparison.OrdinalIgnoreCase)));
     }
 
     [Fact]
@@ -176,7 +177,7 @@ public class CrudExtractionTests
         var query = _analyzer.AnalyzeSql(sql);
 
         Assert.Contains("users", query.TableR.Keys);
-        Assert.Contains("orders", query.TableR.Keys);
+        Assert.True(query.GetAllTableR().Values.Any(v => v.Contains("ORDERS", StringComparison.OrdinalIgnoreCase)));
     }
 
     [Fact]
@@ -186,7 +187,7 @@ public class CrudExtractionTests
         var query = _analyzer.AnalyzeSql(sql);
 
         Assert.Contains("users", query.TableR.Keys);
-        Assert.Contains("orders", query.TableR.Keys);
+        Assert.True(query.GetAllTableR().Values.Any(v => v.Contains("ORDERS", StringComparison.OrdinalIgnoreCase)));
     }
 
     [Fact]
@@ -263,7 +264,7 @@ public class CrudExtractionTests
         var query = _analyzer.AnalyzeSql(sql);
 
         Assert.Contains("users", query.TableU.Keys);
-        Assert.Contains("recent_logins", query.TableR.Keys);
+        Assert.True(query.GetAllTableR().Values.Any(v => v.Contains("RECENT_LOGINS", StringComparison.OrdinalIgnoreCase)));
     }
 
     [Fact]
@@ -273,7 +274,7 @@ public class CrudExtractionTests
         var query = _analyzer.AnalyzeSql(sql);
 
         Assert.Contains("orders", query.TableD.Keys);
-        Assert.Contains("deleted_users", query.TableR.Keys);
+        Assert.True(query.GetAllTableR().Values.Any(v => v.Contains("DELETED_USERS", StringComparison.OrdinalIgnoreCase)));
     }
 
     [Fact]
@@ -364,8 +365,9 @@ public class CrudExtractionTests
         var query = _analyzer.AnalyzeSql(sql);
 
         Assert.Contains("users", query.TableR.Keys);
-        Assert.Contains("orders", query.TableR.Keys);
-        Assert.Contains("products", query.TableR.Keys);
+        var allTableR = query.GetAllTableR();
+        Assert.True(allTableR.Values.Any(v => v.Contains("ORDERS", StringComparison.OrdinalIgnoreCase)));
+        Assert.True(allTableR.Values.Any(v => v.Contains("PRODUCTS", StringComparison.OrdinalIgnoreCase)));
     }
 
     [Fact]
@@ -431,7 +433,7 @@ public class CrudExtractionTests
         var query = _analyzer.AnalyzeSql(sql);
 
         Assert.Contains("order_items", query.TableD.Keys);
-        Assert.Contains("orders", query.TableR.Keys);
+        Assert.True(query.GetAllTableR().Values.Any(v => v.Contains("ORDERS", StringComparison.OrdinalIgnoreCase)));
     }
 
     [Fact]

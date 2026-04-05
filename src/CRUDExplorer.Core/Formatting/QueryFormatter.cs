@@ -65,6 +65,10 @@ public class QueryFormatter
         if (string.IsNullOrWhiteSpace(sql))
             return string.Empty;
 
+        // VB.NET CArrange相当: カンマの前後にスペースを追加して区切り文字として認識させる
+        sql = sql.Replace(",", " , ");
+        sql = System.Text.RegularExpressions.Regex.Replace(sql, "[ ]+", " ");
+
         var result = EditQuery(sql, DefaultKeywords);
         if (string.IsNullOrEmpty(result))
             return string.Empty;

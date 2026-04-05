@@ -1,9 +1,12 @@
 using System;
 using System.Globalization;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Threading;
 using CRUDExplorer.UI.ViewModels;
 
@@ -86,19 +89,9 @@ public partial class MainWindow : Window
         grid.ItemsSource = null;
         grid.Columns.Clear();
 
-        // 固定列: テーブル名 / 論理名 / 合計
-        grid.Columns.Add(new DataGridTextColumn
-        {
-            Header  = "テーブル名",
-            Binding = new Binding(nameof(CrudMatrixRow.TableName)),
-            Width   = new DataGridLength(150),
-        });
-        grid.Columns.Add(new DataGridTextColumn
-        {
-            Header  = "論理名",
-            Binding = new Binding(nameof(CrudMatrixRow.LogicalName)),
-            Width   = new DataGridLength(150),
-        });
+        // 固定列: テーブル名 / 論理名 / 合計 （ツールチップ付き）
+        grid.Columns.Add(CreateTooltipColumn("テーブル名", nameof(CrudMatrixRow.TableName), 150));
+        grid.Columns.Add(CreateTooltipColumn("論理名", nameof(CrudMatrixRow.LogicalName), 150));
         grid.Columns.Add(new DataGridTextColumn
         {
             Header  = "合計",
@@ -106,19 +99,28 @@ public partial class MainWindow : Window
             Width   = new DataGridLength(60),
         });
 
-        // プログラムごとの動的列
+        // プログラムごとの動的列（ヘッダにツールチップ付き）
         for (int idx = 0; idx < vm.MatrixHeaders.Length; idx++)
         {
-            grid.Columns.Add(new DataGridTextColumn
+            var headerName = vm.MatrixHeaders[idx];
+            var col = new DataGridTextColumn
             {
-                Header  = vm.MatrixHeaders[idx],
                 Binding = new Binding(nameof(CrudMatrixRow.CellValues))
                 {
                     Converter      = new CellValueConverter(),
                     ConverterParameter = idx,
                 },
                 Width   = new DataGridLength(80),
-            });
+            };
+            // ヘッダにツールチップを付ける
+            var headerBlock = new TextBlock
+            {
+                Text = headerName,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+            };
+            ToolTip.SetTip(headerBlock, headerName);
+            col.Header = headerBlock;
+            grid.Columns.Add(col);
         }
 
         // SelectionUnit を CellOrRowHeader にして、セル単位の選択を可能にする
@@ -174,7 +176,7 @@ public partial class MainWindow : Window
     /// <summary>
     /// CRUD一覧のダブルクリック → 設定に応じたアクション実行
     /// </summary>
-    private void OnListBoxDoubleTapped(object? sender, TappedEventArgs e)
+    private void OnCrudListDoubleTapped(object? sender, TappedEventArgs e)
     {
         if (DataContext is MainWindowViewModel viewModel)
         {
@@ -185,7 +187,7 @@ public partial class MainWindow : Window
     /// <summary>
     /// CRUD一覧のキーボード操作: Enter → ダブルクリックと同じ動作
     /// </summary>
-    private void OnListBoxKeyDown(object? sender, KeyEventArgs e)
+    private void OnCrudListKeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Key == Key.Enter && DataContext is MainWindowViewModel viewModel)
         {
@@ -207,12 +209,12 @@ public partial class MainWindow : Window
         if (e.Key == Key.Enter || e.Key == Key.Tab)
         {
             e.Handled = true;
-            var listBox = this.FindControl<ListBox>("CrudListBox");
-            if (listBox != null)
+            var crudGrid = this.FindControl<DataGrid>("CrudListGrid");
+            if (crudGrid != null)
             {
-                listBox.Focus();
-                if (listBox.SelectedIndex < 0 && listBox.ItemCount > 0)
-                    listBox.SelectedIndex = 0;
+                crudGrid.Focus();
+                if (crudGrid.SelectedIndex < 0 && _attachedVm.CrudListData.Count > 0)
+                    crudGrid.SelectedIndex = 0;
             }
         }
         else if (e.Key == Key.T)
@@ -239,6 +241,32 @@ public partial class MainWindow : Window
         {
             _attachedVm.ShowTableDefForSelectedRow(row.TableName);
         }
+    }
+
+    // ── ヘルパー（ツールチップ付きテンプレート列）─────────────────────
+
+    /// <summary>
+    /// TextTrimming + ToolTip 付きの DataGridTemplateColumn を生成する。
+    /// </summary>
+    private static DataGridTemplateColumn CreateTooltipColumn(string header, string bindingPath, double width)
+    {
+        return new DataGridTemplateColumn
+        {
+            Header = header,
+            Width = new DataGridLength(width),
+            CellTemplate = new FuncDataTemplate<CrudMatrixRow>((row, _) =>
+            {
+                var tb = new TextBlock
+                {
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    Margin = new Thickness(4, 0),
+                };
+                tb.Bind(TextBlock.TextProperty, new Binding(bindingPath));
+                tb.Bind(ToolTip.TipProperty, new Binding(bindingPath));
+                return tb;
+            }, supportsRecycling: true),
+        };
     }
 
     // ── IValueConverter（動的列用）──────────────────────────────────

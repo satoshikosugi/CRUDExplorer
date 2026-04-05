@@ -290,7 +290,21 @@ public class Query
         {
             foreach (var kvp in sourceDict)
             {
-                target[$"K{target.Count + 1}"] = kvp.Value;
+                // 重複チェック: 同じ値が既に存在する場合はスキップ（VB.NET On Error Resume Next相当）
+                var valueStr = kvp.Value?.ToString() ?? string.Empty;
+                bool exists = false;
+                foreach (var existing in target.Values)
+                {
+                    if (string.Equals(existing?.ToString(), valueStr, StringComparison.OrdinalIgnoreCase))
+                    {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists)
+                {
+                    target[kvp.Key] = kvp.Value;
+                }
             }
         }
 
@@ -355,6 +369,7 @@ public class Query
                 var subQuery = SubQueries[key];
                 var strSubQuery = subQuery.Arrange(expand);
 
+                // %N%マーカーを検索
                 var intSubQueryPos = strQuery.IndexOf(key, StringComparison.OrdinalIgnoreCase);
                 if (intSubQueryPos >= 0)
                 {

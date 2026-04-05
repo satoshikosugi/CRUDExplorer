@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace CRUDExplorer.Core.Models;
@@ -9,10 +10,11 @@ public class Settings
 {
     private const string DefaultEditor = "notepad";
     private const string DefaultNotepadPath = "notepad.exe";
-    private const string DefaultSakuraPath = "C:\\Program Files\\sakura\\sakura.exe";
-    private const string DefaultHidemaruPath = "C:\\Program Files\\Hidemaru\\Hidemaru.exe";
-    private const string DefaultVSCodePath = "/usr/bin/code";  // Mac/Linux対応
-    private const string DefaultTextEditPath = "/System/Applications/TextEdit.app/Contents/MacOS/TextEdit";  // Mac対応
+    private const string DefaultSakuraPath = @"C:\Program Files (x86)\sakura\sakura.exe";
+    private const string DefaultHidemaruPath = @"C:\Program Files\Hidemaru\Hidemaru.exe";
+    private static readonly string DefaultVSCodePath = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+        ? "code"
+        : "/usr/bin/code";
     private const string DefaultProgramIdPattern = "";
 
     /// <summary>
@@ -46,14 +48,9 @@ public class Settings
     public string HidemaruPath { get; set; } = DefaultHidemaruPath;
 
     /// <summary>
-    /// VS Codeパス（Mac/Linux対応）
+    /// VS Codeパス
     /// </summary>
     public string VSCodePath { get; set; } = DefaultVSCodePath;
-
-    /// <summary>
-    /// TextEditパス（Mac対応）
-    /// </summary>
-    public string TextEditPath { get; set; } = DefaultTextEditPath;
 
     /// <summary>
     /// リストダブルクリック時の動作
@@ -86,9 +83,64 @@ public class Settings
     public string AuthServerUrl { get; set; } = "https://localhost:5001/api/license/authenticate";
 
     /// <summary>
+    /// SQLエディタのフォントファミリー
+    /// </summary>
+    public string SqlEditorFontFamily { get; set; } = "Consolas";
+
+    /// <summary>
+    /// SQLエディタのフォントサイズ
+    /// </summary>
+    public double SqlEditorFontSize { get; set; } = 13;
+
+    /// <summary>
+    /// SQLエディタの文字色（Hex）
+    /// </summary>
+    public string SqlForegroundColor { get; set; } = "#000000";
+
+    /// <summary>
+    /// SQLエディタの背景色（Hex）
+    /// </summary>
+    public string SqlBackgroundColor { get; set; } = "#FFFFFF";
+
+    /// <summary>
+    /// SQL予約語の色（Hex）
+    /// </summary>
+    public string SqlKeywordColor { get; set; } = "#0000FF";
+
+    /// <summary>
+    /// SQL文字列リテラルの色（Hex）
+    /// </summary>
+    public string SqlStringLiteralColor { get; set; } = "#FF0000";
+
+    /// <summary>
+    /// SQLコメントの色（Hex）
+    /// </summary>
+    public string SqlCommentColor { get; set; } = "#008000";
+
+    /// <summary>
+    /// SQLエディタのタブ文字数
+    /// </summary>
+    public int SqlEditorTabSize { get; set; } = 4;
+
+    /// <summary>
+    /// SQLエディタの行折り返し
+    /// </summary>
+    public bool SqlEditorWordWrap { get; set; } = true;
+
+    /// <summary>
     /// ウィンドウサイズ保存用
     /// </summary>
     public Dictionary<string, WindowState> WindowStates { get; set; } = new();
+
+    /// <summary>
+    /// テーブル定義取込の接続設定（最後に使用した設定）
+    /// </summary>
+    public DbConnectionSettings? ImportDbConnection { get; set; }
+
+    /// <summary>
+    /// テーブル定義取込の接続履歴リスト
+    /// </summary>
+    public List<DbConnectionSettings> ConnectionHistory { get; set; } = new();
 
     /// <summary>
     /// 設定ファイルパス
@@ -172,4 +224,63 @@ public class WindowState
     public int Left { get; set; }
     public int Top { get; set; }
     public bool IsMaximized { get; set; }
+}
+
+/// <summary>
+/// DB接続設定（テーブル定義取込用）
+/// </summary>
+public class DbConnectionSettings
+{
+    public int DbTypeIndex { get; set; }
+    public string Server { get; set; } = string.Empty;
+    public string Port { get; set; } = string.Empty;
+    public string Database { get; set; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
+    /// <summary>
+    /// 暗号化されたパスワード（Base64）
+    /// </summary>
+    public string EncryptedPassword { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 表示名（プルダウン用: "DB種別 UserName@Server:Port/Database"）
+    /// </summary>
+    public string DisplayName
+    {
+        get
+        {
+            var dbTypes = new[] { "MySQL", "PostgreSQL", "SQL Server", "Oracle", "SQLite", "MariaDB" };
+            var dbType = DbTypeIndex >= 0 && DbTypeIndex < dbTypes.Length ? dbTypes[DbTypeIndex] : "Unknown";
+            return $"{dbType} {UserName}@{Server}:{Port}/{Database}";
+        }
+    }
+
+    public void SetPassword(string plainPassword)
+    {
+        if (string.IsNullOrEmpty(plainPassword))
+        {
+            EncryptedPassword = string.Empty;
+            return;
+        }
+        var bytes = System.Text.Encoding.UTF8.GetBytes(plainPassword);
+        var encrypted = System.Security.Cryptography.ProtectedData.Protect(
+            bytes, null, System.Security.Cryptography.DataProtectionScope.CurrentUser);
+        EncryptedPassword = Convert.ToBase64String(encrypted);
+    }
+
+    public string GetPassword()
+    {
+        if (string.IsNullOrEmpty(EncryptedPassword))
+            return string.Empty;
+        try
+        {
+            var encrypted = Convert.FromBase64String(EncryptedPassword);
+            var decrypted = System.Security.Cryptography.ProtectedData.Unprotect(
+                encrypted, null, System.Security.Cryptography.DataProtectionScope.CurrentUser);
+            return System.Text.Encoding.UTF8.GetString(decrypted);
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
 }

@@ -31,7 +31,7 @@ public class SettingsWindowTests
         // Assert
         Assert.NotNull(viewModel);
         // Check that editor path property is initialized
-        Assert.NotNull(viewModel.EditorPath);
+        Assert.NotNull(viewModel.NotepadPath);
         Assert.NotNull(viewModel.ProgramIdPattern);
     }
 

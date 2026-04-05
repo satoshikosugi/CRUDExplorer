@@ -500,15 +500,7 @@ internal class SqlVisitor : Grammar.SqlBaseVisitor<object?>
         subVisitor.Visit(subquery);
 
         _query.SubQueries[subQueryObj.SubQueryIndex] = subQueryObj;
-
-        // サブクエリ内のテーブルを親クエリのTableRにマージ
-        foreach (var kvp in subQueryObj.TableR)
-        {
-            if (!_query.TableR.ContainsKey(kvp.Key))
-            {
-                _query.TableR[kvp.Key] = kvp.Value;
-            }
-        }
+        // サブクエリのテーブルは親にマージしない（VB.NET準拠: 各ノードは自ノードのテーブルのみ保持）
     }
 
     public override object? VisitWhereClause([NotNull] Grammar.SqlParser.WhereClauseContext context)

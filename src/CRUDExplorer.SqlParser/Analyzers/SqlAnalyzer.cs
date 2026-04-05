@@ -46,6 +46,9 @@ public class SqlAnalyzer
             var visitor = new SqlVisitor(query);
             visitor.Visit(sqlStatement);
 
+            // サブクエリテキストを%N%マーカーに置換（VB.NET DivideSubQuery相当）
+            ReplaceSubqueriesWithMarkers(query);
+
             return query;
         }
         catch (Exception ex)
@@ -59,6 +62,125 @@ public class SqlAnalyzer
                 QueryKind = $"ERROR: {ex.Message}"
             };
         }
+    }
+
+    /// <summary>
+    /// サブクエリの(SELECT ...)テキストを%N%マーカーに置換する（VB.NET DivideSubQuery相当）
+    /// サブクエリ内のネストされたサブクエリも再帰的に処理する
+    /// </summary>
+    private static void ReplaceSubqueriesWithMarkers(Query query)
+    {
+        int globalIndex = 0;
+        ReplaceSubqueriesCore(query, ref globalIndex);
+    }
+
+    private static void ReplaceSubqueriesCore(Query query, ref int globalIndex)
+    {
+        var text = query.QueryText;
+        var oldSubValues = query.SubQueries.Values.ToList();
+        var newSubQueries = new Dictionary<string, Query>(StringComparer.OrdinalIgnoreCase);
+        int localIndex = 0;
+        int pos = 0;
+
+        while (pos < text.Length)
+        {
+            // SELECTキーワードの前の'('を探す
+            var parenStart = FindSubqueryOpenParen(text, pos);
+            if (parenStart < 0) break;
+
+            // 対応する')'を見つける
+            var parenEnd = FindMatchingCloseParen(text, parenStart);
+            if (parenEnd < 0) { pos = parenStart + 1; continue; }
+
+            // サブクエリテキストを抽出（括弧の内側）
+            var subQueryText = text.Substring(parenStart + 1, parenEnd - parenStart - 1).Trim();
+
+            globalIndex++;
+            var marker = $"%{globalIndex}%";
+
+            // (SELECT ...) をマーカーに置換
+            text = text[..parenStart] + marker + text[(parenEnd + 1)..];
+
+            // 対応するSubQueryオブジェクトのQueryTextとインデックスを更新
+            if (localIndex < oldSubValues.Count)
+            {
+                var sub = oldSubValues[localIndex];
+                sub.SubQueryIndex = globalIndex.ToString();
+                sub.QueryText = subQueryText;
+                newSubQueries[marker] = sub;
+
+                // サブクエリ内のネストされたサブクエリを再帰処理
+                ReplaceSubqueriesCore(sub, ref globalIndex);
+            }
+            localIndex++;
+
+            pos = parenStart + marker.Length;
+        }
+
+        // %N%マーカーの前にスペースを補正（TABLE%1% → TABLE %1%）
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"(\w)(%\d+%)", "$1 $2");
+
+        query.QueryText = text;
+        if (newSubQueries.Count > 0)
+            query.SubQueries = newSubQueries;
+    }
+
+    /// <summary>
+    /// '(' + SELECT パターンを検索。文字列リテラル内はスキップする。
+    /// </summary>
+    private static int FindSubqueryOpenParen(string text, int startPos)
+    {
+        bool inString = false;
+        for (int i = startPos; i < text.Length; i++)
+        {
+            var c = text[i];
+            if (c == '\'')
+            {
+                inString = !inString;
+                continue;
+            }
+            if (inString) continue;
+
+            if (c == '(')
+            {
+                // '('の後にSELECTキーワードが続くか確認
+                var afterParen = text.AsSpan(i + 1).TrimStart(" \t\r\n".ToCharArray());
+                if (afterParen.Length >= 6
+                    && afterParen[..6].ToString().Equals("SELECT", StringComparison.OrdinalIgnoreCase)
+                    && (afterParen.Length == 6 || !char.IsLetterOrDigit(afterParen[6])))
+                {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    /// <summary>
+    /// 対応する閉じ括弧を検索。文字列リテラル内はスキップする。
+    /// </summary>
+    private static int FindMatchingCloseParen(string text, int openPos)
+    {
+        int depth = 0;
+        bool inString = false;
+        for (int i = openPos; i < text.Length; i++)
+        {
+            var c = text[i];
+            if (c == '\'')
+            {
+                inString = !inString;
+                continue;
+            }
+            if (inString) continue;
+
+            if (c == '(') depth++;
+            else if (c == ')')
+            {
+                depth--;
+                if (depth == 0) return i;
+            }
+        }
+        return -1;
     }
 
     /// <summary>

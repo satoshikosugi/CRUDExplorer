@@ -32,35 +32,22 @@
                         <Setter Property="Background" Value="#1976D2" />
                     </Style>
                 </Menu.Styles>
-                <MenuItem Header="ファイル(_F)">
-                    <MenuItem Header="フォルダを開く(_O)">
-                        <MenuItem Header="テーブルCRUD" Command="{Binding OpenFolderCommand}" />
-                        <MenuItem Header="カラムCRUD" Command="{Binding OpenFolderCommand}" />
-                        <MenuItem Header="CRUDは開かない" Command="{Binding OpenFolderWithoutCrudCommand}" />
-                    </MenuItem>
-                    <MenuItem Header="CRUD解析(_A)" Command="{Binding AnalyzeCrudCommand}" />
-                    <MenuItem Header="ソースファイル一覧(_L)" Command="{Binding ShowFileListCommand}" />
-                    <MenuItem Header="マトリクスをクリップボードに(_C)" Command="{Binding CopyMatrixToClipboardCommand}" />
-                    <Separator />
-                    <MenuItem Header="終了(_X)" Command="{Binding ExitCommand}" />
+                <MenuItem Header="開く(&amp;O)">
+                    <MenuItem Header="テーブルCRUD" Command="{Binding OpenFolderCommand}" />
+                    <MenuItem Header="カラムCRUD" Command="{Binding OpenFolderCommand}" />
+                    <MenuItem Header="CRUDは開かない" Command="{Binding OpenFolderWithoutCrudCommand}" />
                 </MenuItem>
-                <MenuItem Header="表示(_V)">
-                    <MenuItem Header="テーブルCRUD(_T)" Command="{Binding ShowTableCrudCommand}" />
-                    <MenuItem Header="カラムCRUD(_C)" Command="{Binding ShowColumnCrudCommand}" />
+                <MenuItem Header="CRUD解析(&amp;A)" Command="{Binding AnalyzeCrudCommand}" />
+                <MenuItem Header="ソースファイル一覧(&amp;L)" Command="{Binding ShowFileListCommand}" />
+                <MenuItem Header="マトリクスをクリップボードに(&amp;C)" Command="{Binding CopyMatrixToClipboardCommand}" />
+                <MenuItem Header="テーブル定義参照(&amp;T)" Command="{Binding LoadTableDefCommand}" />
+                <MenuItem Header="テーブル定義取込(&amp;I)" Command="{Binding ImportTableDefCommand}" />
+                <MenuItem Header="クエリ解析ウィンドウ(&amp;Q)" Command="{Binding ShowQueryAnalyzerCommand}" />
+                <MenuItem Header="設定(&amp;X)" Command="{Binding OpenSettingsCommand}" />
+                <MenuItem Header="ヘルプ">
+                    <MenuItem Header="サポートサイト" Command="{Binding OpenSupportSiteCommand}" />
                     <Separator />
-                    <MenuItem Header="テーブル定義参照(_T)" Command="{Binding LoadTableDefCommand}" />
-                    <MenuItem Header="クエリ解析ウィンドウ(_Q)" Command="{Binding ShowQueryAnalyzerCommand}" />
-                    <Separator />
-                    <MenuItem Header="フィルタ(_F)" Command="{Binding ShowFilterCommand}" />
-                    <Separator />
-                    <MenuItem Header="マトリクスをコピー(_M)" Command="{Binding CopyMatrixToClipboardCommand}" />
-                </MenuItem>
-                <MenuItem Header="設定(_S)">
-                    <MenuItem Header="設定(_S)" Command="{Binding OpenSettingsCommand}" />
-                </MenuItem>
-                <MenuItem Header="ヘルプ(_H)">
-                    <MenuItem Header="サポートサイト(_S)" Command="{Binding OpenSupportSiteCommand}" />
-                    <MenuItem Header="バージョン情報(_A)" Command="{Binding ShowVersionCommand}" />
+                    <MenuItem Header="バージョン情報" Command="{Binding ShowVersionCommand}" />
                 </MenuItem>
             </Menu>
         </Border>
@@ -136,16 +123,16 @@
                 </StackPanel>
             </Border>
 
-            <!-- 左右分割ペイン -->
+            <!-- 上下分割ペイン（オリジナル同様：上=マトリクス、下=CRUD一覧） -->
             <Grid Grid.Row="1" Margin="6,6,6,4">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*" MinWidth="300" />
-                    <ColumnDefinition Width="6" />
-                    <ColumnDefinition Width="*" MinWidth="180" />
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="3*" MinHeight="200" />
+                    <RowDefinition Height="6" />
+                    <RowDefinition Height="*" MinHeight="100" />
+                </Grid.RowDefinitions>
 
-                <!-- ── CRUDマトリクス（左ペイン） ── -->
-                <Border Grid.Column="0"
+                <!-- ── CRUDマトリクス（上ペイン） ── -->
+                <Border Grid.Row="0"
                         Background="{StaticResource AppPanelBrush}"
                         BorderBrush="{StaticResource AppBorderBrush}"
                         BorderThickness="1"
@@ -200,55 +187,109 @@
                     </Grid>
                 </Border>
 
-                <!-- グリッドスプリッター -->
-                <GridSplitter Grid.Column="1"
+                <!-- グリッドスプリッター（上下） -->
+                <GridSplitter Grid.Row="1"
                               Background="{StaticResource AppBorderBrush}"
-                              ResizeDirection="Columns" />
+                              ResizeDirection="Rows" />
 
-                <!-- ── CRUD一覧（右ペイン） ── -->
-                <Border Grid.Column="2"
+                <!-- ── CRUD一覧（下ペイン） ── -->
+                <Border Grid.Row="2"
                         Background="{StaticResource AppPanelBrush}"
                         BorderBrush="{StaticResource AppBorderBrush}"
                         BorderThickness="1"
                         CornerRadius="4">
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <!-- パネルヘッダ -->
-                        <Border Grid.Row="0"
-                                Background="{StaticResource AppHeaderBrush}"
-                                BorderBrush="{StaticResource AppBorderBrush}"
-                                BorderThickness="0,0,0,1"
-                                Padding="8,6"
-                                CornerRadius="4,4,0,0">
-                            <TextBlock Text="CRUD一覧"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource AppPrimaryBrush}" />
-                        </Border>
-
-                        <!-- ListBox -->
-                        <ListBox Grid.Row="1"
-                                 x:Name="CrudListBox"
-                                 ItemsSource="{Binding CrudListData}"
-                                 SelectedItem="{Binding SelectedCrudItem}"
-                                 DoubleTapped="OnListBoxDoubleTapped"
-                                 KeyDown="OnListBoxKeyDown"
-                                 Background="White">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding DisplayText}"
-                                               FontSize="12"
-                                               Padding="2,1" />
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
+                        <!-- CRUD一覧 DataGrid（オリジナル同様の8列リスト表示） -->
+                        <DataGrid Grid.Row="0"
+                                  x:Name="CrudListGrid"
+                                  ItemsSource="{Binding CrudListData}"
+                                  SelectedItem="{Binding SelectedCrudItem}"
+                                  IsReadOnly="True"
+                                  GridLinesVisibility="All"
+                                  BorderThickness="0"
+                                  AutoGenerateColumns="False"
+                                  CanUserReorderColumns="True"
+                                  CanUserResizeColumns="True"
+                                  CanUserSortColumns="True"
+                                  Background="White"
+                                  RowBackground="White"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Auto"
+                                  DoubleTapped="OnCrudListDoubleTapped"
+                                  KeyDown="OnCrudListKeyDown"
+                                  FontSize="12">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="ファイル" Width="220">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding FileName}" TextTrimming="CharacterEllipsis"
+                                                       ToolTip.Tip="{Binding FileName}" VerticalAlignment="Center" Margin="4,0" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="行番号"
+                                                    Binding="{Binding LineNo}"
+                                                    Width="60" />
+                                <DataGridTemplateColumn Header="プログラム" Width="150">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding ProgramId}" TextTrimming="CharacterEllipsis"
+                                                       ToolTip.Tip="{Binding ProgramId}" VerticalAlignment="Center" Margin="4,0" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="エンティティ名" Width="170">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding LogicalName}" TextTrimming="CharacterEllipsis"
+                                                       ToolTip.Tip="{Binding LogicalName}" VerticalAlignment="Center" Margin="4,0" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="テーブル名" Width="140">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding TableName}" TextTrimming="CharacterEllipsis"
+                                                       ToolTip.Tip="{Binding TableName}" VerticalAlignment="Center" Margin="4,0" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="CRUD"
+                                                    Binding="{Binding Crud}"
+                                                    Width="50" />
+                                <DataGridTemplateColumn Header="関数名/カーソル名" Width="155">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding FuncName}" TextTrimming="CharacterEllipsis"
+                                                       ToolTip.Tip="{Binding FuncName}" VerticalAlignment="Center" Margin="4,0" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="代替" Width="55">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding AltName}" TextTrimming="CharacterEllipsis"
+                                                       ToolTip.Tip="{Binding AltName}" VerticalAlignment="Center" Margin="4,0" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="エディタ起動" Command="{Binding RunTextEditorCommand}" />
+                                    <MenuItem Header="クエリ分析" Command="{Binding AnalyzeSelectedQueryCommand}" />
+                                    <MenuItem Header="テーブル定義" Command="{Binding ShowSelectedTableDefCommand}" />
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
+                        </DataGrid>
 
                         <!-- 下部アクションボタン -->
-                        <Border Grid.Row="2"
+                        <Border Grid.Row="1"
                                 Background="{StaticResource AppSurfaceBrush}"
                                 BorderBrush="{StaticResource AppBorderBrush}"
                                 BorderThickness="0,1,0,0"
