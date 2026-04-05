@@ -78,6 +78,8 @@ public partial class GrepViewModel : ViewModelBase
             if (UseRegex)
             {
                 regexPattern = SearchPattern;
+                // 正規表現の妥当性を検証
+                _ = new Regex(regexPattern);
             }
             else
             {
@@ -86,7 +88,7 @@ public partial class GrepViewModel : ViewModelBase
                     regexPattern = $@"\b{regexPattern}\b";
             }
         }
-        catch
+        catch (ArgumentException)
         {
             ResultSummary = "正規表現パターンが不正です";
             return;
