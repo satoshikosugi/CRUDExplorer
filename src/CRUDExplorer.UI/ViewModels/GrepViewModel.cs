@@ -166,6 +166,21 @@ public partial class GrepViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private void AnalyzeQuery()
+    {
+        if (SelectedResult == null) return;
+
+        // GlobalState に解析リクエストを設定
+        GlobalState.Instance.AnalyzeQueryRequest = new AnalyzeQueryRequest
+        {
+            SourcePath = GlobalState.Instance.LastAnalysisDestPath,
+            FileName = SelectedResult.FileName,
+            LineNo = SelectedResult.LineNumber,
+            TableName = string.Empty
+        };
+    }
+
+    [RelayCommand]
     private void Close()
     {
         _closeWindow();

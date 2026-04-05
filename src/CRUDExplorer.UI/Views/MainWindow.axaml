@@ -51,6 +51,9 @@
                     <MenuItem Header="テーブル定義参照(_T)" Command="{Binding LoadTableDefCommand}" />
                     <MenuItem Header="クエリ解析ウィンドウ(_Q)" Command="{Binding ShowQueryAnalyzerCommand}" />
                     <Separator />
+                    <MenuItem Header="Grep検索(_G)" Command="{Binding ShowGrepWindowCommand}" />
+                    <MenuItem Header="CRUD検索(_R)" Command="{Binding ShowCrudSearchWindowCommand}" />
+                    <Separator />
                     <MenuItem Header="フィルタ(_F)" Command="{Binding ShowFilterCommand}" />
                     <Separator />
                     <MenuItem Header="マトリクスをコピー(_M)" Command="{Binding CopyMatrixToClipboardCommand}" />
@@ -238,6 +241,18 @@
                                  DoubleTapped="OnListBoxDoubleTapped"
                                  KeyDown="OnListBoxKeyDown"
                                  Background="White">
+                            <ListBox.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="選択行をコピー" Command="{Binding CopyCrudListSelectedItemCommand}" />
+                                    <MenuItem Header="全行をコピー" Command="{Binding CopyCrudListAllItemsCommand}" />
+                                    <Separator />
+                                    <MenuItem Header="Grep検索" Command="{Binding GrepFromSelectedItemCommand}" />
+                                    <MenuItem Header="テーブル定義" Command="{Binding ShowSelectedTableDefCommand}" />
+                                    <Separator />
+                                    <MenuItem Header="エディタで開く" Command="{Binding RunTextEditorCommand}" />
+                                    <MenuItem Header="クエリ解析" Command="{Binding AnalyzeSelectedQueryCommand}" />
+                                </ContextMenu>
+                            </ListBox.ContextMenu>
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding DisplayText}"

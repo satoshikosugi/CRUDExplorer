@@ -277,6 +277,83 @@ public partial class MainWindowViewModel : ViewModelBase
     /// <summary>クリップボードへのコピー準備完了イベント</summary>
     public event EventHandler? MatrixClipboardReady;
 
+    // ─── CRUD一覧コンテキストメニュー用コマンド ─────────────────────────
+
+    [RelayCommand]
+    private void CopyCrudListSelectedItem()
+    {
+        if (SelectedCrudItem is not CrudListItem item)
+        {
+            StatusMessage = "コピーする項目がありません";
+            return;
+        }
+
+        // タブ区切り形式でコピー
+        ClipboardText = $"{item.FileName}\t{item.LineNo}\t{item.ProgramId}\t{item.LogicalName}\t{item.TableName}\t{item.Crud}\t{item.FuncName}";
+        MatrixClipboardReady?.Invoke(this, EventArgs.Empty);
+        StatusMessage = "選択行をクリップボードにコピーしました";
+    }
+
+    [RelayCommand]
+    private void CopyCrudListAllItems()
+    {
+        if (CrudListData.Count == 0)
+        {
+            StatusMessage = "コピーするデータがありません";
+            return;
+        }
+
+        var sb = new StringBuilder();
+        sb.AppendLine("ファイル名\t行番号\tプログラムID\t論理名\tテーブル名\tCRUD\t関数名");
+        foreach (var item in CrudListData)
+        {
+            sb.AppendLine($"{item.FileName}\t{item.LineNo}\t{item.ProgramId}\t{item.LogicalName}\t{item.TableName}\t{item.Crud}\t{item.FuncName}");
+        }
+
+        ClipboardText = sb.ToString();
+        MatrixClipboardReady?.Invoke(this, EventArgs.Empty);
+        StatusMessage = $"全{CrudListData.Count}行をクリップボードにコピーしました";
+    }
+
+    [RelayCommand]
+    private async Task ShowGrepWindowAsync()
+    {
+        if (string.IsNullOrEmpty(SourcePath))
+        {
+            StatusMessage = "先にフォルダを選択してください";
+            return;
+        }
+        await _windowService.ShowDialog<GrepWindow>();
+    }
+
+    [RelayCommand]
+    private async Task ShowCrudSearchWindowAsync()
+    {
+        if (string.IsNullOrEmpty(SourcePath))
+        {
+            StatusMessage = "先にフォルダを選択してください";
+            return;
+        }
+        await _windowService.ShowDialog<CrudSearchWindow>();
+    }
+
+    [RelayCommand]
+    private void GrepFromSelectedItem()
+    {
+        if (SelectedCrudItem is not CrudListItem item) return;
+        OpenGrepWindowWithContext(item.FileName, item.TableName);
+    }
+
+    private void OpenGrepWindowWithContext(string fileName, string searchText)
+    {
+        var vm = new GrepViewModel();
+        vm.CurrentFile = fileName;
+        vm.SearchPattern = searchText;
+        vm.SearchAllFiles = true;
+        _windowService.ShowWindow<GrepWindow>(vm);
+        StatusMessage = $"Grep: {searchText}";
+    }
+
     [RelayCommand]
     private void OpenFolderWithoutCrud()
     {
