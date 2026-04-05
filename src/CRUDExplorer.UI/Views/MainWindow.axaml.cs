@@ -5,6 +5,7 @@ using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Threading;
+using CRUDExplorer.Core.Utilities;
 using CRUDExplorer.UI.ViewModels;
 
 namespace CRUDExplorer.UI.Views;
@@ -109,9 +110,22 @@ public partial class MainWindow : Window
         // プログラムごとの動的列
         for (int idx = 0; idx < vm.MatrixHeaders.Length; idx++)
         {
+            var programId = vm.MatrixHeaders[idx];
+            
+            // 論理名表示モードの場合、プログラム名（論理名）に切り替える
+            string headerText = programId;
+            if (vm.ShowLogicalName)
+            {
+                if (GlobalState.Instance.ProgramNames.TryGetValue(programId, out var logicalName)
+                    && !string.IsNullOrEmpty(logicalName))
+                {
+                    headerText = logicalName;
+                }
+            }
+
             grid.Columns.Add(new DataGridTextColumn
             {
-                Header  = vm.MatrixHeaders[idx],
+                Header  = headerText,
                 Binding = new Binding(nameof(CrudMatrixRow.CellValues))
                 {
                     Converter      = new CellValueConverter(),
@@ -129,7 +143,8 @@ public partial class MainWindow : Window
         // セル選択イベントを接続
         grid.SelectionChanged += OnMatrixSelectionChanged;
 
-        vm.StatusMessage += $"  [列:{grid.Columns.Count} / 行:{vm.MatrixRows.Count}]";
+        var modeLabel = vm.ShowLogicalName ? "論理名" : "物理名";
+        vm.StatusMessage += $"  [列:{grid.Columns.Count} / 行:{vm.MatrixRows.Count}] ({modeLabel}表示)";
     }
 
     /// <summary>

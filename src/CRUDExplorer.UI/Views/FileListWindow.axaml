@@ -3,45 +3,76 @@
         xmlns:vm="using:CRUDExplorer.UI.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
         x:Class="CRUDExplorer.UI.Views.FileListWindow"
         x:DataType="vm:FileListViewModel"
-        Title="ファイル一覧" Width="800" Height="600"
+        Title="ソースファイル一覧" Width="1000" Height="600"
         CanResize="True">
 
   <DockPanel Margin="10">
     <!-- Bottom Buttons -->
     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
-      <Button Content="開く(_O)" Width="100" Command="{Binding OpenCommand}" />
+      <Button Content="エディタで開く(_O)" Width="130" Command="{Binding OpenCommand}" />
+      <Button Content="クエリ解析(_A)" Width="100" Command="{Binding AnalyzeQueryCommand}" />
       <Button Content="閉じる(_C)" Width="100" Command="{Binding CloseCommand}" />
     </StackPanel>
 
     <!-- Filter Panel -->
     <Border DockPanel.Dock="Top" Background="White" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,10">
-      <Grid ColumnDefinitions="Auto,*,Auto">
-        <TextBlock Grid.Column="0" Text="フィルタ:" VerticalAlignment="Center" Margin="0,0,10,0" />
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto,*,Auto">
+        <TextBlock Grid.Column="0" Text="ファイルフィルタ:" VerticalAlignment="Center" Margin="0,0,10,0" />
         <TextBox Grid.Column="1" Text="{Binding FilterPattern}" Watermark="ファイル名でフィルタ（部分一致）" />
-        <Button Grid.Column="2" Content="更新" Command="{Binding RefreshCommand}" Margin="10,0,0,0" />
+        <TextBlock Grid.Column="3" Text="Grep:" VerticalAlignment="Center" Margin="20,0,10,0" />
+        <TextBox Grid.Column="4" Text="{Binding GrepPattern}" Watermark="クエリ内をGrep検索" />
+        <Button Grid.Column="5" Content="検索" Command="{Binding GrepCommand}" Margin="10,0,0,0" />
       </Grid>
     </Border>
 
-    <!-- File List -->
-    <Border BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5">
-      <DockPanel>
-        <TextBlock DockPanel.Dock="Top" Text="{Binding FileCount, StringFormat='ファイル数: {0}件'}" FontWeight="Bold" Margin="5,0,5,5" />
-        <DataGrid ItemsSource="{Binding Files}"
-                  SelectedItem="{Binding SelectedFile}"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  GridLinesVisibility="All">
-          <DataGrid.Columns>
-            <DataGridTextColumn Header="ファイル名" Binding="{Binding FileName}" Width="*" />
-            <DataGridTextColumn Header="パス" Binding="{Binding FilePath}" Width="2*" />
-            <DataGridTextColumn Header="サイズ" Binding="{Binding FileSize}" Width="100" />
-            <DataGridTextColumn Header="更新日時" Binding="{Binding LastModified}" Width="150" />
-          </DataGrid.Columns>
-        </DataGrid>
-      </DockPanel>
-    </Border>
+    <!-- Main Content: Left (Files) / Right (Queries) -->
+    <Grid ColumnDefinitions="*,6,*">
+      <!-- Left: File List -->
+      <Border Grid.Column="0" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Text="{Binding FileCount, StringFormat='ファイル: {0}件'}" FontWeight="Bold" Margin="5,0,5,5" />
+          <ListBox ItemsSource="{Binding Files}"
+                   SelectedItem="{Binding SelectedFile}"
+                   DoubleTapped="OnFileDoubleClicked">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <StackPanel>
+                  <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" />
+                  <TextBlock Text="{Binding FilePath}" FontSize="11" Foreground="{StaticResource AppSecondaryTextBrush}" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+      </Border>
+
+      <!-- Splitter -->
+      <GridSplitter Grid.Column="1" Background="{StaticResource AppBorderBrush}" ResizeDirection="Columns" />
+
+      <!-- Right: Query List -->
+      <Border Grid.Column="2" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="5">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Text="{Binding QueryCount, StringFormat='クエリ: {0}件'}" FontWeight="Bold" Margin="5,0,5,5" />
+          <ListBox ItemsSource="{Binding Queries}"
+                   SelectedItem="{Binding SelectedQuery}"
+                   DoubleTapped="OnQueryDoubleClicked">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <StackPanel>
+                  <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock Grid.Column="0" Text="{Binding LineNo, StringFormat='行{0}'}" FontWeight="SemiBold" Width="60" />
+                    <TextBlock Grid.Column="1" Text="{Binding FuncName}" FontWeight="SemiBold" />
+                  </Grid>
+                  <TextBlock Text="{Binding Preview}" FontSize="11" FontFamily="Consolas,Courier New,monospace" Foreground="{StaticResource AppSecondaryTextBrush}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+      </Border>
+    </Grid>
   </DockPanel>
 </Window>

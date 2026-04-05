@@ -59,10 +59,20 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private int _crudViewType = 0; // 0: TableCRUD, 1: ColumnCRUD
 
+    /// <summary>論理名表示モード（true: 論理名, false: 物理名）</summary>
+    [ObservableProperty]
+    private bool _showLogicalName = false;
+
     partial void OnCrudViewTypeChanged(int value)
     {
         if (!string.IsNullOrEmpty(SourcePath))
             _ = LoadCrudDataAsync();
+    }
+
+    partial void OnShowLogicalNameChanged(bool value)
+    {
+        // 列ヘッダを再構築するためにイベントを発火
+        MatrixColumnsChanged?.Invoke(this, EventArgs.Empty);
     }
 
     [ObservableProperty]
@@ -82,6 +92,13 @@ public partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>MainWindow.axaml.cs がDataGrid列を再構築するために購読するイベント</summary>
     public event EventHandler? MatrixColumnsChanged;
+
+    [RelayCommand]
+    private void ToggleLogicalName()
+    {
+        ShowLogicalName = !ShowLogicalName;
+        StatusMessage = ShowLogicalName ? "論理名表示モード" : "物理名表示モード";
+    }
 
     public MainWindowViewModel(IWindowService windowService)
     {

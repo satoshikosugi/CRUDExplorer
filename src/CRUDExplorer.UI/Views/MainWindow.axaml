@@ -136,6 +136,11 @@
                     <Button Content="✕ クリア"
                             Command="{Binding ClearFilterCommand}"
                             Padding="8,4" />
+                    <Separator Margin="4,0" />
+                    <ToggleButton Content="論理名/物理名"
+                                  IsChecked="{Binding ShowLogicalName}"
+                                  Padding="8,4"
+                                  ToolTip.Tip="列ヘッダの表示を切替" />
                 </StackPanel>
             </Border>
 
