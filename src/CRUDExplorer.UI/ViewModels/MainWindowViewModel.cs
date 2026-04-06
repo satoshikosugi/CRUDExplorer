@@ -59,10 +59,20 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private int _crudViewType = 0; // 0: TableCRUD, 1: ColumnCRUD
 
+    /// <summary>論理名表示モード（true: 論理名, false: 物理名）</summary>
+    [ObservableProperty]
+    private bool _showLogicalName = false;
+
     partial void OnCrudViewTypeChanged(int value)
     {
         if (!string.IsNullOrEmpty(SourcePath))
             _ = LoadCrudDataAsync();
+    }
+
+    partial void OnShowLogicalNameChanged(bool value)
+    {
+        // 列ヘッダを再構築するためにイベントを発火
+        MatrixColumnsChanged?.Invoke(this, EventArgs.Empty);
     }
 
     [ObservableProperty]
@@ -82,6 +92,13 @@ public partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>MainWindow.axaml.cs がDataGrid列を再構築するために購読するイベント</summary>
     public event EventHandler? MatrixColumnsChanged;
+
+    [RelayCommand]
+    private void ToggleLogicalName()
+    {
+        ShowLogicalName = !ShowLogicalName;
+        StatusMessage = ShowLogicalName ? "論理名表示モード" : "物理名表示モード";
+    }
 
     public MainWindowViewModel(IWindowService windowService)
     {
@@ -276,6 +293,119 @@ public partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>クリップボードへのコピー準備完了イベント</summary>
     public event EventHandler? MatrixClipboardReady;
+
+    // ─── CRUD一覧コンテキストメニュー用コマンド ─────────────────────────
+
+    [RelayCommand]
+    private void CopyCrudListSelectedItem()
+    {
+        if (SelectedCrudItem is not CrudListItem item)
+        {
+            StatusMessage = "コピーする項目がありません";
+            return;
+        }
+
+        // タブ区切り形式でコピー
+        ClipboardText = $"{item.FileName}\t{item.LineNo}\t{item.ProgramId}\t{item.LogicalName}\t{item.TableName}\t{item.Crud}\t{item.FuncName}";
+        MatrixClipboardReady?.Invoke(this, EventArgs.Empty);
+        StatusMessage = "選択行をクリップボードにコピーしました";
+    }
+
+    [RelayCommand]
+    private void CopyCrudListAllItems()
+    {
+        if (CrudListData.Count == 0)
+        {
+            StatusMessage = "コピーするデータがありません";
+            return;
+        }
+
+        var sb = new StringBuilder();
+        sb.AppendLine("ファイル名\t行番号\tプログラムID\t論理名\tテーブル名\tCRUD\t関数名");
+        foreach (var item in CrudListData)
+        {
+            sb.AppendLine($"{item.FileName}\t{item.LineNo}\t{item.ProgramId}\t{item.LogicalName}\t{item.TableName}\t{item.Crud}\t{item.FuncName}");
+        }
+
+        ClipboardText = sb.ToString();
+        MatrixClipboardReady?.Invoke(this, EventArgs.Empty);
+        StatusMessage = $"全{CrudListData.Count}行をクリップボードにコピーしました";
+    }
+
+    /// <summary>
+    /// CRUD一覧の列別コピー（オリジナル InitCommonContextMenu の列別コピー相当）
+    /// </summary>
+    [RelayCommand]
+    private void CopyCrudListColumn(string columnName)
+    {
+        if (SelectedCrudItem is not CrudListItem item)
+        {
+            StatusMessage = "コピーする項目がありません";
+            return;
+        }
+
+        ClipboardText = columnName switch
+        {
+            "FileName"    => item.FileName,
+            "LineNo"      => item.LineNo.ToString(),
+            "ProgramId"   => item.ProgramId,
+            "LogicalName" => item.LogicalName,
+            "TableName"   => item.TableName,
+            "Crud"        => item.Crud,
+            "FuncName"    => item.FuncName,
+            _ => string.Empty
+        };
+        MatrixClipboardReady?.Invoke(this, EventArgs.Empty);
+        StatusMessage = $"{columnName} をクリップボードにコピーしました";
+    }
+
+    [RelayCommand]
+    private async Task ShowGrepWindowAsync()
+    {
+        if (string.IsNullOrEmpty(SourcePath))
+        {
+            StatusMessage = "先にフォルダを選択してください";
+            return;
+        }
+        await _windowService.ShowDialog<GrepWindow>();
+    }
+
+    [RelayCommand]
+    private async Task ShowCrudSearchWindowAsync()
+    {
+        if (string.IsNullOrEmpty(SourcePath))
+        {
+            StatusMessage = "先にフォルダを選択してください";
+            return;
+        }
+        await _windowService.ShowDialog<CrudSearchWindow>();
+    }
+
+    [RelayCommand]
+    private void GrepFromSelectedItem()
+    {
+        if (SelectedCrudItem is not CrudListItem item) return;
+        OpenGrepWindowWithContext(item.FileName, item.TableName);
+    }
+
+    private void OpenGrepWindowWithContext(string fileName, string searchText)
+    {
+        var vm = new GrepViewModel();
+        vm.CurrentFile = fileName;
+        vm.SearchPattern = searchText;
+        vm.SearchAllFiles = true;
+        _windowService.ShowWindow<GrepWindow>(vm);
+        StatusMessage = $"Grep: {searchText}";
+    }
+
+    /// <summary>
+    /// マトリクスの選択行テーブル名でGrep検索を開く
+    /// </summary>
+    public void GrepFromMatrixSelection(string? tableName)
+    {
+        if (string.IsNullOrEmpty(tableName)) return;
+        OpenGrepWindowWithContext(string.Empty, tableName);
+    }
 
     [RelayCommand]
     private void OpenFolderWithoutCrud()

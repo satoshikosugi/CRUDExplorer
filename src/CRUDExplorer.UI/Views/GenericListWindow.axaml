@@ -32,9 +32,15 @@
                    Text="{Binding ItemCountText}"
                    FontWeight="Bold"
                    Margin="5,0,5,5" />
-        <ListBox ItemsSource="{Binding Items}"
+        <ListBox ItemsSource="{Binding FilteredItems}"
                  SelectedItem="{Binding SelectedItem}"
                  SelectionMode="{Binding SelectionMode}">
+          <ListBox.ContextMenu>
+            <ContextMenu>
+              <MenuItem Header="選択行をコピー" Command="{Binding CopySelectedCommand}" />
+              <MenuItem Header="全行をコピー" Command="{Binding CopyAllCommand}" />
+            </ContextMenu>
+          </ListBox.ContextMenu>
           <ListBox.ItemTemplate>
             <DataTemplate>
               <TextBlock Text="{Binding DisplayText}" />

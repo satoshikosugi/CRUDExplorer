@@ -51,6 +51,9 @@
                     <MenuItem Header="テーブル定義参照(_T)" Command="{Binding LoadTableDefCommand}" />
                     <MenuItem Header="クエリ解析ウィンドウ(_Q)" Command="{Binding ShowQueryAnalyzerCommand}" />
                     <Separator />
+                    <MenuItem Header="Grep検索(_G)" Command="{Binding ShowGrepWindowCommand}" />
+                    <MenuItem Header="CRUD検索(_R)" Command="{Binding ShowCrudSearchWindowCommand}" />
+                    <Separator />
                     <MenuItem Header="フィルタ(_F)" Command="{Binding ShowFilterCommand}" />
                     <Separator />
                     <MenuItem Header="マトリクスをコピー(_M)" Command="{Binding CopyMatrixToClipboardCommand}" />
@@ -133,6 +136,29 @@
                     <Button Content="✕ クリア"
                             Command="{Binding ClearFilterCommand}"
                             Padding="8,4" />
+                    <Separator Margin="4,0" />
+                    <ToggleButton Content="論理名/物理名"
+                                  IsChecked="{Binding ShowLogicalName}"
+                                  Padding="8,4"
+                                  ToolTip.Tip="列ヘッダの表示を切替" />
+                    <Separator Margin="4,0" />
+                    <Button Content="🔍 フィルタ詳細"
+                            Command="{Binding ShowFilterCommand}"
+                            Padding="8,4"
+                            ToolTip.Tip="フィルタ詳細設定を開く" />
+                    <Separator Margin="4,0" />
+                    <Button Content="📝 エディタ"
+                            Command="{Binding RunTextEditorCommand}"
+                            Padding="8,4"
+                            ToolTip.Tip="選択中のクエリをエディタで開く" />
+                    <Button Content="📊 クエリ解析"
+                            Command="{Binding AnalyzeSelectedQueryCommand}"
+                            Padding="8,4"
+                            ToolTip.Tip="選択中のクエリを解析" />
+                    <Button Content="📋 テーブル定義"
+                            Command="{Binding LoadTableDefCommand}"
+                            Padding="8,4"
+                            ToolTip.Tip="テーブル定義を表示" />
                 </StackPanel>
             </Border>
 
@@ -194,6 +220,9 @@
                                 <ContextMenu>
                                     <MenuItem Header="マトリクスをクリップボードにコピー" Command="{Binding CopyMatrixToClipboardCommand}" />
                                     <MenuItem Header="テーブル定義" Click="OnContextMenuTableDef" />
+                                    <MenuItem Header="Grep検索" Click="OnContextMenuGrep" />
+                                    <Separator />
+                                    <MenuItem Header="ソートをリセット" Click="OnResetSort" />
                                 </ContextMenu>
                             </DataGrid.ContextMenu>
                         </DataGrid>
@@ -230,22 +259,56 @@
                                        Foreground="{StaticResource AppPrimaryBrush}" />
                         </Border>
 
-                        <!-- ListBox -->
-                        <ListBox Grid.Row="1"
-                                 x:Name="CrudListBox"
+                        <!-- DataGrid (CRUD一覧) -->
+                        <DataGrid Grid.Row="1"
+                                 x:Name="CrudListGrid"
                                  ItemsSource="{Binding CrudListData}"
                                  SelectedItem="{Binding SelectedCrudItem}"
-                                 DoubleTapped="OnListBoxDoubleTapped"
-                                 KeyDown="OnListBoxKeyDown"
-                                 Background="White">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding DisplayText}"
-                                               FontSize="12"
-                                               Padding="2,1" />
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
+                                 IsReadOnly="True"
+                                 GridLinesVisibility="Horizontal"
+                                 BorderThickness="0"
+                                 AutoGenerateColumns="False"
+                                 CanUserReorderColumns="True"
+                                 CanUserResizeColumns="True"
+                                 CanUserSortColumns="True"
+                                 Background="White"
+                                 RowBackground="White"
+                                 HorizontalScrollBarVisibility="Auto"
+                                 VerticalScrollBarVisibility="Auto"
+                                 DoubleTapped="OnCrudListGridDoubleTapped"
+                                 KeyDown="OnCrudListGridKeyDown"
+                                 FontSize="12">
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="選択行をコピー" Command="{Binding CopyCrudListSelectedItemCommand}" />
+                                    <MenuItem Header="全行をコピー" Command="{Binding CopyCrudListAllItemsCommand}" />
+                                    <MenuItem Header="列別コピー">
+                                        <MenuItem Header="ファイル名" Command="{Binding CopyCrudListColumnCommand}" CommandParameter="FileName" />
+                                        <MenuItem Header="行番号" Command="{Binding CopyCrudListColumnCommand}" CommandParameter="LineNo" />
+                                        <MenuItem Header="プログラムID" Command="{Binding CopyCrudListColumnCommand}" CommandParameter="ProgramId" />
+                                        <MenuItem Header="論理名" Command="{Binding CopyCrudListColumnCommand}" CommandParameter="LogicalName" />
+                                        <MenuItem Header="テーブル名" Command="{Binding CopyCrudListColumnCommand}" CommandParameter="TableName" />
+                                        <MenuItem Header="CRUD" Command="{Binding CopyCrudListColumnCommand}" CommandParameter="Crud" />
+                                        <MenuItem Header="関数名" Command="{Binding CopyCrudListColumnCommand}" CommandParameter="FuncName" />
+                                    </MenuItem>
+                                    <Separator />
+                                    <MenuItem Header="Grep検索" Command="{Binding GrepFromSelectedItemCommand}" />
+                                    <MenuItem Header="テーブル定義" Command="{Binding ShowSelectedTableDefCommand}" />
+                                    <Separator />
+                                    <MenuItem Header="エディタで開く" Command="{Binding RunTextEditorCommand}" />
+                                    <MenuItem Header="クエリ解析" Command="{Binding AnalyzeSelectedQueryCommand}" />
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="ファイル名" Binding="{Binding FileName}" Width="180" />
+                                <DataGridTextColumn Header="行" Binding="{Binding LineNo}" Width="50" />
+                                <DataGridTextColumn Header="プログラムID" Binding="{Binding ProgramId}" Width="130" />
+                                <DataGridTextColumn Header="論理名" Binding="{Binding LogicalName}" Width="140" />
+                                <DataGridTextColumn Header="テーブル名" Binding="{Binding TableName}" Width="120" />
+                                <DataGridTextColumn Header="CRUD" Binding="{Binding Crud}" Width="55" />
+                                <DataGridTextColumn Header="関数名" Binding="{Binding FuncName}" Width="130" />
+                            </DataGrid.Columns>
+                        </DataGrid>
 
                         <!-- 下部アクションボタン -->
                         <Border Grid.Row="2"

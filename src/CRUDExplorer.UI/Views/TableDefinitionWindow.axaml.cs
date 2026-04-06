@@ -16,6 +16,15 @@ public partial class TableDefinitionWindow : Window
                 var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
                 if (clipboard != null)
                     await clipboard.SetTextAsync(text);
+            },
+            showCrudSearch: (tableName, columnName) =>
+            {
+                var vm = new CrudSearchViewModel(closeWindow: null);
+                vm.TableNamePattern = tableName;
+                vm.ColumnNamePattern = columnName;
+                vm.SearchCommand.Execute(null);
+                var win = new CrudSearchWindow { DataContext = vm };
+                win.Show();
             });
     }
 }

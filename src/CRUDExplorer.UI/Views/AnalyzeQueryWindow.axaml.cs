@@ -15,6 +15,7 @@ public partial class AnalyzeQueryWindow : Window
 {
     private TextEditor? _sqlEditor;
     private SqlTextColorizer? _colorizer;
+    private BracketMatchRenderer? _bracketRenderer;
 
     public AnalyzeQueryWindow()
     {
@@ -81,6 +82,11 @@ public partial class AnalyzeQueryWindow : Window
             };
             _sqlEditor.TextArea.TextView.LineTransformers.Add(_colorizer);
 
+            // 括弧マッチハイライト（オリジナルの DecoKakko 相当）
+            _bracketRenderer = new BracketMatchRenderer();
+            _sqlEditor.TextArea.TextView.BackgroundRenderers.Add(_bracketRenderer);
+            _sqlEditor.TextArea.Caret.PositionChanged += OnCaretPositionChanged;
+
             // ダブルクリックでSQL識別子全体を選択（アンダースコア含む）
             _sqlEditor.TextArea.AddHandler(
                 DoubleTappedEvent,
@@ -123,6 +129,16 @@ public partial class AnalyzeQueryWindow : Window
         _sqlEditor?.TextArea.TextView.Redraw();
     }
 
+    /// <summary>
+    /// カーソル位置変更時に括弧マッチハイライトを更新
+    /// </summary>
+    private void OnCaretPositionChanged(object? sender, EventArgs e)
+    {
+        if (_sqlEditor == null || _bracketRenderer == null) return;
+        _bracketRenderer.UpdateBracketMatch(_sqlEditor.Document, _sqlEditor.TextArea.Caret.Offset);
+        _sqlEditor.TextArea.TextView.InvalidateLayer(AvaloniaEdit.Rendering.KnownLayer.Selection);
+    }
+
     private void OnSqlEditorDoubleTapped(object? sender, TappedEventArgs e)
     {
         if (_sqlEditor?.Document == null) return;
@@ -158,6 +174,33 @@ public partial class AnalyzeQueryWindow : Window
         if (DataContext is AnalyzeQueryViewModel vm && sender is TreeView tv)
         {
             vm.SelectedTreeNode = tv.SelectedItem as QueryTreeNode;
+        }
+    }
+
+    /// <summary>
+    /// キーボード操作: T → 選択テキストまたは先頭テーブルのテーブル定義を表示
+    /// </summary>
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+
+        if (e.Key == Key.T && DataContext is AnalyzeQueryViewModel vm)
+        {
+            // TextBox/TextEditor にフォーカスがある場合は通常入力を優先
+            if (TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() is Avalonia.Controls.TextBox)
+                return;
+            if (_sqlEditor?.TextArea.IsFocused == true)
+                return;
+
+            var tableName = _sqlEditor?.SelectedText;
+            if (string.IsNullOrWhiteSpace(tableName))
+                tableName = vm.TableCrudList.FirstOrDefault()?.TableName;
+
+            if (!string.IsNullOrEmpty(tableName))
+            {
+                vm.ShowTableDefinitionCommand.Execute(null);
+                e.Handled = true;
+            }
         }
     }
 }

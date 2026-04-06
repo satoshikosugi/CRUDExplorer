@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -37,11 +38,18 @@ public partial class CrudSearchViewModel : ViewModelBase
     private ObservableCollection<CrudSearchResult> _searchResults = new();
 
     [ObservableProperty]
+    private CrudSearchResult? _selectedResult;
+
+    [ObservableProperty]
     private int _resultCount = 0;
+
+    /// <summary>エディタ起動/クエリ解析で使用するソースパス</summary>
+    public string SourcePath { get; set; } = string.Empty;
 
     public CrudSearchViewModel(Action? closeWindow = null)
     {
         _closeWindow = closeWindow ?? (() => { });
+        SourcePath = GlobalState.Instance.LastAnalysisDestPath;
     }
 
     [RelayCommand]
@@ -128,6 +136,34 @@ public partial class CrudSearchViewModel : ViewModelBase
             ColumnName = columnName,
             CrudType = crudType
         });
+    }
+
+    [RelayCommand]
+    private void OpenInEditor()
+    {
+        if (SelectedResult == null) return;
+
+        var settings = Settings.Load();
+        var launcher = new ExternalEditorLauncher(settings);
+        var filePath = !string.IsNullOrEmpty(SourcePath) 
+            ? Path.Combine(SourcePath, SelectedResult.FileName)
+            : SelectedResult.FileName;
+        launcher.RunTextEditor(filePath, SelectedResult.LineNo, SelectedResult.TableName);
+    }
+
+    [RelayCommand]
+    private void AnalyzeQuery()
+    {
+        if (SelectedResult == null) return;
+
+        // GlobalState に解析リクエストを設定し、AnalyzeQueryWindow を開く
+        GlobalState.Instance.AnalyzeQueryRequest = new AnalyzeQueryRequest
+        {
+            SourcePath = SourcePath,
+            FileName = SelectedResult.FileName,
+            LineNo = SelectedResult.LineNo,
+            TableName = SelectedResult.TableName
+        };
     }
 
     [RelayCommand]

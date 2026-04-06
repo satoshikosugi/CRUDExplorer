@@ -1,10 +1,15 @@
 using System;
 using System.Globalization;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Threading;
+using CRUDExplorer.Core.Utilities;
 using CRUDExplorer.UI.ViewModels;
 
 namespace CRUDExplorer.UI.Views;
@@ -106,20 +111,41 @@ public partial class MainWindow : Window
             Width   = new DataGridLength(60),
         });
 
-        // プログラムごとの動的列
+        // プログラムごとの動的列（ヘッダを縦書き表示: オリジナル CellPainting 相当）
         for (int idx = 0; idx < vm.MatrixHeaders.Length; idx++)
         {
-            grid.Columns.Add(new DataGridTextColumn
+            var programId = vm.MatrixHeaders[idx];
+            
+            // 論理名表示モードの場合、プログラム名（論理名）に切り替える
+            string headerText = programId;
+            if (vm.ShowLogicalName)
             {
-                Header  = vm.MatrixHeaders[idx],
+                if (GlobalState.Instance.ProgramNames.TryGetValue(programId, out var logicalName)
+                    && !string.IsNullOrEmpty(logicalName))
+                {
+                    headerText = logicalName;
+                }
+            }
+
+            var col = new DataGridTextColumn
+            {
                 Binding = new Binding(nameof(CrudMatrixRow.CellValues))
                 {
                     Converter      = new CellValueConverter(),
                     ConverterParameter = idx,
                 },
-                Width   = new DataGridLength(80),
-            });
+                Width   = new DataGridLength(50),
+            };
+
+            // 縦書きヘッダ用テンプレート
+            var capturedText = headerText;
+            col.Header = new VerticalHeaderContent(capturedText);
+
+            grid.Columns.Add(col);
         }
+
+        // ヘッダ高さを拡張（縦書きテキスト用）
+        grid.ColumnHeaderHeight = 100;
 
         // SelectionUnit を CellOrRowHeader にして、セル単位の選択を可能にする
         grid.SelectionMode = DataGridSelectionMode.Extended;
@@ -129,7 +155,8 @@ public partial class MainWindow : Window
         // セル選択イベントを接続
         grid.SelectionChanged += OnMatrixSelectionChanged;
 
-        vm.StatusMessage += $"  [列:{grid.Columns.Count} / 行:{vm.MatrixRows.Count}]";
+        var modeLabel = vm.ShowLogicalName ? "論理名" : "物理名";
+        vm.StatusMessage += $"  [列:{grid.Columns.Count} / 行:{vm.MatrixRows.Count}] ({modeLabel}表示)";
     }
 
     /// <summary>
@@ -174,7 +201,7 @@ public partial class MainWindow : Window
     /// <summary>
     /// CRUD一覧のダブルクリック → 設定に応じたアクション実行
     /// </summary>
-    private void OnListBoxDoubleTapped(object? sender, TappedEventArgs e)
+    private void OnCrudListGridDoubleTapped(object? sender, TappedEventArgs e)
     {
         if (DataContext is MainWindowViewModel viewModel)
         {
@@ -185,7 +212,7 @@ public partial class MainWindow : Window
     /// <summary>
     /// CRUD一覧のキーボード操作: Enter → ダブルクリックと同じ動作
     /// </summary>
-    private void OnListBoxKeyDown(object? sender, KeyEventArgs e)
+    private void OnCrudListGridKeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Key == Key.Enter && DataContext is MainWindowViewModel viewModel)
         {
@@ -207,12 +234,12 @@ public partial class MainWindow : Window
         if (e.Key == Key.Enter || e.Key == Key.Tab)
         {
             e.Handled = true;
-            var listBox = this.FindControl<ListBox>("CrudListBox");
-            if (listBox != null)
+            var crudGrid = this.FindControl<DataGrid>("CrudListGrid");
+            if (crudGrid != null)
             {
-                listBox.Focus();
-                if (listBox.SelectedIndex < 0 && listBox.ItemCount > 0)
-                    listBox.SelectedIndex = 0;
+                crudGrid.Focus();
+                if (crudGrid.SelectedIndex < 0 && _attachedVm?.CrudListData.Count > 0)
+                    crudGrid.SelectedIndex = 0;
             }
         }
         else if (e.Key == Key.T)
@@ -241,6 +268,34 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// コンテキストメニュー: 選択行のテーブル名でGrep検索
+    /// </summary>
+    private void OnContextMenuGrep(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_attachedVm == null) return;
+
+        var grid = this.FindControl<DataGrid>("CrudMatrixGrid");
+        var row = grid?.SelectedItem as CrudMatrixRow;
+        if (row != null)
+        {
+            _attachedVm.GrepFromMatrixSelection(row.TableName);
+        }
+    }
+
+    /// <summary>
+    /// コンテキストメニュー: ソートリセット（オリジナル frmMain.vb の角クリック相当）
+    /// DataGrid列を再構築し、元の順序に戻す。
+    /// </summary>
+    private void OnResetSort(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_attachedVm == null) return;
+
+        // 列の再構築で DataGrid のソート状態をリセット
+        RebuildMatrixColumns(_attachedVm);
+        _attachedVm.StatusMessage = "ソートをリセットしました";
+    }
+
     // ── IValueConverter（動的列用）──────────────────────────────────
 
     /// <summary>
@@ -258,5 +313,37 @@ public partial class MainWindow : Window
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
             => throw new NotSupportedException();
+    }
+
+    /// <summary>
+    /// 縦書きヘッダ用コンテンツ。DataGridColumnHeader に
+    /// LayoutTransform(RotateTransform(270)) を適用した TextBlock を表示する。
+    /// オリジナル VB.NET の CellPainting + StringFormatFlags.DirectionVertical 相当。
+    /// </summary>
+    private sealed class VerticalHeaderContent : Avalonia.Controls.Panel
+    {
+        public VerticalHeaderContent(string text)
+        {
+            var tb = new TextBlock
+            {
+                Text = text,
+                FontSize = 11,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                RenderTransform = new RotateTransform(270),
+                RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative),
+            };
+            Children.Add(tb);
+            Width = 46;
+            Height = 94;
+            ClipToBounds = true;
+        }
+
+        public override string ToString()
+        {
+            // DataGrid のソートなどで Header.ToString() が使われるので、テキストを返す
+            return (Children.Count > 0 && Children[0] is TextBlock tb) ? tb.Text ?? string.Empty : string.Empty;
+        }
     }
 }

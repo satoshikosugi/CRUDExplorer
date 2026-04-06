@@ -78,6 +78,8 @@ public partial class GrepViewModel : ViewModelBase
             if (UseRegex)
             {
                 regexPattern = SearchPattern;
+                // 正規表現の妥当性を検証
+                _ = new Regex(regexPattern);
             }
             else
             {
@@ -86,7 +88,7 @@ public partial class GrepViewModel : ViewModelBase
                     regexPattern = $@"\b{regexPattern}\b";
             }
         }
-        catch
+        catch (ArgumentException)
         {
             ResultSummary = "正規表現パターンが不正です";
             return;
@@ -163,6 +165,21 @@ public partial class GrepViewModel : ViewModelBase
         var settings = Settings.Load();
         var launcher = new ExternalEditorLauncher(settings);
         launcher.RunTextEditor(SelectedResult.FilePath, SelectedResult.LineNumber, SearchPattern);
+    }
+
+    [RelayCommand]
+    private void AnalyzeQuery()
+    {
+        if (SelectedResult == null) return;
+
+        // GlobalState に解析リクエストを設定
+        GlobalState.Instance.AnalyzeQueryRequest = new AnalyzeQueryRequest
+        {
+            SourcePath = GlobalState.Instance.LastAnalysisDestPath,
+            FileName = SelectedResult.FileName,
+            LineNo = SelectedResult.LineNumber,
+            TableName = string.Empty
+        };
     }
 
     [RelayCommand]
