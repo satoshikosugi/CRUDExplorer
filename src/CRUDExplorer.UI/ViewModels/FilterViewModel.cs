@@ -33,6 +33,9 @@ public partial class FilterViewModel : ViewModelBase
         // プログラム/テーブル一覧を GlobalState から収集
         LoadProgramItems(f.ProgramFilter);
         LoadTableItems(f.TableFilter);
+
+        // アクセス連動 ComboBox の選択肢を構築
+        LoadAccessComboBoxItems();
     }
 
     // ── フィルタ文字列 ────────────────────────────────────────────────
@@ -72,6 +75,105 @@ public partial class FilterViewModel : ViewModelBase
     [ObservableProperty] private bool _showR = true;
     [ObservableProperty] private bool _showU = true;
     [ObservableProperty] private bool _showD = true;
+
+    // ── アクセス連動 ComboBox（オリジナル frmFilter.vb の cmbProgramAccess / cmbTableAccess 相当） ──
+
+    [ObservableProperty]
+    private ObservableCollection<string> _programAccessItems = new();
+
+    [ObservableProperty]
+    private string? _selectedProgramAccess;
+
+    [ObservableProperty]
+    private ObservableCollection<string> _tableAccessItems = new();
+
+    [ObservableProperty]
+    private string? _selectedTableAccess;
+
+    /// <summary>
+    /// プログラムアクセスComboBox選択時: テーブルチェックを全解除（オリジナル仕様）
+    /// </summary>
+    partial void OnSelectedProgramAccessChanged(string? value)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            foreach (var i in TableItems) i.IsChecked = false;
+            // 選択したプログラムがアクセスするテーブルのみチェック
+            var programKey = ExtractKey(value);
+            if (!string.IsNullOrEmpty(programKey))
+            {
+                var accessedTables = GetTablesAccessedByProgram(programKey);
+                foreach (var t in TableItems)
+                {
+                    if (accessedTables.Contains(t.Name))
+                        t.IsChecked = true;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// テーブルアクセスComboBox選択時: プログラムチェックを全解除（オリジナル仕様）
+    /// </summary>
+    partial void OnSelectedTableAccessChanged(string? value)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            foreach (var i in ProgramItems) i.IsChecked = false;
+            // 選択したテーブルにアクセスするプログラムのみチェック
+            var tableKey = ExtractKey(value);
+            if (!string.IsNullOrEmpty(tableKey))
+            {
+                var accessingPrograms = GetProgramsAccessingTable(tableKey);
+                foreach (var p in ProgramItems)
+                {
+                    if (accessingPrograms.Contains(p.Name))
+                        p.IsChecked = true;
+                }
+            }
+        }
+    }
+
+    /// <summary>ComboBox表示名から先頭のキー部分を抽出: "KEY (名前)" → "KEY"</summary>
+    private static string ExtractKey(string displayText)
+    {
+        var idx = displayText.IndexOf(" (", StringComparison.Ordinal);
+        return idx > 0 ? displayText[..idx] : displayText;
+    }
+
+    /// <summary>指定プログラムがアクセスするテーブル一覧を返す</summary>
+    private static HashSet<string> GetTablesAccessedByProgram(string programKey)
+    {
+        var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var kvp in GlobalState.Instance.QueryList)
+        {
+            var q = kvp.Value;
+            var pid = System.IO.Path.GetFileNameWithoutExtension(q.FileName);
+            if (!string.Equals(pid, programKey, StringComparison.OrdinalIgnoreCase)) continue;
+            foreach (var t in q.GetAllTables().Values)
+                result.Add(t.Split('\t')[0]);
+        }
+        return result;
+    }
+
+    /// <summary>指定テーブルにアクセスするプログラム一覧を返す</summary>
+    private static HashSet<string> GetProgramsAccessingTable(string tableKey)
+    {
+        var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var kvp in GlobalState.Instance.QueryList)
+        {
+            var q = kvp.Value;
+            foreach (var t in q.GetAllTables().Values)
+            {
+                if (string.Equals(t.Split('\t')[0], tableKey, StringComparison.OrdinalIgnoreCase))
+                {
+                    result.Add(System.IO.Path.GetFileNameWithoutExtension(q.FileName));
+                    break;
+                }
+            }
+        }
+        return result;
+    }
 
     // ── チェックリスト ────────────────────────────────────────────────
 
@@ -113,6 +215,27 @@ public partial class FilterViewModel : ViewModelBase
                                   name, currentFilter,
                                   System.Text.RegularExpressions.RegexOptions.IgnoreCase)
             });
+        }
+    }
+
+    /// <summary>
+    /// アクセス連動 ComboBox の選択肢を構築する（オリジナル frmFilter.vb の ShowForm 相当）。
+    /// 表示形式: "KEY (論理名)"
+    /// </summary>
+    private void LoadAccessComboBoxItems()
+    {
+        ProgramAccessItems.Clear();
+        ProgramAccessItems.Add(string.Empty); // 空=未選択
+        foreach (var kv in GlobalState.Instance.ProgramNames)
+        {
+            ProgramAccessItems.Add($"{kv.Key} ({kv.Value})");
+        }
+
+        TableAccessItems.Clear();
+        TableAccessItems.Add(string.Empty); // 空=未選択
+        foreach (var kv in GlobalState.Instance.TableNames)
+        {
+            TableAccessItems.Add($"{kv.Key} ({kv.Value})");
         }
     }
 

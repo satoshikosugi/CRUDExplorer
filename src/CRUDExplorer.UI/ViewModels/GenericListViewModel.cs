@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Controls;
@@ -11,6 +12,10 @@ public partial class GenericListViewModel : ViewModelBase
 {
     private readonly Action _closeWindow;
     private readonly Action<ListItemModel?>? _onSelect;
+
+    // ソート状態
+    private string? _sortColumn;
+    private bool _sortAscending = true;
 
     [ObservableProperty]
     private string _windowTitle = "リスト選択";
@@ -32,6 +37,12 @@ public partial class GenericListViewModel : ViewModelBase
 
     [ObservableProperty]
     private SelectionMode _selectionMode = SelectionMode.Single;
+
+    /// <summary>列定義（複数列表示対応用）</summary>
+    public ObservableCollection<string> ColumnHeaders { get; } = new();
+
+    /// <summary>クリップボード設定用コールバック</summary>
+    public Func<string, System.Threading.Tasks.Task>? SetClipboard { get; set; }
 
     public GenericListViewModel(
         Action? closeWindow = null,
@@ -55,18 +66,52 @@ public partial class GenericListViewModel : ViewModelBase
 
     private void ApplyFilter()
     {
-        if (string.IsNullOrWhiteSpace(FilterText))
+        IEnumerable<ListItemModel> source = Items;
+
+        if (!string.IsNullOrWhiteSpace(FilterText))
         {
-            FilteredItems = new ObservableCollection<ListItemModel>(Items);
+            source = source.Where(item =>
+                item.DisplayText.Contains(FilterText, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // ソート適用
+        if (!string.IsNullOrEmpty(_sortColumn))
+        {
+            var colIdx = ColumnHeaders.IndexOf(_sortColumn);
+            if (colIdx >= 0)
+            {
+                source = _sortAscending
+                    ? source.OrderBy(i => GetColumnValue(i, colIdx))
+                    : source.OrderByDescending(i => GetColumnValue(i, colIdx));
+            }
+        }
+
+        FilteredItems = new ObservableCollection<ListItemModel>(source);
+        ItemCountText = $"{FilteredItems.Count} 件";
+    }
+
+    /// <summary>
+    /// 列クリック時のソートトグル処理（オリジナル frmList.vb の lstList_ColumnClick 相当）
+    /// </summary>
+    public void SortByColumn(string columnName)
+    {
+        if (_sortColumn == columnName)
+        {
+            _sortAscending = !_sortAscending;
         }
         else
         {
-            var filtered = Items.Where(item =>
-                item.DisplayText.Contains(FilterText, StringComparison.OrdinalIgnoreCase));
-            FilteredItems = new ObservableCollection<ListItemModel>(filtered);
+            _sortColumn = columnName;
+            _sortAscending = true;
         }
+        ApplyFilter();
+    }
 
-        ItemCountText = $"{FilteredItems.Count} 件";
+    private static string GetColumnValue(ListItemModel item, int colIdx)
+    {
+        if (item.ColumnValues != null && colIdx < item.ColumnValues.Length)
+            return item.ColumnValues[colIdx];
+        return item.DisplayText;
     }
 
     [RelayCommand]
@@ -88,10 +133,28 @@ public partial class GenericListViewModel : ViewModelBase
         _onSelect?.Invoke(null);
         _closeWindow();
     }
+
+    // ── コンテキストメニュー ──────────────────────────────────────────
+
+    [RelayCommand]
+    private async System.Threading.Tasks.Task CopySelected()
+    {
+        if (SelectedItem == null || SetClipboard == null) return;
+        await SetClipboard(SelectedItem.DisplayText);
+    }
+
+    [RelayCommand]
+    private async System.Threading.Tasks.Task CopyAll()
+    {
+        if (FilteredItems.Count == 0 || SetClipboard == null) return;
+        var text = string.Join(Environment.NewLine, FilteredItems.Select(i => i.DisplayText));
+        await SetClipboard(text);
+    }
 }
 
 public class ListItemModel
 {
     public string DisplayText { get; set; } = string.Empty;
+    public string[]? ColumnValues { get; set; }
     public object? Tag { get; set; }
 }

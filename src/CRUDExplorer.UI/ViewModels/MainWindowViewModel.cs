@@ -332,6 +332,33 @@ public partial class MainWindowViewModel : ViewModelBase
         StatusMessage = $"全{CrudListData.Count}行をクリップボードにコピーしました";
     }
 
+    /// <summary>
+    /// CRUD一覧の列別コピー（オリジナル InitCommonContextMenu の列別コピー相当）
+    /// </summary>
+    [RelayCommand]
+    private void CopyCrudListColumn(string columnName)
+    {
+        if (SelectedCrudItem is not CrudListItem item)
+        {
+            StatusMessage = "コピーする項目がありません";
+            return;
+        }
+
+        ClipboardText = columnName switch
+        {
+            "FileName"    => item.FileName,
+            "LineNo"      => item.LineNo.ToString(),
+            "ProgramId"   => item.ProgramId,
+            "LogicalName" => item.LogicalName,
+            "TableName"   => item.TableName,
+            "Crud"        => item.Crud,
+            "FuncName"    => item.FuncName,
+            _ => string.Empty
+        };
+        MatrixClipboardReady?.Invoke(this, EventArgs.Empty);
+        StatusMessage = $"{columnName} をクリップボードにコピーしました";
+    }
+
     [RelayCommand]
     private async Task ShowGrepWindowAsync()
     {
@@ -369,6 +396,15 @@ public partial class MainWindowViewModel : ViewModelBase
         vm.SearchAllFiles = true;
         _windowService.ShowWindow<GrepWindow>(vm);
         StatusMessage = $"Grep: {searchText}";
+    }
+
+    /// <summary>
+    /// マトリクスの選択行テーブル名でGrep検索を開く
+    /// </summary>
+    public void GrepFromMatrixSelection(string? tableName)
+    {
+        if (string.IsNullOrEmpty(tableName)) return;
+        OpenGrepWindowWithContext(string.Empty, tableName);
     }
 
     [RelayCommand]

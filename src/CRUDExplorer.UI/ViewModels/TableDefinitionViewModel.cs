@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -11,6 +12,12 @@ public partial class TableDefinitionViewModel : ViewModelBase
 {
     private readonly Action _closeWindow;
     private readonly Func<string, System.Threading.Tasks.Task>? _setClipboard;
+
+    // コンテキストメニュー用コールバック: CrudSearchWindowを開く
+    private Action<string, string>? _showCrudSearch;
+
+    // SQL挿入用コールバック: 指定テキストを関連コントロールに挿入
+    private Action<string>? _insertText;
 
     [ObservableProperty]
     private ObservableCollection<string> _tables = new();
@@ -30,13 +37,38 @@ public partial class TableDefinitionViewModel : ViewModelBase
     [ObservableProperty]
     private string _ddlScript = string.Empty;
 
+    [ObservableProperty]
+    private ColumnDefinition? _selectedColumn;
+
+    [ObservableProperty]
+    private string _sqlBuildText = string.Empty;
+
+    /// <summary>SQL挿入パネルを表示するか（関連コントロールが渡された場合のみ true）</summary>
+    [ObservableProperty]
+    private bool _showSqlInsertPanel = false;
+
     public TableDefinitionViewModel(
         Action? closeWindow = null,
-        Func<string, System.Threading.Tasks.Task>? setClipboard = null)
+        Func<string, System.Threading.Tasks.Task>? setClipboard = null,
+        Action<string, string>? showCrudSearch = null,
+        Action<string>? insertText = null)
     {
         _closeWindow = closeWindow ?? (() => { });
         _setClipboard = setClipboard;
+        _showCrudSearch = showCrudSearch;
+        _insertText = insertText;
+        ShowSqlInsertPanel = insertText != null;
         LoadTables();
+    }
+
+    /// <summary>コールバックを後から設定する</summary>
+    public void SetCallbacks(
+        Action<string, string>? showCrudSearch = null,
+        Action<string>? insertText = null)
+    {
+        _showCrudSearch = showCrudSearch;
+        _insertText = insertText;
+        ShowSqlInsertPanel = insertText != null;
     }
 
     partial void OnSelectedTableChanged(string? value)
@@ -68,6 +100,98 @@ public partial class TableDefinitionViewModel : ViewModelBase
     private void Close()
     {
         _closeWindow();
+    }
+
+    // ── コンテキストメニュー（オリジナル frmTableDef.vb 相当） ─────────
+
+    /// <summary>このテーブルにアクセスしている処理を検索</summary>
+    [RelayCommand]
+    private void SearchTableAccess()
+    {
+        if (string.IsNullOrEmpty(SelectedTable)) return;
+        _showCrudSearch?.Invoke(SelectedTable, string.Empty);
+    }
+
+    /// <summary>このカラムにアクセスしている処理を検索</summary>
+    [RelayCommand]
+    private void SearchColumnAccess()
+    {
+        if (string.IsNullOrEmpty(SelectedTable) || SelectedColumn == null) return;
+        _showCrudSearch?.Invoke(SelectedTable, SelectedColumn.PhysicalName);
+    }
+
+    // ── SQL挿入ボタン（オリジナル frmTableDef.vb の SQL文構築補助） ──
+
+    /// <summary>テーブル名.カラム名 を挿入</summary>
+    [RelayCommand]
+    private void InsertTableColumn()
+    {
+        if (string.IsNullOrEmpty(SelectedTable) || SelectedColumn == null) return;
+        AppendSqlText($"{SelectedTable}.{SelectedColumn.PhysicalName}");
+    }
+
+    /// <summary>テーブル名 を挿入</summary>
+    [RelayCommand]
+    private void InsertTable()
+    {
+        if (string.IsNullOrEmpty(SelectedTable)) return;
+        AppendSqlText(SelectedTable);
+    }
+
+    /// <summary>改行を挿入</summary>
+    [RelayCommand]
+    private void InsertNewLine() => AppendSqlText(Environment.NewLine);
+
+    /// <summary>カンマ + 改行 を挿入</summary>
+    [RelayCommand]
+    private void InsertComma() => AppendSqlText("," + Environment.NewLine);
+
+    /// <summary>( を挿入</summary>
+    [RelayCommand]
+    private void InsertOpenParen() => AppendSqlText(" ( ");
+
+    /// <summary>) を挿入</summary>
+    [RelayCommand]
+    private void InsertCloseParen() => AppendSqlText(" ) ");
+
+    /// <summary>AND を挿入</summary>
+    [RelayCommand]
+    private void InsertAnd() => AppendSqlText(Environment.NewLine + "AND ");
+
+    /// <summary>OR を挿入</summary>
+    [RelayCommand]
+    private void InsertOr() => AppendSqlText(Environment.NewLine + "OR  ");
+
+    /// <summary>= を挿入</summary>
+    [RelayCommand]
+    private void InsertEquals() => AppendSqlText(" = ");
+
+    /// <summary>SQL構築テキストに追加、または関連コントロールに挿入</summary>
+    private void AppendSqlText(string text)
+    {
+        if (_insertText != null)
+        {
+            _insertText(text);
+        }
+        else
+        {
+            SqlBuildText += text;
+        }
+    }
+
+    /// <summary>SQL構築テキストをクリア</summary>
+    [RelayCommand]
+    private void ClearSqlBuildText()
+    {
+        SqlBuildText = string.Empty;
+    }
+
+    /// <summary>SQL構築テキストをクリップボードにコピー</summary>
+    [RelayCommand]
+    private async System.Threading.Tasks.Task CopySqlBuildText()
+    {
+        if (_setClipboard != null && !string.IsNullOrEmpty(SqlBuildText))
+            await _setClipboard(SqlBuildText);
     }
 
     private void LoadTables()
