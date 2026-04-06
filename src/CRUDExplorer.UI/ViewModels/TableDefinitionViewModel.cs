@@ -1,6 +1,8 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CRUDExplorer.Core.Utilities;
@@ -14,6 +16,12 @@ public partial class TableDefinitionViewModel : ViewModelBase
 
     [ObservableProperty]
     private ObservableCollection<string> _tables = new();
+
+    [ObservableProperty]
+    private ObservableCollection<string> _filteredTables = new();
+
+    [ObservableProperty]
+    private string _tableFilter = string.Empty;
 
     [ObservableProperty]
     private string? _selectedTable;
@@ -51,9 +59,49 @@ public partial class TableDefinitionViewModel : ViewModelBase
     private void Refresh()
     {
         LoadTables();
+        ApplyFilter();
         if (SelectedTable != null)
         {
             LoadTableDefinition(SelectedTable);
+        }
+    }
+
+    [RelayCommand]
+    private void ApplyFilter()
+    {
+        FilteredTables.Clear();
+
+        if (string.IsNullOrWhiteSpace(TableFilter))
+        {
+            foreach (var table in Tables)
+            {
+                FilteredTables.Add(table);
+            }
+        }
+        else
+        {
+            try
+            {
+                var regex = new Regex(TableFilter, RegexOptions.IgnoreCase);
+                foreach (var table in Tables.Where(t => regex.IsMatch(t)))
+                {
+                    FilteredTables.Add(table);
+                }
+            }
+            catch
+            {
+                // 正規表現が不正な場合は部分一致検索
+                foreach (var table in Tables.Where(t => t.Contains(TableFilter, StringComparison.OrdinalIgnoreCase)))
+                {
+                    FilteredTables.Add(table);
+                }
+            }
+        }
+
+        // 選択中のテーブルがフィルタ結果にない場合、選択を解除
+        if (SelectedTable != null && !FilteredTables.Contains(SelectedTable))
+        {
+            SelectedTable = FilteredTables.FirstOrDefault();
         }
     }
 
@@ -78,6 +126,8 @@ public partial class TableDefinitionViewModel : ViewModelBase
         {
             Tables.Add(tableName);
         }
+        // 初期表示はフィルタなしで全テーブル表示
+        ApplyFilter();
     }
 
     private void LoadTableDefinition(string tableName)

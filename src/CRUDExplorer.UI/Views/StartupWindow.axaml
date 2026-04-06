@@ -26,6 +26,13 @@
         <StackPanel HorizontalAlignment="Center" Spacing="5">
           <TextBlock Text="CRUD Explorer" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" />
           <TextBlock Text="SQL分析ツール" FontSize="14" Foreground="Gray" HorizontalAlignment="Center" />
+          <!-- Demo Mode Label -->
+          <TextBlock Text="*** 評価版 ***"
+                     FontSize="16"
+                     FontWeight="Bold"
+                     Foreground="Red"
+                     HorizontalAlignment="Center"
+                     IsVisible="{Binding IsDemoMode}" />
         </StackPanel>
 
         <!-- Version -->

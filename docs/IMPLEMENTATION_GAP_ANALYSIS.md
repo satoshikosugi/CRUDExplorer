@@ -382,8 +382,12 @@
 - [x] クエリ解析ボタン追加（AnalyzeQueryCommand）
 - [x] クエリ解析(新規)ボタン追加（AnalyzeQueryNewCommand）
 
-#### 5. CrudSearchWindow
-- [x] エディタ起動ボタン追加（RunTextEditorCommand）
-- [x] クエリ解析ボタン追加（AnalyzeQueryCommand）
-- [x] クエリ解析(新規)ボタン追加（AnalyzeQueryNewCommand）
-- [x] SelectedResultバインディング追加
+#### 6. TableDefinitionWindow
+- [x] テーブル名フィルタTextBox追加（TableFilter）
+- [x] 適用ボタン追加（ApplyFilterCommand）
+- [x] FilteredTablesプロパティによるフィルタリング済みテーブル一覧
+- [x] 正規表現/部分一致によるフィルタ機能
+
+#### 7. StartupWindow
+- [x] デモ版表示対応（IsDemoModeプロパティ）
+- [x] ライセンスキー未設定時に「*** 評価版 ***」ラベルを表示
