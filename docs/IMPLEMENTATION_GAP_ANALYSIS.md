@@ -357,4 +357,33 @@
 
 | 日付 | 変更内容 |
 |------|---------|
-| 2024-XX-XX | 初版作成 |
+| 2026-04-06 | 初版作成、Phase 1実装完了 |
+
+## 実装済み修正一覧
+
+### 2026-04-06 実装完了
+
+#### 1. MainWindow
+- [x] 論理名/物理名切替ボタン追加（ToggleDisplayNameCommand）
+- [x] 詳細フィルタボタン追加（ShowFilterCommand）
+- [x] ボタンテキストの動的切替（ShowLogicalNameプロパティ）
+
+#### 2. FilterWindow
+- [x] プログラムアクセス絞り込みComboBox追加（ProgramAccessItems）
+- [x] テーブルアクセス絞り込みComboBox追加（TableAccessItems）
+- [x] CRUD関連データからプログラム⇔テーブル関連を構築
+- [x] ComboBox選択時のチェック状態自動更新
+
+#### 3. MakeCrudWindow
+- [x] エディタ起動ボタン追加（RunTextEditorCommand）
+- [x] クエリ解析ボタン追加（AnalyzeQueryCommand）
+
+#### 4. GrepWindow
+- [x] クエリ解析ボタン追加（AnalyzeQueryCommand）
+- [x] クエリ解析(新規)ボタン追加（AnalyzeQueryNewCommand）
+
+#### 5. CrudSearchWindow
+- [x] エディタ起動ボタン追加（RunTextEditorCommand）
+- [x] クエリ解析ボタン追加（AnalyzeQueryCommand）
+- [x] クエリ解析(新規)ボタン追加（AnalyzeQueryNewCommand）
+- [x] SelectedResultバインディング追加

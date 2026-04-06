@@ -120,6 +120,15 @@
                     <Button Content="✕ クリア"
                             Command="{Binding ClearFilterCommand}"
                             Padding="8,4" />
+                    <Button Content="🔍 詳細フィルタ"
+                            Command="{Binding ShowFilterCommand}"
+                            Padding="8,4"
+                            ToolTip.Tip="プログラム/テーブルを個別に選択してフィルタ" />
+                    <Separator Margin="4,0" />
+                    <Button Content="{Binding ToggleDisplayNameButtonText}"
+                            Command="{Binding ToggleDisplayNameCommand}"
+                            Padding="8,4"
+                            ToolTip.Tip="論理名/物理名の表示を切り替え" />
                 </StackPanel>
             </Border>
 

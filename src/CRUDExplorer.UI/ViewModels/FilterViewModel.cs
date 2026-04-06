@@ -17,6 +17,10 @@ public partial class FilterViewModel : ViewModelBase
 {
     private readonly Action _closeWindow;
 
+    // CRUD辞書: プログラム→テーブル一覧、テーブル→プログラム一覧を保持
+    private readonly Dictionary<string, HashSet<string>> _programToTables = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, HashSet<string>> _tableTtoPrograms = new(StringComparer.OrdinalIgnoreCase);
+
     public FilterViewModel(Action? closeWindow = null)
     {
         _closeWindow = closeWindow ?? (() => { });
@@ -30,9 +34,15 @@ public partial class FilterViewModel : ViewModelBase
         ShowU = f.ShowU;
         ShowD = f.ShowD;
 
+        // CRUDデータからプログラム⇔テーブルの関連を構築
+        BuildCrudRelations();
+
         // プログラム/テーブル一覧を GlobalState から収集
         LoadProgramItems(f.ProgramFilter);
         LoadTableItems(f.TableFilter);
+
+        // アクセス絞り込みComboBoxを初期化
+        InitializeAccessItems();
     }
 
     // ── フィルタ文字列 ────────────────────────────────────────────────
@@ -72,6 +82,109 @@ public partial class FilterViewModel : ViewModelBase
     [ObservableProperty] private bool _showR = true;
     [ObservableProperty] private bool _showU = true;
     [ObservableProperty] private bool _showD = true;
+
+    // ── アクセス絞り込みComboBox ──────────────────────────────────────
+
+    /// <summary>「このテーブルにアクセスしているプログラムに絞る」のComboBox選択肢</summary>
+    public ObservableCollection<string> TableAccessItems { get; } = new();
+
+    /// <summary>「このプログラムがアクセスしているテーブルに絞る」のComboBox選択肢</summary>
+    public ObservableCollection<string> ProgramAccessItems { get; } = new();
+
+    [ObservableProperty]
+    private string? _selectedTableAccess;
+
+    partial void OnSelectedTableAccessChanged(string? value)
+    {
+        if (string.IsNullOrEmpty(value) || value == "(テーブルアクセスで絞り込み)")
+            return;
+
+        // 選択したテーブルにアクセスしているプログラムのみチェック
+        if (_tableTtoPrograms.TryGetValue(value, out var programs))
+        {
+            foreach (var item in ProgramItems)
+            {
+                item.IsChecked = programs.Contains(item.Name);
+            }
+        }
+    }
+
+    [ObservableProperty]
+    private string? _selectedProgramAccess;
+
+    partial void OnSelectedProgramAccessChanged(string? value)
+    {
+        if (string.IsNullOrEmpty(value) || value == "(プログラムアクセスで絞り込み)")
+            return;
+
+        // 選択したプログラムがアクセスしているテーブルのみチェック
+        if (_programToTables.TryGetValue(value, out var tables))
+        {
+            foreach (var item in TableItems)
+            {
+                item.IsChecked = tables.Contains(item.Name);
+            }
+        }
+    }
+
+    private void InitializeAccessItems()
+    {
+        // 左パネル（プログラム側）: テーブルアクセスで絞り込む
+        TableAccessItems.Clear();
+        TableAccessItems.Add("(テーブルアクセスで絞り込み)");
+        foreach (var table in _tableTtoPrograms.Keys.OrderBy(k => k))
+        {
+            TableAccessItems.Add(table);
+        }
+        SelectedTableAccess = "(テーブルアクセスで絞り込み)";
+
+        // 右パネル（テーブル側）: プログラムアクセスで絞り込む
+        ProgramAccessItems.Clear();
+        ProgramAccessItems.Add("(プログラムアクセスで絞り込み)");
+        foreach (var prog in _programToTables.Keys.OrderBy(k => k))
+        {
+            ProgramAccessItems.Add(prog);
+        }
+        SelectedProgramAccess = "(プログラムアクセスで絞り込み)";
+    }
+
+    private void BuildCrudRelations()
+    {
+        _programToTables.Clear();
+        _tableTtoPrograms.Clear();
+
+        // GlobalStateのQueryListからCRUD関連を抽出
+        foreach (var kvp in GlobalState.Instance.QueryList)
+        {
+            var query = kvp.Value;
+            var programId = query.FileName;
+            if (string.IsNullOrEmpty(programId))
+                continue;
+
+            // 全テーブル辞書からテーブル名を収集
+            var allTables = query.GetAllTables(true);
+            foreach (var tableEntry in allTables)
+            {
+                var tableName = tableEntry.Key;
+                if (string.IsNullOrEmpty(tableName))
+                    continue;
+
+                if (!_programToTables.TryGetValue(programId, out var tables))
+                {
+                    tables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    _programToTables[programId] = tables;
+                }
+                tables.Add(tableName);
+
+                if (!_tableTtoPrograms.TryGetValue(tableName, out var programs))
+                {
+                    programs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    _tableTtoPrograms[tableName] = programs;
+                }
+                programs.Add(programId);
+            }
+        }
+    }
 
     // ── チェックリスト ────────────────────────────────────────────────
 
@@ -183,6 +296,8 @@ public partial class FilterViewModel : ViewModelBase
         ShowC = ShowR = ShowU = ShowD = true;
         foreach (var i in ProgramItems) i.IsChecked = true;
         foreach (var i in TableItems)   i.IsChecked = true;
+        SelectedTableAccess = "(テーブルアクセスで絞り込み)";
+        SelectedProgramAccess = "(プログラムアクセスで絞り込み)";
 
         GlobalState.Instance.FilterState = new AppFilterState { WasApplied = false };
     }

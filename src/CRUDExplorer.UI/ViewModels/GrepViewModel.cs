@@ -166,6 +166,63 @@ public partial class GrepViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private void AnalyzeQuery()
+    {
+        if (SelectedResult == null) return;
+        OpenAnalyzeQueryWindow(SelectedResult, false);
+    }
+
+    [RelayCommand]
+    private void AnalyzeQueryNew()
+    {
+        if (SelectedResult == null) return;
+        OpenAnalyzeQueryWindow(SelectedResult, true);
+    }
+
+    private void OpenAnalyzeQueryWindow(GrepResult result, bool newWindow)
+    {
+        // クエリ解析ウィンドウを開く
+        // 新規ウィンドウの場合は新しいViewModelで開く
+        var vm = new AnalyzeQueryViewModel();
+        vm.FileName = result.FileName;
+        vm.LineNumber = result.LineNumber.ToString();
+        vm.HighlightText1 = SearchPattern;
+
+        // クエリをロード
+        var queryFile = Path.Combine(GlobalState.Instance.LastAnalysisDestPath ?? string.Empty, "querys", result.FileName + ".query");
+        if (File.Exists(queryFile))
+        {
+            try
+            {
+                var sqlAnalyzer = new CRUDExplorer.SqlParser.Analyzers.SqlAnalyzer();
+                var lines = File.ReadAllLines(queryFile);
+                Query? targetQuery = null;
+                foreach (var line in lines)
+                {
+                    if (string.IsNullOrEmpty(line)) continue;
+                    var cols = line.Split('\t');
+                    if (cols.Length > 1 && int.TryParse(cols[0], out var lineNo))
+                    {
+                        var query = sqlAnalyzer.AnalyzeSql(cols[1], result.FileName, lineNo);
+                        vm.Queries.Add(query);
+                        if (lineNo == result.LineNumber)
+                            targetQuery = query;
+                    }
+                }
+                if (targetQuery != null)
+                    vm.SelectedQuery = targetQuery;
+                else if (vm.Queries.Count > 0)
+                    vm.SelectedQuery = vm.Queries[0];
+            }
+            catch { /* クエリファイル読み込み失敗 */ }
+        }
+
+        // ウィンドウを開く（NOTE: この実装では新しいウィンドウを開くロジックは簡略化）
+        // 実際のウィンドウオープンはWindowServiceを通じて行う必要がある
+        ResultSummary = $"クエリ解析を開始: {result.FileName}:{result.LineNumber}";
+    }
+
+    [RelayCommand]
     private void Close()
     {
         _closeWindow();

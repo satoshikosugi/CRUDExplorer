@@ -35,6 +35,7 @@
           <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
@@ -52,8 +53,21 @@
                    Watermark="正規表現でフィルタ..."
                    Margin="6,6,6,2" />
 
+          <!-- アクセス絞り込みComboBox -->
+          <ComboBox Grid.Row="2"
+                    ItemsSource="{Binding TableAccessItems}"
+                    SelectedItem="{Binding SelectedTableAccess}"
+                    Margin="6,4,6,4"
+                    FontSize="11">
+            <ComboBox.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+
           <!-- チェックリスト -->
-          <ListBox Grid.Row="2"
+          <ListBox Grid.Row="3"
                    ItemsSource="{Binding ProgramItems}"
                    Background="White" BorderThickness="0"
                    Margin="4,2,4,2">
@@ -66,7 +80,7 @@
           </ListBox>
 
           <!-- 全選択/全解除 -->
-          <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="6"
+          <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="6"
                       HorizontalAlignment="Center" Margin="6,4,6,6">
             <Button Content="全選択" FontSize="11" Padding="6,2"
                     Command="{Binding SelectAllProgramsCommand}" />
@@ -85,8 +99,8 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
 
@@ -103,8 +117,21 @@
                    Watermark="正規表現でフィルタ..."
                    Margin="6,6,6,2" />
 
+          <!-- アクセス絞り込みComboBox -->
+          <ComboBox Grid.Row="2"
+                    ItemsSource="{Binding ProgramAccessItems}"
+                    SelectedItem="{Binding SelectedProgramAccess}"
+                    Margin="6,4,6,4"
+                    FontSize="11">
+            <ComboBox.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+
           <!-- CRUD 種別フィルタ -->
-          <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8"
+          <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8"
                       Margin="8,4,8,4">
             <CheckBox Content="C" IsChecked="{Binding ShowC}" />
             <CheckBox Content="R" IsChecked="{Binding ShowR}" />
@@ -113,7 +140,7 @@
           </StackPanel>
 
           <!-- チェックリスト -->
-          <ListBox Grid.Row="3"
+          <ListBox Grid.Row="4"
                    ItemsSource="{Binding TableItems}"
                    Background="White" BorderThickness="0"
                    Margin="4,2,4,2">
@@ -131,7 +158,7 @@
           </ListBox>
 
           <!-- 全選択/全解除 -->
-          <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="6"
+          <StackPanel Grid.Row="5" Orientation="Horizontal" Spacing="6"
                       HorizontalAlignment="Center" Margin="6,4,6,6">
             <Button Content="全選択" FontSize="11" Padding="6,2"
                     Command="{Binding SelectAllTablesCommand}" />
