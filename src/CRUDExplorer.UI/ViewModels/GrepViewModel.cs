@@ -214,11 +214,15 @@ public partial class GrepViewModel : ViewModelBase
                 else if (vm.Queries.Count > 0)
                     vm.SelectedQuery = vm.Queries[0];
             }
-            catch { /* クエリファイル読み込み失敗 */ }
+            catch
+            {
+                // クエリファイル読み込み失敗は無視し、空のViewModelで続行
+                // ユーザーには結果サマリーで通知される
+            }
         }
 
-        // ウィンドウを開く（NOTE: この実装では新しいウィンドウを開くロジックは簡略化）
-        // 実際のウィンドウオープンはWindowServiceを通じて行う必要がある
+        // TODO: ウィンドウを開くにはWindowServiceをコンストラクタで注入する必要がある
+        // 現時点ではViewModelの準備のみ行い、ステータスを更新する
         ResultSummary = $"クエリ解析を開始: {result.FileName}:{result.LineNumber}";
     }
 

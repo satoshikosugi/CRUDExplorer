@@ -19,7 +19,7 @@ public partial class FilterViewModel : ViewModelBase
 
     // CRUD辞書: プログラム→テーブル一覧、テーブル→プログラム一覧を保持
     private readonly Dictionary<string, HashSet<string>> _programToTables = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<string, HashSet<string>> _tableTtoPrograms = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, HashSet<string>> _tableToPrograms = new(StringComparer.OrdinalIgnoreCase);
 
     public FilterViewModel(Action? closeWindow = null)
     {
@@ -100,7 +100,7 @@ public partial class FilterViewModel : ViewModelBase
             return;
 
         // 選択したテーブルにアクセスしているプログラムのみチェック
-        if (_tableTtoPrograms.TryGetValue(value, out var programs))
+        if (_tableToPrograms.TryGetValue(value, out var programs))
         {
             foreach (var item in ProgramItems)
             {
@@ -132,7 +132,7 @@ public partial class FilterViewModel : ViewModelBase
         // 左パネル（プログラム側）: テーブルアクセスで絞り込む
         TableAccessItems.Clear();
         TableAccessItems.Add("(テーブルアクセスで絞り込み)");
-        foreach (var table in _tableTtoPrograms.Keys.OrderBy(k => k))
+        foreach (var table in _tableToPrograms.Keys.OrderBy(k => k))
         {
             TableAccessItems.Add(table);
         }
@@ -151,7 +151,7 @@ public partial class FilterViewModel : ViewModelBase
     private void BuildCrudRelations()
     {
         _programToTables.Clear();
-        _tableTtoPrograms.Clear();
+        _tableToPrograms.Clear();
 
         // GlobalStateのQueryListからCRUD関連を抽出
         foreach (var kvp in GlobalState.Instance.QueryList)
@@ -176,10 +176,10 @@ public partial class FilterViewModel : ViewModelBase
                 }
                 tables.Add(tableName);
 
-                if (!_tableTtoPrograms.TryGetValue(tableName, out var programs))
+                if (!_tableToPrograms.TryGetValue(tableName, out var programs))
                 {
                     programs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    _tableTtoPrograms[tableName] = programs;
+                    _tableToPrograms[tableName] = programs;
                 }
                 programs.Add(programId);
             }

@@ -88,9 +88,9 @@ public partial class TableDefinitionViewModel : ViewModelBase
                     FilteredTables.Add(table);
                 }
             }
-            catch
+            catch (ArgumentException)
             {
-                // 正規表現が不正な場合は部分一致検索
+                // 正規表現が不正な場合は部分一致検索にフォールバック
                 foreach (var table in Tables.Where(t => t.Contains(TableFilter, StringComparison.OrdinalIgnoreCase)))
                 {
                     FilteredTables.Add(table);

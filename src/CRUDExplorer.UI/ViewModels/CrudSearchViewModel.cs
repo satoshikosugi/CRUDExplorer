@@ -196,10 +196,14 @@ public partial class CrudSearchViewModel : ViewModelBase
                 else if (vm.Queries.Count > 0)
                     vm.SelectedQuery = vm.Queries[0];
             }
-            catch { /* クエリファイル読み込み失敗 */ }
+            catch
+            {
+                // クエリファイル読み込み失敗は無視し、空のViewModelで続行
+            }
         }
 
-        // ステータス更新
+        // TODO: ウィンドウを開くにはWindowServiceをコンストラクタで注入する必要がある
+        // 現時点ではViewModelの準備のみ行い、検索結果数はそのまま維持
         ResultCount = SearchResults.Count;
     }
 

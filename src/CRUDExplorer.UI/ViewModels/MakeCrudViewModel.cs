@@ -122,9 +122,12 @@ public partial class MakeCrudViewModel : ViewModelBase
             return;
         }
 
-        // GlobalStateに解析結果パスを設定してメインウィンドウからクエリ解析を起動
+        // GlobalStateに解析結果パスを設定
+        // NOTE: このウィンドウからは直接クエリ解析ウィンドウを開けないため、
+        // メインウィンドウの「クエリ解析ウィンドウ」メニューから起動してもらう
         GlobalState.Instance.LastAnalysisDestPath = DestPath;
-        AppendLog("クエリ解析ウィンドウはメインウィンドウから起動してください。");
+        AppendLog($"解析結果パス: {DestPath}");
+        AppendLog("クエリ解析ウィンドウはメインメニュー「クエリ解析ウィンドウ」から起動してください。");
     }
 
     [RelayCommand]
