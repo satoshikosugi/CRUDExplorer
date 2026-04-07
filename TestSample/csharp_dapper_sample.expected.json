@@ -1,0 +1,10 @@
+{
+  "sourceFile": "csharp_dapper_sample.cs",
+  "description": "C# Dapper",
+  "expectedResults": [
+    { "sql": "SELECT * FROM users WHERE id = @Id", "tables": { "users": ["R"] } },
+    { "sql": "INSERT INTO orders (user_id, total) VALUES (@UserId, @Total)", "tables": { "orders": ["C"] } },
+    { "sql": "UPDATE orders SET status = @Status WHERE id = @Id", "tables": { "orders": ["U"] } },
+    { "sql": "DELETE FROM order_items WHERE order_id = @OrderId", "tables": { "order_items": ["D"] } }
+  ]
+}

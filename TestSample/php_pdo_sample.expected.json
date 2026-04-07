@@ -1,0 +1,10 @@
+{
+  "sourceFile": "php_pdo_sample.php",
+  "description": "PHP PDO",
+  "expectedResults": [
+    { "sql": "SELECT id, name, email FROM users WHERE id = :id", "tables": { "users": ["R"] } },
+    { "sql": "INSERT INTO users (name, email) VALUES (:name, :email)", "tables": { "users": ["C"] } },
+    { "sql": "UPDATE users SET email = :email WHERE id = :id", "tables": { "users": ["U"] } },
+    { "sql": "DELETE FROM orders WHERE id = :id", "tables": { "orders": ["D"] } }
+  ]
+}

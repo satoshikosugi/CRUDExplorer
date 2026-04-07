@@ -1,0 +1,10 @@
+{
+  "sourceFile": "go_database_sql_sample.go",
+  "description": "Go database/sql",
+  "expectedResults": [
+    { "sql": "SELECT id, name, email FROM users WHERE id = $1", "tables": { "users": ["R"] } },
+    { "sql": "INSERT INTO users (name, email) VALUES ($1, $2)", "tables": { "users": ["C"] } },
+    { "sql": "UPDATE users SET email = $1 WHERE id = $2", "tables": { "users": ["U"] } },
+    { "sql": "DELETE FROM orders WHERE id = $1", "tables": { "orders": ["D"] } }
+  ]
+}

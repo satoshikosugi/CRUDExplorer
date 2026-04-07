@@ -1,0 +1,10 @@
+{
+  "sourceFile": "python_sqlalchemy_sample.py",
+  "description": "Python SQLAlchemy text()",
+  "expectedResults": [
+    { "sql": "SELECT * FROM users WHERE id = :id", "tables": { "users": ["R"] } },
+    { "sql": "INSERT INTO users (name, email) VALUES (:name, :email)", "tables": { "users": ["C"] } },
+    { "sql": "UPDATE users SET email = :email WHERE id = :id", "tables": { "users": ["U"] } },
+    { "sql": "DELETE FROM orders WHERE user_id = :user_id", "tables": { "orders": ["D"] } }
+  ]
+}

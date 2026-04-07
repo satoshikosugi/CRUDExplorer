@@ -1,0 +1,10 @@
+{
+  "sourceFile": "ruby_activerecord_sample.rb",
+  "description": "Ruby ActiveRecord raw SQL",
+  "expectedResults": [
+    { "sql": "SELECT * FROM users WHERE id = #{id}", "tables": { "users": ["R"] } },
+    { "sql": "INSERT INTO users (name) VALUES ('#{name}')", "tables": { "users": ["C"] } },
+    { "sql": "UPDATE users SET name = '#{name}' WHERE id = #{id}", "tables": { "users": ["U"] } },
+    { "sql": "SELECT u.id, u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id", "tables": { "users": ["R"], "orders": ["R"] } }
+  ]
+}
