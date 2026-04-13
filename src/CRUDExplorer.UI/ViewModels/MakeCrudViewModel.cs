@@ -267,11 +267,12 @@ public partial class MakeCrudViewModel : ViewModelBase
                             WriteTableCrud(sb, query.GetAllTableU(), moduleName, programId, lineNo, "U", funcName);
                             WriteTableCrud(sb, query.GetAllTableD(), moduleName, programId, lineNo, "D", funcName);
 
-                            // カラムCRUD出力
-                            WriteColumnCrud(sbCol, query.ColumnInsert, moduleName, programId, lineNo, "C", funcName);
-                            WriteColumnCrud(sbCol, query.ColumnSelect, moduleName, programId, lineNo, "R", funcName);
-                            WriteColumnCrud(sbCol, query.ColumnUpdate, moduleName, programId, lineNo, "U", funcName);
-                            WriteColumnCrud(sbCol, query.ColumnDelete, moduleName, programId, lineNo, "D", funcName);
+                            // カラムCRUD出力（エイリアス→実テーブル名を解決）
+                            var aliasMap = BuildAliasToTableMap(query, sql);
+                            WriteColumnCrud(sbCol, query.ColumnInsert, aliasMap, moduleName, programId, lineNo, "C", funcName);
+                            WriteColumnCrud(sbCol, query.ColumnSelect, aliasMap, moduleName, programId, lineNo, "R", funcName);
+                            WriteColumnCrud(sbCol, query.ColumnUpdate, aliasMap, moduleName, programId, lineNo, "U", funcName);
+                            WriteColumnCrud(sbCol, query.ColumnDelete, aliasMap, moduleName, programId, lineNo, "D", funcName);
                         }
                     }
 
@@ -460,13 +461,89 @@ public partial class MakeCrudViewModel : ViewModelBase
     private static void WriteColumnCrud(
         StringBuilder sb,
         ColumnCollection columns,
+        Dictionary<string, string> aliasMap,
         string moduleName, string programId, string lineNo, string crud, string funcName)
     {
         foreach (var col in columns)
         {
             if (string.IsNullOrEmpty(col.Table) || string.IsNullOrEmpty(col.ColumnName)) continue;
-            sb.AppendLine($"{moduleName}\t{programId}\t{lineNo}\t{col.Table}.{col.ColumnName}\t{crud}\t{funcName}\t");
+            var resolvedTable = aliasMap.TryGetValue(col.Table, out var realName) ? realName : col.Table;
+            sb.AppendLine($"{moduleName}\t{programId}\t{lineNo}\t{resolvedTable}.{col.ColumnName}\t{crud}\t{funcName}\t");
         }
+    }
+
+    /// <summary>
+    /// エイリアス→実テーブル名の逆引きマップを構築。
+    /// TableC/R/U/D の値が "TABLENAME\tALIAS" 形式。
+    /// パーサーがテーブル情報を取得できなかった場合は、SQL文からの正規表現フォールバックで補完する。
+    /// </summary>
+    private static Dictionary<string, string> BuildAliasToTableMap(Query query, string sql = "")
+    {
+        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        void AddFromDict(Dictionary<string, string> tables)
+        {
+            foreach (var kvp in tables)
+            {
+                var parts = kvp.Value.Split('\t');
+                var realName = parts[0];
+                var alias = parts.Length > 1 ? parts[1] : string.Empty;
+                if (!map.ContainsKey(realName))
+                    map[realName] = realName;
+                if (!string.IsNullOrEmpty(alias) && !map.ContainsKey(alias))
+                    map[alias] = realName;
+            }
+        }
+
+        void AddFromQuery(Query q)
+        {
+            AddFromDict(q.TableC);
+            AddFromDict(q.TableR);
+            AddFromDict(q.TableU);
+            AddFromDict(q.TableD);
+        }
+
+        AddFromQuery(query);
+
+        // サブクエリのテーブルも再帰的に収集
+        void AddSubQueries(Query q)
+        {
+            foreach (var sub in q.SubQueries.Values)
+            {
+                AddFromQuery(sub);
+                AddSubQueries(sub);
+            }
+        }
+        AddSubQueries(query);
+
+        // パーサーがテーブル情報を取得できなかった場合のフォールバック:
+        // SQL文から FROM/JOIN テーブル名 エイリアス パターンを正規表現で抽出
+        if (!string.IsNullOrEmpty(sql))
+        {
+            // FROM tablename alias / JOIN tablename alias パターン
+            // サブクエリのカッコ直後のエイリアスは除外（テーブル名が英字で始まる必要）
+            var matches = Regex.Matches(sql,
+                @"(?:FROM|JOIN)\s+([A-Za-z_]\w*)\s+([A-Za-z_]\w*)",
+                RegexOptions.IgnoreCase);
+            foreach (Match m in matches)
+            {
+                var tableName = m.Groups[1].Value.ToUpperInvariant();
+                var alias = m.Groups[2].Value;
+                // SQL予約語をエイリアスとして誤認しないようにスキップ
+                var reserved = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                    { "ON", "WHERE", "SET", "AND", "OR", "NOT", "IN", "AS", "LEFT",
+                      "RIGHT", "INNER", "OUTER", "CROSS", "FULL", "NATURAL",
+                      "GROUP", "ORDER", "HAVING", "LIMIT", "OFFSET", "UNION",
+                      "VALUES", "INTO", "SELECT", "FROM", "JOIN", "USING" };
+                if (reserved.Contains(alias)) continue;
+                if (!map.ContainsKey(tableName))
+                    map[tableName] = tableName;
+                if (!map.ContainsKey(alias))
+                    map[alias] = tableName;
+            }
+        }
+
+        return map;
     }
 
     // ─── Step 4: マトリクス生成 ───────────────────────────────────────
