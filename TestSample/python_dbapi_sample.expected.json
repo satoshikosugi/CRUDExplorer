@@ -1,0 +1,10 @@
+{
+  "sourceFile": "python_dbapi_sample.py",
+  "description": "Python DB-API (psycopg2)",
+  "expectedResults": [
+    { "sql": "SELECT id, name, email FROM users WHERE id = %s", "tables": { "users": ["R"] } },
+    { "sql": "INSERT INTO users (name, email) VALUES (%s, %s)", "tables": { "users": ["C"] } },
+    { "sql": "UPDATE users SET email = %s WHERE id = %s", "tables": { "users": ["U"] } },
+    { "sql": "DELETE FROM orders WHERE id = %s", "tables": { "orders": ["D"] } }
+  ]
+}

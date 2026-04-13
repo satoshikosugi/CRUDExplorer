@@ -1,0 +1,11 @@
+{
+  "sourceFile": "java_mybatis_mapper.xml",
+  "description": "Java MyBatis XML Mapper",
+  "expectedResults": [
+    { "sql": "SELECT id, name, email FROM users WHERE id = #{id}", "tables": { "users": ["R"] }, "context": "findUserById" },
+    { "sql": "INSERT INTO users (name, email) VALUES (#{name}, #{email})", "tables": { "users": ["C"] }, "context": "insertUser" },
+    { "sql": "UPDATE users SET name = #{name}, email = #{email} WHERE id = #{id}", "tables": { "users": ["U"] }, "context": "updateUser" },
+    { "sql": "DELETE FROM users WHERE id = #{id}", "tables": { "users": ["D"] }, "context": "deleteUser" },
+    { "sql": "SELECT o.order_id, o.total, o.status FROM orders o JOIN users u ON o.user_id = u.id WHERE u.id = #{userId}", "tables": { "orders": ["R"], "users": ["R"] }, "context": "findOrdersByUser" }
+  ]
+}

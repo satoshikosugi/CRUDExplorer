@@ -1,0 +1,11 @@
+{
+  "sourceFile": "java_jdbc_sample.java",
+  "description": "Java JDBC PreparedStatement",
+  "expectedResults": [
+    { "sql": "SELECT id, name, email FROM users WHERE id = ?", "tables": { "users": ["R"] } },
+    { "sql": "INSERT INTO users (name, email) VALUES (?, ?)", "tables": { "users": ["C"] } },
+    { "sql": "UPDATE users SET email = ? WHERE id = ?", "tables": { "users": ["U"] } },
+    { "sql": "DELETE FROM users WHERE id = ?", "tables": { "users": ["D"] } },
+    { "sql": "SELECT u.id, u.name, o.order_id, o.total FROM users u JOIN orders o ON u.id = o.user_id WHERE u.id = ?", "tables": { "users": ["R"], "orders": ["R"] } }
+  ]
+}

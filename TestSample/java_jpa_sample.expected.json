@@ -1,0 +1,10 @@
+{
+  "sourceFile": "java_jpa_sample.java",
+  "description": "Java JPA @Query with nativeQuery",
+  "expectedResults": [
+    { "sql": "SELECT * FROM users WHERE email = ?1", "tables": { "users": ["R"] } },
+    { "sql": "SELECT * FROM users WHERE id = :id", "tables": { "users": ["R"] } },
+    { "sql": "SELECT o.order_id, o.total FROM orders o WHERE o.user_id = :userId", "tables": { "orders": ["R"] } },
+    { "sql": "SELECT p.id, p.name FROM products p JOIN order_items oi ON p.id = oi.product_id WHERE oi.order_id = :orderId", "tables": { "products": ["R"], "order_items": ["R"] } }
+  ]
+}

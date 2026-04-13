@@ -1,0 +1,10 @@
+{
+  "sourceFile": "typescript_pg_sample.ts",
+  "description": "TypeScript pg (node-postgres)",
+  "expectedResults": [
+    { "sql": "SELECT id, name, email FROM users WHERE id = $1", "tables": { "users": ["R"] } },
+    { "sql": "INSERT INTO users (name, email) VALUES ($1, $2)", "tables": { "users": ["C"] } },
+    { "sql": "UPDATE orders SET status = $1 WHERE id = $2", "tables": { "orders": ["U"] } },
+    { "sql": "DELETE FROM order_items WHERE order_id = $1", "tables": { "order_items": ["D"] } }
+  ]
+}
