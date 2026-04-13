@@ -9,34 +9,45 @@ using CRUDExplorer.Core.Utilities;
 
 namespace CRUDExplorer.UI.ViewModels;
 
+/// <summary>
+/// テーブル定義画面の ViewModel。
+/// オリジナル frmTableDef.vb の左右ペイン構成を踏襲。
+/// 左: テーブル一覧（フィルタ付き）、右: 選択テーブルのカラム定義。
+/// </summary>
 public partial class TableDefinitionViewModel : ViewModelBase
 {
     private readonly Action _closeWindow;
     private readonly Func<string, System.Threading.Tasks.Task>? _setClipboard;
 
-    [ObservableProperty]
-    private ObservableCollection<string> _tables = new();
+    /// <summary>左ペイン: テーブル一覧</summary>
+    public ObservableCollection<TableListItem> TableListItems { get; } = new();
 
+    /// <summary>右ペイン: 選択テーブルのカラム定義</summary>
     [ObservableProperty]
-    private ObservableCollection<string> _filteredTables = new();
+    private ObservableCollection<ColumnDefinitionItem> _columns = new();
 
     [ObservableProperty]
     private string _tableFilter = string.Empty;
 
     [ObservableProperty]
-    private string? _selectedTable;
+    private TableListItem? _selectedTableItem;
 
     [ObservableProperty]
-    private ObservableCollection<ColumnDefinition> _columns = new();
+    private ColumnDefinitionItem? _selectedColumnItem;
 
-    [ObservableProperty]
-    private ObservableCollection<IndexDefinition> _indexes = new();
-
-    [ObservableProperty]
-    private ObservableCollection<ForeignKeyDefinition> _foreignKeys = new();
-
-    [ObservableProperty]
-    private string _ddlScript = string.Empty;
+    // 外部から設定するための互換プロパティ（MainWindowViewModel から vm.SelectedTable = "xxx" で呼ばれる）
+    public string? SelectedTable
+    {
+        get => SelectedTableItem?.TableName;
+        set
+        {
+            if (string.IsNullOrEmpty(value)) return;
+            var item = TableListItems.FirstOrDefault(t =>
+                string.Equals(t.TableName, value, StringComparison.OrdinalIgnoreCase));
+            if (item != null)
+                SelectedTableItem = item;
+        }
+    }
 
     public TableDefinitionViewModel(
         Action? closeWindow = null,
@@ -44,72 +55,52 @@ public partial class TableDefinitionViewModel : ViewModelBase
     {
         _closeWindow = closeWindow ?? (() => { });
         _setClipboard = setClipboard;
-        LoadTables();
+        LoadTableList();
     }
 
-    partial void OnSelectedTableChanged(string? value)
+    partial void OnSelectedTableItemChanged(TableListItem? value)
     {
-        if (!string.IsNullOrEmpty(value))
+        if (value != null)
         {
-            LoadTableDefinition(value);
+            LoadTableDefinition(value.TableName);
+            // タイトル更新
+        }
+        else
+        {
+            Columns.Clear();
         }
     }
 
-    [RelayCommand]
-    private void Refresh()
-    {
-        LoadTables();
-        ApplyFilter();
-        if (SelectedTable != null)
-        {
-            LoadTableDefinition(SelectedTable);
-        }
-    }
+    // ── コマンド ──────────────────────────────────────────────────────
 
     [RelayCommand]
     private void ApplyFilter()
     {
-        FilteredTables.Clear();
-
-        if (string.IsNullOrWhiteSpace(TableFilter))
-        {
-            foreach (var table in Tables)
-            {
-                FilteredTables.Add(table);
-            }
-        }
-        else
-        {
-            try
-            {
-                var regex = new Regex(TableFilter, RegexOptions.IgnoreCase);
-                foreach (var table in Tables.Where(t => regex.IsMatch(t)))
-                {
-                    FilteredTables.Add(table);
-                }
-            }
-            catch (ArgumentException)
-            {
-                // 正規表現が不正な場合は部分一致検索にフォールバック
-                foreach (var table in Tables.Where(t => t.Contains(TableFilter, StringComparison.OrdinalIgnoreCase)))
-                {
-                    FilteredTables.Add(table);
-                }
-            }
-        }
-
-        // 選択中のテーブルがフィルタ結果にない場合、選択を解除
-        if (SelectedTable != null && !FilteredTables.Contains(SelectedTable))
-        {
-            SelectedTable = FilteredTables.FirstOrDefault();
-        }
+        LoadTableList();
     }
 
     [RelayCommand]
-    private async System.Threading.Tasks.Task CopyToClipboard()
+    private void ClearFilter()
     {
-        if (_setClipboard != null)
-            await _setClipboard(DdlScript);
+        TableFilter = string.Empty;
+        LoadTableList();
+    }
+
+    [RelayCommand]
+    private void SearchTableAccess()
+    {
+        // CRUDサーチ: このテーブルにアクセスしている処理
+        // 将来的にCRUDサーチウィンドウを開く
+        if (SelectedTableItem == null) return;
+        // CRUDSearchWindow を開く処理は MainWindow 側で行うため、
+        // ここではグローバルステートに情報をセットするのみ
+    }
+
+    [RelayCommand]
+    private void SearchColumnAccess()
+    {
+        // CRUDサーチ: このカラムにアクセスしている処理
+        if (SelectedTableItem == null || SelectedColumnItem == null) return;
     }
 
     [RelayCommand]
@@ -118,114 +109,99 @@ public partial class TableDefinitionViewModel : ViewModelBase
         _closeWindow();
     }
 
-    private void LoadTables()
+    // ── 内部処理 ──────────────────────────────────────────────────────
+
+    private void LoadTableList()
     {
-        Tables.Clear();
+        var previousSelection = SelectedTableItem?.TableName;
+        TableListItems.Clear();
+
         var tableDefinitions = GlobalState.Instance.TableDefinitions;
-        foreach (var tableName in tableDefinitions.Keys)
+        var tableNames = GlobalState.Instance.TableNames;
+
+        Regex? regex = null;
+        if (!string.IsNullOrWhiteSpace(TableFilter))
         {
-            Tables.Add(tableName);
+            try { regex = new Regex(TableFilter, RegexOptions.IgnoreCase); }
+            catch (ArgumentException) { regex = null; }
         }
-        // 初期表示はフィルタなしで全テーブル表示
-        ApplyFilter();
+
+        foreach (var tableName in tableDefinitions.Keys.OrderBy(k => k, StringComparer.OrdinalIgnoreCase))
+        {
+            if (regex != null && !regex.IsMatch(tableName))
+                continue;
+
+            var logicalName = tableNames.TryGetValue(tableName, out var ln)
+                ? ln
+                : (tableNames.TryGetValue(tableName.ToUpperInvariant(), out ln) ? ln : string.Empty);
+
+            TableListItems.Add(new TableListItem
+            {
+                TableName = tableName,
+                LogicalName = logicalName
+            });
+        }
+
+        // 選択復元 or 先頭選択
+        if (!string.IsNullOrEmpty(previousSelection))
+        {
+            var prev = TableListItems.FirstOrDefault(t =>
+                string.Equals(t.TableName, previousSelection, StringComparison.OrdinalIgnoreCase));
+            SelectedTableItem = prev ?? TableListItems.FirstOrDefault();
+        }
+        else
+        {
+            SelectedTableItem = TableListItems.FirstOrDefault();
+        }
     }
 
     private void LoadTableDefinition(string tableName)
     {
         Columns.Clear();
-        Indexes.Clear();
-        ForeignKeys.Clear();
-        DdlScript = string.Empty;
 
         var tableDefinitions = GlobalState.Instance.TableDefinitions;
-        var tableNames = GlobalState.Instance.TableNames;
-
         if (!tableDefinitions.TryGetValue(tableName, out var tableDef))
-            return;
+        {
+            // 大文字でリトライ
+            if (!tableDefinitions.TryGetValue(tableName.ToUpperInvariant(), out tableDef))
+                return;
+        }
 
-        // カラム情報を設定
         foreach (var col in tableDef.Columns.Values)
         {
-            Columns.Add(new ColumnDefinition
+            Columns.Add(new ColumnDefinitionItem
             {
-                ColumnName = col.AttributeName,
+                Sequence = col.Sequence,
                 PhysicalName = col.ColumnName,
+                ColumnName = col.AttributeName,
+                PkDisplay = col.PrimaryKey == "Yes" ? "Yes" : string.Empty,
+                FkDisplay = col.ForeignKey == "Yes" ? "Yes" : string.Empty,
+                RequiredDisplay = col.Required == "Yes" ? "Yes" : string.Empty,
                 DataType = col.DataType,
-                Size = string.IsNullOrEmpty(col.Accuracy)
-                    ? col.Digits
-                    : $"{col.Digits},{col.Accuracy}",
-                IsNullable = col.Required != "Yes",
-                IsPrimaryKey = col.PrimaryKey == "Yes",
-                DefaultValue = string.Empty,
-                Description = col.AttributeName
+                Digits = col.Digits,
+                Accuracy = col.Accuracy,
             });
         }
-
-        // DDLスクリプトを生成
-        var logicalName = tableNames.TryGetValue(tableName, out var ln) ? ln : tableName;
-        DdlScript = GenerateDdlScript(tableName, logicalName, tableDef);
-    }
-
-    private static string GenerateDdlScript(string tableName, string logicalName, CRUDExplorer.Core.Models.TableDefinition tableDef)
-    {
-        var sb = new StringBuilder();
-        sb.AppendLine($"-- {logicalName} ({tableName})");
-        sb.AppendLine($"CREATE TABLE {tableName} (");
-
-        var cols = new System.Collections.Generic.List<string>();
-        var pkCols = new System.Collections.Generic.List<string>();
-
-        foreach (var col in tableDef.Columns.Values)
-        {
-            var notNull = col.Required == "Yes" ? " NOT NULL" : string.Empty;
-            string sizeStr;
-            if (string.IsNullOrEmpty(col.Digits))
-                sizeStr = string.Empty;
-            else if (string.IsNullOrEmpty(col.Accuracy))
-                sizeStr = $"({col.Digits})";
-            else
-                sizeStr = $"({col.Digits},{col.Accuracy})";
-            cols.Add($"    {col.ColumnName} {col.DataType}{sizeStr}{notNull}");
-            if (col.PrimaryKey == "Yes")
-                pkCols.Add(col.ColumnName);
-        }
-
-        sb.AppendLine(string.Join(",\n", cols));
-
-        if (pkCols.Count > 0)
-        {
-            sb.AppendLine($"    , PRIMARY KEY ({string.Join(", ", pkCols)})");
-        }
-
-        sb.AppendLine(");");
-        return sb.ToString();
     }
 }
 
-public class ColumnDefinition
+/// <summary>左ペインのテーブル一覧アイテム</summary>
+public class TableListItem
 {
-    public string ColumnName { get; set; } = string.Empty;
+    public string TableName { get; set; } = string.Empty;
+    public string LogicalName { get; set; } = string.Empty;
+}
+
+/// <summary>右ペインのカラム定義アイテム（オリジナルの lstTableDef に対応）</summary>
+public class ColumnDefinitionItem
+{
+    public string Sequence { get; set; } = string.Empty;
     public string PhysicalName { get; set; } = string.Empty;
+    public string ColumnName { get; set; } = string.Empty;
+    public string PkDisplay { get; set; } = string.Empty;
+    public string FkDisplay { get; set; } = string.Empty;
+    public string RequiredDisplay { get; set; } = string.Empty;
     public string DataType { get; set; } = string.Empty;
-    public string Size { get; set; } = string.Empty;
-    public bool IsNullable { get; set; }
-    public bool IsPrimaryKey { get; set; }
-    public string DefaultValue { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-}
-
-public class IndexDefinition
-{
-    public string IndexName { get; set; } = string.Empty;
-    public string Columns { get; set; } = string.Empty;
-    public bool IsUnique { get; set; }
-    public bool IsClustered { get; set; }
-}
-
-public class ForeignKeyDefinition
-{
-    public string ForeignKeyName { get; set; } = string.Empty;
-    public string Columns { get; set; } = string.Empty;
-    public string ReferencedTable { get; set; } = string.Empty;
-    public string ReferencedColumns { get; set; } = string.Empty;
+    public string Digits { get; set; } = string.Empty;
+    public string Accuracy { get; set; } = string.Empty;
 }

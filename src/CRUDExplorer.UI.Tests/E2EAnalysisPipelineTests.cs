@@ -464,6 +464,62 @@ public class E2EAnalysisPipelineTests : IDisposable
     }
 
     // ─────────────────────────────────────────────────────────────────
+    // CRUDColumns エイリアス解決テスト
+    // ─────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task ColumnCrud_ShouldUseRealTableNames_NotAliases()
+    {
+        // Arrange
+        var vm = CreateViewModel();
+
+        // Act
+        await vm.ExecuteAnalysisCommand.ExecuteAsync(null);
+        LogAnalysisLog(vm);
+
+        var colTsv = Path.Combine(_outputDir, "querys", "CRUDColumns.tsv");
+        Assert.True(File.Exists(colTsv), $"CRUDColumns.tsv が存在しません: {colTsv}");
+
+        var lines = File.ReadAllLines(colTsv)
+            .Where(l => !string.IsNullOrWhiteSpace(l))
+            .ToArray();
+
+        _output.WriteLine($"=== CRUDColumns.tsv ({lines.Length} 行) ===");
+        foreach (var line in lines)
+            _output.WriteLine($"  {line}");
+
+        // col[3] は "テーブル名.カラム名" 形式。テーブル名が1-2文字のエイリアスになっていないことを確認。
+        // 既知のエイリアス: c, o, p, oi, bl, p2, o2, o3 (TestSample SQLファイルで使用)
+        var knownAliases = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            { "c", "o", "p", "oi", "bl", "p2", "o2", "o3", "t", "s", "ci" };
+
+        var aliasLines = new List<string>();
+        foreach (var line in lines)
+        {
+            var parts = line.Split('\t');
+            if (parts.Length < 4) continue;
+            var tableCol = parts[3]; // "TABLE.COLUMN"
+            var dotIndex = tableCol.IndexOf('.');
+            if (dotIndex <= 0) continue;
+            var tablePart = tableCol[..dotIndex];
+            if (knownAliases.Contains(tablePart))
+            {
+                aliasLines.Add($"  エイリアス検出: {line}");
+            }
+        }
+
+        if (aliasLines.Count > 0)
+        {
+            _output.WriteLine($"=== エイリアスのまま出力された行 ({aliasLines.Count} 件) ===");
+            foreach (var al in aliasLines)
+                _output.WriteLine(al);
+        }
+
+        Assert.True(aliasLines.Count == 0,
+            $"CRUDColumns.tsv にエイリアスが {aliasLines.Count} 件含まれています。実テーブル名に解決されるべきです。");
+    }
+
+    // ─────────────────────────────────────────────────────────────────
     // ヘルパー
     // ─────────────────────────────────────────────────────────────────
 

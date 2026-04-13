@@ -48,6 +48,10 @@ artifacts/
 # Temporary files
 *.tmp
 /tmp/
+
+# Analysis output (generated files)
+/out/
+/out2/
 *.log
 *.bak
 *~

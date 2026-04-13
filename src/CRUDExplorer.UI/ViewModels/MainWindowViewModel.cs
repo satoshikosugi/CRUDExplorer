@@ -591,10 +591,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 var row = new CrudMatrixRow
                 {
                     TableName   = tableKey,
-                    LogicalName = cols.Length > 1 && !string.IsNullOrEmpty(cols[1])
-                        ? cols[1]
-                        : (GlobalState.Instance.TableNames.TryGetValue(tableKey.ToUpperInvariant(), out var ln)
-                            ? ln : string.Empty),
+                    LogicalName = ResolveLogicalName(tableKey, cols.Length > 1 ? cols[1] : string.Empty),
                     Total       = cols.Length > 2 ? cols[2] : string.Empty
                 };
 
@@ -650,6 +647,50 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// テーブル名（またはテーブル名.カラム名）から論理名を解決する。
+    /// カラムCRUD表示の場合は「エンティティ名.属性名」を構築する（オリジナル ChangeHeaderText 相当）。
+    /// </summary>
+    private string ResolveLogicalName(string tableKey, string tsvLogicalName)
+    {
+        var gs = GlobalState.Instance;
+
+        if (CrudViewType == 1 && tableKey.Contains('.'))
+        {
+            // カラムCRUD: tableKey = "テーブル名.カラム名"
+            var dotIdx = tableKey.IndexOf('.');
+            var tableName = tableKey[..dotIdx];
+            var columnName = tableKey[(dotIdx + 1)..];
+
+            var entityName = tableName;
+            if (gs.TableNames.TryGetValue(tableName.ToUpperInvariant(), out var tn) ||
+                gs.TableNames.TryGetValue(tableName, out tn))
+                entityName = tn;
+
+            var attributeName = columnName;
+            if (gs.TableDefinitions.TryGetValue(tableName.ToUpperInvariant(), out var tableDef) ||
+                gs.TableDefinitions.TryGetValue(tableName, out tableDef))
+            {
+                if (tableDef.Columns.TryGetValue(columnName, out var colDef) &&
+                    !string.IsNullOrEmpty(colDef.AttributeName))
+                    attributeName = colDef.AttributeName;
+            }
+
+            return entityName + "." + attributeName;
+        }
+
+        // テーブルCRUD: TSVの値が有効ならそのまま使う
+        if (!string.IsNullOrEmpty(tsvLogicalName))
+            return tsvLogicalName;
+
+        // TSVに論理名がなければ辞書から引く
+        if (gs.TableNames.TryGetValue(tableKey.ToUpperInvariant(), out var ln) ||
+            gs.TableNames.TryGetValue(tableKey, out ln))
+            return ln;
+
+        return string.Empty;
+    }
+
+    /// <summary>
     /// CRUD.tsv を読み込んでリスト表示用データと検索辞書を更新する。
     /// 形式: col0=ファイル, col1=プログラムID, col2=行番号, col3=テーブル名, col4=CRUD, col5=関数名, col6=論理名
     /// </summary>
@@ -668,7 +709,7 @@ public partial class MainWindowViewModel : ViewModelBase
             // テーブル名から論理名（エンティティ名）を取得
             var logicalName = cols.Length > 6 && !string.IsNullOrEmpty(cols[6])
                 ? cols[6]
-                : (gs.TableNames.TryGetValue(tableName.ToUpperInvariant(), out var ln) ? ln : string.Empty);
+                : ResolveLogicalName(tableName, string.Empty);
 
             var item = new CrudListItem
             {

@@ -1105,4 +1105,84 @@ public class CrudExtractionTests
     }
 
     #endregion
+
+    #region Alias Resolution Diagnostics
+
+    [Fact]
+    public void AliasResolution_SelectWithTableAlias_ColumnTableIsAlias()
+    {
+        // This test verifies the raw parser behavior: col.Table contains the alias
+        var sql = "SELECT c.CUSTOMER_ID, c.NAME FROM CUSTOMERS c";
+        var query = _analyzer.AnalyzeSql(sql);
+
+        // Parser should set col.Table to alias 'c'
+        var col = query.ColumnSelect.FirstOrDefault(c => c.ColumnName == "CUSTOMER_ID");
+        Assert.NotNull(col);
+        Assert.Equal("c", col!.Table);  // Alias, not real table name
+
+        // TableR should contain the mapping
+        Assert.True(query.TableR.ContainsKey("CUSTOMERS"), "TableR should contain CUSTOMERS");
+        var val = query.TableR["CUSTOMERS"];
+        Assert.Contains("c", val);  // Value should be "CUSTOMERS\tc"
+    }
+
+    [Fact]
+    public void AliasResolution_JoinWithSubquery_OuterColumnsHaveAlias()
+    {
+        // Mimics the ClassifyCustomers query structure
+        var sql = @"SELECT c.CUSTOMER_ID, c.NAME, c.EMAIL, stats.ORDER_COUNT
+                     FROM CUSTOMERS c
+                     JOIN (
+                         SELECT o.CUSTOMER_ID, COUNT(*) AS ORDER_COUNT
+                         FROM ORDERS o
+                         GROUP BY o.CUSTOMER_ID
+                     ) stats ON stats.CUSTOMER_ID = c.CUSTOMER_ID";
+        var query = _analyzer.AnalyzeSql(sql);
+
+        // Verify TableR contains CUSTOMERS
+        Assert.True(query.TableR.ContainsKey("CUSTOMERS"),
+            $"TableR should contain CUSTOMERS. Keys: [{string.Join(", ", query.TableR.Keys)}]");
+
+        // Verify ColumnSelect has columns with 'c' as Table  
+        var custCols = query.ColumnSelect.Where(c => c.Table == "c").ToList();
+        Assert.NotEmpty(custCols);
+
+        // Verify aliased columns from subquery too
+        var statsCols = query.ColumnSelect.Where(c => c.Table == "stats").ToList();
+        Assert.NotEmpty(statsCols);
+    }
+
+    [Fact]
+    public void AliasResolution_ComplexCaseWithSubqueries_ParserDoesNotParseTableR()
+    {
+        // 既知の制限: PERCENTILE_CONT WITHIN GROUP 構文を含む複雑なSQLでは、
+        // パーサーがFROM句のテーブル情報を取得できない。
+        // MakeCrudViewModel.BuildAliasToTableMap がSQL正規表現フォールバックで補完する。
+        var sql = @"SELECT c.CUSTOMER_ID, c.NAME, c.EMAIL, stats.ORDER_COUNT, stats.TOTAL_SPENT, stats.LAST_ORDER_DATE,
+            CASE WHEN stats.TOTAL_SPENT >= (
+                SELECT PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY sub.TOTAL_SPENT)
+                FROM (SELECT SUM(o3.TOTAL_AMOUNT) AS TOTAL_SPENT FROM ORDERS o3 WHERE o3.STATUS = 'COMPLETED' GROUP BY o3.CUSTOMER_ID) sub
+            ) THEN 'PLATINUM'
+            WHEN stats.TOTAL_SPENT >= (
+                SELECT PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY sub2.TOTAL_SPENT)
+                FROM (SELECT SUM(o4.TOTAL_AMOUNT) AS TOTAL_SPENT FROM ORDERS o4 WHERE o4.STATUS = 'COMPLETED' GROUP BY o4.CUSTOMER_ID) sub2
+            ) THEN 'GOLD'
+            WHEN stats.ORDER_COUNT >= 3 THEN 'SILVER'
+            ELSE 'BRONZE'
+            END AS SEGMENT
+            FROM CUSTOMERS c
+            JOIN (
+                SELECT o.CUSTOMER_ID, COUNT(*) AS ORDER_COUNT, SUM(o.TOTAL_AMOUNT) AS TOTAL_SPENT, MAX(o.ORDER_DATE) AS LAST_ORDER_DATE
+                FROM ORDERS o WHERE o.STATUS = 'COMPLETED' GROUP BY o.CUSTOMER_ID
+            ) stats ON stats.CUSTOMER_ID = c.CUSTOMER_ID
+            ORDER BY stats.TOTAL_SPENT DESC";
+        var query = _analyzer.AnalyzeSql(sql);
+
+        // パーサーの制限: TableRが空 → MakeCrudViewModelの正規表現フォールバックが必要
+        Assert.Empty(query.TableR);
+        // ColumnSelectはパーシャルに取得されている
+        Assert.Contains(query.ColumnSelect, c => c.Table == "c" && c.ColumnName == "CUSTOMER_ID");
+    }
+
+    #endregion
 }
