@@ -82,6 +82,55 @@ public partial class MakeCrudViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private void RunTextEditor()
+    {
+        if (string.IsNullOrEmpty(DestPath))
+        {
+            AppendLog("[エラー] 出力先フォルダが選択されていません。");
+            return;
+        }
+
+        var querysDir = Path.Combine(DestPath, "querys");
+        if (!Directory.Exists(querysDir))
+        {
+            AppendLog("[エラー] querysフォルダが見つかりません。先にCRUD解析を実行してください。");
+            return;
+        }
+
+        var settings = Settings.Load();
+        var launcher = new ExternalEditorLauncher(settings);
+
+        // querysフォルダ内の最初のクエリファイルを開く
+        var queryFiles = Directory.GetFiles(querysDir, "*.query");
+        if (queryFiles.Length > 0)
+        {
+            launcher.RunTextEditor(queryFiles[0], 1, string.Empty);
+            AppendLog($"エディタを起動しました: {queryFiles[0]}");
+        }
+        else
+        {
+            AppendLog("[エラー] クエリファイルが見つかりません。");
+        }
+    }
+
+    [RelayCommand]
+    private void AnalyzeQuery()
+    {
+        if (string.IsNullOrEmpty(DestPath))
+        {
+            AppendLog("[エラー] 出力先フォルダが選択されていません。");
+            return;
+        }
+
+        // GlobalStateに解析結果パスを設定
+        // NOTE: このウィンドウからは直接クエリ解析ウィンドウを開けないため、
+        // メインウィンドウの「クエリ解析ウィンドウ」メニューから起動してもらう
+        GlobalState.Instance.LastAnalysisDestPath = DestPath;
+        AppendLog($"解析結果パス: {DestPath}");
+        AppendLog("クエリ解析ウィンドウはメインメニュー「クエリ解析ウィンドウ」から起動してください。");
+    }
+
+    [RelayCommand]
     private async Task ExecuteAnalysis()
     {
         if (string.IsNullOrEmpty(SourcePath))

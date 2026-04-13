@@ -13,6 +13,8 @@
     <!-- Bottom Buttons -->
     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
       <Button Content="エディタで開く(_O)" Width="120" Command="{Binding OpenInEditorCommand}" />
+      <Button Content="クエリ解析(_A)" Width="100" Command="{Binding AnalyzeQueryCommand}" ToolTip.Tip="選択したクエリを解析ウィンドウで開く" />
+      <Button Content="クエリ解析(新規)" Width="120" Command="{Binding AnalyzeQueryNewCommand}" ToolTip.Tip="新しいウィンドウでクエリを解析" />
       <Button Content="閉じる(_C)" Width="100" Command="{Binding CloseCommand}" />
     </StackPanel>
 

@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CRUDExplorer.Core.Models;
 
 namespace CRUDExplorer.UI.ViewModels;
 
@@ -14,6 +15,9 @@ public partial class StartupViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _loadingMessage = "初期化中...";
+
+    [ObservableProperty]
+    private bool _isDemoMode = false;
 
     public StartupViewModel(Action? closeWindow = null)
     {
@@ -34,6 +38,10 @@ public partial class StartupViewModel : ViewModelBase
         {
             LoadingMessage = "設定を読み込んでいます...";
             await Task.Delay(500); // Simulate loading
+
+            // ライセンス設定を読み込み（ライセンスキーが空ならデモモード）
+            var settings = Settings.Load();
+            IsDemoMode = string.IsNullOrEmpty(settings.LicenseKey);
 
             LoadingMessage = "データベース接続を確認しています...";
             await Task.Delay(500); // Simulate loading

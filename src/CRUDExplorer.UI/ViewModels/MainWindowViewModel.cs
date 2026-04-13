@@ -65,6 +65,21 @@ public partial class MainWindowViewModel : ViewModelBase
             _ = LoadCrudDataAsync();
     }
 
+    /// <summary>論理名表示モード（true:論理名, false:物理名）</summary>
+    [ObservableProperty]
+    private bool _showLogicalName = true;
+
+    /// <summary>論理名/物理名切替ボタンのテキスト</summary>
+    [ObservableProperty]
+    private string _toggleDisplayNameButtonText = "📋 物理名表示";
+
+    partial void OnShowLogicalNameChanged(bool value)
+    {
+        ToggleDisplayNameButtonText = value ? "📋 物理名表示" : "📋 論理名表示";
+        // マトリクスとCRUD一覧を再描画
+        MatrixColumnsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
     [ObservableProperty]
     private ObservableCollection<CrudListItem> _crudListData = new();
 
@@ -326,6 +341,13 @@ public partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>クリップボードへのコピー準備完了イベント</summary>
     public event EventHandler? MatrixClipboardReady;
+
+    [RelayCommand]
+    private void ToggleDisplayName()
+    {
+        ShowLogicalName = !ShowLogicalName;
+        StatusMessage = ShowLogicalName ? "論理名を表示しています" : "物理名を表示しています";
+    }
 
     [RelayCommand]
     private void OpenFolderWithoutCrud()

@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CRUDExplorer.Core.Models;
 using CRUDExplorer.Core.Utilities;
+using CRUDExplorer.UI.Services;
 
 namespace CRUDExplorer.UI.ViewModels;
 
@@ -35,6 +37,9 @@ public partial class CrudSearchViewModel : ViewModelBase
 
     [ObservableProperty]
     private ObservableCollection<CrudSearchResult> _searchResults = new();
+
+    [ObservableProperty]
+    private CrudSearchResult? _selectedResult;
 
     [ObservableProperty]
     private int _resultCount = 0;
@@ -110,7 +115,7 @@ public partial class CrudSearchViewModel : ViewModelBase
     private void AddResult(Query query, string tableName, string columnName, string crudType)
     {
         var programNames = GlobalState.Instance.ProgramNames;
-        var programId = System.IO.Path.GetFileNameWithoutExtension(query.FileName);
+        var programId = Path.GetFileNameWithoutExtension(query.FileName);
         if (programNames.TryGetValue(programId, out var programName))
             programId = $"{programName}({programId})";
 
@@ -128,6 +133,78 @@ public partial class CrudSearchViewModel : ViewModelBase
             ColumnName = columnName,
             CrudType = crudType
         });
+    }
+
+    [RelayCommand]
+    private void RunTextEditor()
+    {
+        if (SelectedResult == null) return;
+
+        var settings = Settings.Load();
+        var launcher = new ExternalEditorLauncher(settings);
+        var sourcePath = GlobalState.Instance.LastAnalysisDestPath ?? string.Empty;
+        var filePath = Path.Combine(sourcePath, SelectedResult.FileName);
+        launcher.RunTextEditor(filePath, SelectedResult.LineNo, SelectedResult.TableName);
+    }
+
+    [RelayCommand]
+    private void AnalyzeQuery()
+    {
+        if (SelectedResult == null) return;
+        OpenAnalyzeQueryWindow(SelectedResult, false);
+    }
+
+    [RelayCommand]
+    private void AnalyzeQueryNew()
+    {
+        if (SelectedResult == null) return;
+        OpenAnalyzeQueryWindow(SelectedResult, true);
+    }
+
+    private void OpenAnalyzeQueryWindow(CrudSearchResult result, bool newWindow)
+    {
+        // クエリ解析ウィンドウを開く
+        var vm = new AnalyzeQueryViewModel();
+        vm.FileName = result.FileName;
+        vm.LineNumber = result.LineNo.ToString();
+        vm.HighlightText1 = result.TableName;
+
+        // クエリをロード
+        var sourcePath = GlobalState.Instance.LastAnalysisDestPath ?? string.Empty;
+        var queryFile = Path.Combine(sourcePath, "querys", result.FileName + ".query");
+        if (File.Exists(queryFile))
+        {
+            try
+            {
+                var sqlAnalyzer = new CRUDExplorer.SqlParser.Analyzers.SqlAnalyzer();
+                var lines = File.ReadAllLines(queryFile);
+                Query? targetQuery = null;
+                foreach (var line in lines)
+                {
+                    if (string.IsNullOrEmpty(line)) continue;
+                    var cols = line.Split('\t');
+                    if (cols.Length > 1 && int.TryParse(cols[0], out var lineNo))
+                    {
+                        var query = sqlAnalyzer.AnalyzeSql(cols[1], result.FileName, lineNo);
+                        vm.Queries.Add(query);
+                        if (lineNo == result.LineNo)
+                            targetQuery = query;
+                    }
+                }
+                if (targetQuery != null)
+                    vm.SelectedQuery = targetQuery;
+                else if (vm.Queries.Count > 0)
+                    vm.SelectedQuery = vm.Queries[0];
+            }
+            catch
+            {
+                // クエリファイル読み込み失敗は無視し、空のViewModelで続行
+            }
+        }
+
+        // TODO: ウィンドウを開くにはWindowServiceをコンストラクタで注入する必要がある
+        // 現時点ではViewModelの準備のみ行い、検索結果数はそのまま維持
+        ResultCount = SearchResults.Count;
     }
 
     [RelayCommand]
